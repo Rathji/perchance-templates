@@ -1,0 +1,404 @@
+// ============================================================================
+//  VGN TEXT RPG TEMPLATE  (slug: vgn-text-rpg-template)
+//  ============================================================================
+//  A text-based dungeon crawler in the spirit of Bard's Tale / Wizardry.
+//  Fork of the VGN Generic Template. Hub: https://perchance.org/vgn-video-game-network
+//
+//  WHAT THIS FILE IS
+//  ----------------------------------------------------------------------------
+//  main.pjs is the generator's "control panel". Everything defined here at the
+//  top level becomes a global on the page, readable from src/rpggame.js via
+//  `window.root.<name>`. It holds:
+//      • $meta        — title / description / tags (listing page + SEO)
+//      • config       — branding + tuning numbers (safe to tweak)
+//      • howToPlay    — text shown in the HOW TO PLAY overlay
+//      • CONTENT      — every list below `config` is GAME CONTENT: names,
+//                       monsters, spells, loot, dungeon flavor. Edit these to
+//                       change the game without touching JavaScript.
+//  ============================================================================
+
+
+$meta
+  title = VGN Text RPG Template
+  description = A text-based dungeon crawler in the spirit of Bard's Tale and Wizardry, built on the VGN Generic Template's CRT arcade shell. Create a party, delve a procedurally generated dungeon, fight turn-based battles, cast spells, loot chests and level up. Edit monsters, spells, loot and flavor text right here in main.pjs.
+  tags = template, vgn, video game network, rpg, dungeon crawler, text based, bard's tale, wizardry, turn based, party, fantasy
+  image = https://user.uploads.dev/file/964ec937202368dd43cf3cfb51c0163f.jpg
+
+
+// ============================================================================
+//  CONFIG  —  branding + tuning numbers (read at boot by src/rpggame.js)
+//  ============================================================================
+config
+  // -- Branding -------------------------------------------------------------
+  gameTitle = DUNGEON OF THE BLIND WIZARD
+  tagline = A text dungeon crawler — Bard's Tale & Wizardry style.
+  coinPrompt = ROLL FOR INITIATIVE ▶ PRESS START
+  backHubUrl = https://perchance.org/vgn-video-game-network
+  backHubLabel = RETURN TO VGN HUB
+  highScoreKey = vgn-text-rpg-template-best
+  titleCfg = vgn-text-rpg-template
+
+  // -- Gameplay tuning ------------------------------------------------------
+  dungeonFloors = 4             // number of dungeon levels (last one holds the boss)
+  startGold = 0
+  wanderEncounter = 0.14        // chance of a random ambush per step on corridor tiles
+  roomEncounter = 0.4           // chance of a random ambush per step on room tiles
+  restEncounter = 0.45          // chance of being ambushed while resting
+  restTurns = 12                // turns a rest costs
+  restHeal = 2                  // HP each living hero recovers per rest
+  fleeChance = 0.65             // base chance to escape a random encounter
+  chestGold = 2d20+10           // gold in a chest (dice notation)
+  searchGold = 1d12+2           // small gold found by SEARCH on plain tiles
+  potionChance = 0.5            // chest contains a potion (on top of gold)
+  gearChance = 0.4              // chest contains a weapon/armor (on top of gold)
+  xpBase = 100                  // XP needed for level 2 (curve: xpBase·L·(L+1)/2)
+  saveKey = vgn-text-rpg-save   // localStorage key for the auto-save
+  typeSpeed = 0.016             // seconds per character in the typewriter effect
+
+  // -- Player-facing "How to Play" (shown in the How-To overlay) ------------
+  howToPlay
+    EXPLORE — ↑ step forward · ↓ step back · ←/→ turn
+    MOVE — number keys 1–4 on the explore screen (N / E / S / W)
+    ACTIONS — press 5: LOOK · SEARCH · REST · PARTY · SAVE
+    COMBAT — pick an action for each hero, then END THE ROUND
+    1 ATTACK · 2 SPELL · 3 ITEM · 4 GUARD — and 2 FLEE on the round screen
+    PARTY — press 8 (inside ACTIONS): use potions, cast healing magic
+    REST to recover HP & SP — but you may be ambushed while camping!
+    Descend the stairs to level 4 and slay the BLIND WIZARD to win.
+    P / ESC — pause · ENTER / SPACE — confirm · arrows also steer menus
+    $output = [this.joinItems("\n")]
+
+
+// ============================================================================
+//  CONTENT — names, monsters, spells, loot, flavor. Edit freely!
+//  ============================================================================
+//  Dice notation ("NdM±X") is used everywhere damage/gold appears. Odds (^n)
+//  weight how often an entry is picked. `minFloor` sets the deepest floor an
+//  entry can appear on (1 = cellar, 2 = catacombs, 3 = halls, 4 = sanctum).
+
+// -- party name pools --------------------------------------------------------
+firstName
+  Aldric
+  Bram
+  Cedric
+  Dorian
+  Edric
+  Finn
+  Gareth
+  Halvar
+  Isolde
+  Jorund
+  Kael
+  Liora
+  Maren
+  Nerissa
+  Osric
+  Petra
+  Rowan
+  Selene
+  Thorne
+  Ulric
+  Virelia
+  Wren
+  Xander
+  Yvaine
+  Zander
+
+surname
+  Storm
+  Ironwood
+  Blackthorn
+  Ravenscroft
+  Frostwind
+  Embervale
+  Ashcroft
+  Moonshade
+  Greylock
+  Sablemoor
+
+// -- dungeon floor names (one per floor) --------------------------------------
+floorNames
+  THE CELLARS OF GORM
+  THE CATACOMBS OF THORN
+  THE HALLS OF THE ASHEN DEAD
+  THE SANCTUM OF THE BLIND WIZARD
+
+// -- room / corridor flavor (complete noun phrases — "YOU STAND IN <x>.") -----
+roomFlavor
+  a torchlit chamber stacked with empty crates
+  the wreckage of an old guardroom
+  a chapel where dead flowers rustle in the draught
+  a feast hall long since looted
+  a library of rotting scrolls
+  an armoury stripped bare
+  a dank barracks lined with rotting bunks
+  a shrine to a forgotten god
+  a store room of shattered amphorae
+  a sleeping cell with a rusted cot
+
+corridorFlavor
+  a narrow corridor of rough-cut stone
+  a passage whose walls weep moisture
+  a low tunnel braced with rotten timbers
+  a long gallery lined with alcoves
+  a cramped crawlspace of packed earth
+  a corridor paved with cracked flagstones
+  a twisting passage that doubles back on itself
+  a corridor where old bones lie swept to the walls
+
+sceneryFlavor
+  Dust motes drift in the torchlight.
+  A cold draught whispers through the stones.
+  Somewhere, water drips.
+  Torchlight dances across carved reliefs.
+  The silence presses in.
+  Scratch-marks skitter in the dark.
+  Your footsteps echo oddly.
+  A faint smell of rot hangs in the air.
+
+// -- monsters -----------------------------------------------------------------
+// Properties: name · hp (range) · dmg (dice) · xp · gold (range) · level ·
+// minFloor · undead (true) · boss (true)
+monsters
+  giantRat
+    name = GIANT RAT
+    hp = {8-13}
+    dmg = 1d3
+    xp = 25
+    gold = {1-3}
+    level = 1
+    minFloor = 1
+  goblin^3
+    name = GOBLIN
+    hp = {10-16}
+    dmg = 1d6
+    xp = 40
+    gold = {2-8}
+    level = 1
+    minFloor = 1
+  skeleton
+    name = SKELETON
+    hp = {12-18}
+    dmg = 1d6+1
+    xp = 55
+    gold = {3-9}
+    level = 1
+    minFloor = 1
+    undead = true
+  orc
+    name = ORC
+    hp = {16-24}
+    dmg = 1d8
+    xp = 75
+    gold = {5-14}
+    level = 2
+    minFloor = 2
+  zombie^2
+    name = ZOMBIE
+    hp = {18-26}
+    dmg = 1d6+2
+    xp = 65
+    gold = {2-7}
+    level = 2
+    minFloor = 2
+    undead = true
+  giantBat
+    name = GIANT BAT
+    hp = {10-16}
+    dmg = 1d4+1
+    xp = 45
+    gold = {2-6}
+    level = 2
+    minFloor = 2
+  cultist^2
+    name = CULTIST
+    hp = {14-20}
+    dmg = 1d6+1
+    xp = 70
+    gold = {4-12}
+    level = 2
+    minFloor = 2
+  ghoul
+    name = GHOUL
+    hp = {20-28}
+    dmg = 1d8+1
+    xp = 95
+    gold = {4-10}
+    level = 3
+    minFloor = 3
+    undead = true
+  ogre
+    name = OGRE
+    hp = {30-40}
+    dmg = 2d6+2
+    xp = 140
+    gold = {10-25}
+    level = 3
+    minFloor = 3
+  wight^2
+    name = WIGHT
+    hp = {22-30}
+    dmg = 1d10+1
+    xp = 110
+    gold = {6-15}
+    level = 3
+    minFloor = 3
+    undead = true
+  warg
+    name = WARG
+    hp = {18-26}
+    dmg = 1d8+2
+    xp = 85
+    gold = {5-12}
+    level = 3
+    minFloor = 3
+  mummy
+    name = MUMMY
+    hp = {34-44}
+    dmg = 2d6+1
+    xp = 180
+    gold = {12-28}
+    level = 4
+    minFloor = 4
+    undead = true
+  wyvern
+    name = WYVERN
+    hp = {30-42}
+    dmg = 2d6+3
+    xp = 200
+    gold = {20-45}
+    level = 4
+    minFloor = 4
+  troll^2
+    name = TROLL
+    hp = {40-54}
+    dmg = 2d6+2
+    xp = 230
+    gold = {15-40}
+    level = 4
+    minFloor = 4
+  blindWizard
+    name = THE BLIND WIZARD
+    hp = {80-100}
+    dmg = 2d6+4
+    xp = 600
+    gold = {200-350}
+    level = 6
+    minFloor = 4
+    boss = true
+
+// -- spells --------------------------------------------------------------------
+// kind: damage | heal · target: one | all · school: mage | cleric
+// undeadOnly: damage spells that only harm the undead
+spells
+  fireBolt
+    name = FIRE BOLT
+    school = mage
+    kind = damage
+    dmg = 1d6
+    sp = 2
+    target = one
+    scaleLevel = true
+  frostWave
+    name = FROST WAVE
+    school = mage
+    kind = damage
+    dmg = 1d4
+    sp = 3
+    target = all
+    scaleLevel = true
+  cureWounds
+    name = CURE WOUNDS
+    school = cleric
+    kind = heal
+    dmg = 1d6+2
+    sp = 2
+    target = one
+  greaterHeal
+    name = GREATER HEAL
+    school = cleric
+    kind = heal
+    dmg = 2d6+4
+    sp = 4
+    target = one
+  turnUndead
+    name = TURN UNDEAD
+    school = cleric
+    kind = damage
+    dmg = 2d6+1
+    sp = 3
+    target = all
+    undeadOnly = true
+
+// -- loot: weapons ------------------------------------------------------------
+// hit = to-hit bonus · dmg = damage dice
+weapons
+  dagger
+    name = DAGGER
+    dmg = 1d4
+    hit = 0
+    minFloor = 1
+  shortSword
+    name = SHORT SWORD
+    dmg = 1d6
+    hit = 0
+    minFloor = 1
+  mace
+    name = MACE
+    dmg = 1d6+1
+    hit = 0
+    minFloor = 1
+  longSword^2
+    name = LONG SWORD
+    dmg = 1d8+1
+    hit = 1
+    minFloor = 2
+  axe
+    name = BATTLE AXE
+    dmg = 1d8+2
+    hit = 0
+    minFloor = 2
+  greatSword
+    name = GREAT SWORD
+    dmg = 2d6+2
+    hit = 1
+    minFloor = 3
+  runicStaff
+    name = RUNIC STAFF
+    dmg = 1d6+3
+    hit = 1
+    minFloor = 3
+  bladeOfVaren
+    name = BLADE OF VAREN
+    dmg = 2d6+4
+    hit = 2
+    minFloor = 4
+
+// -- loot: armor ---------------------------------------------------------------
+// ac = armor class (reduces the enemy's chance to hit you)
+armors
+  leather
+    name = LEATHER ARMOR
+    ac = 1
+    minFloor = 1
+  chain
+    name = CHAIN MAIL
+    ac = 2
+    minFloor = 2
+  plate
+    name = PLATE MAIL
+    ac = 3
+    minFloor = 3
+  dragonScale
+    name = DRAGON SCALE
+    ac = 4
+    minFloor = 4
+
+// -- loot: potions (party inventory, shared) -----------------------------------
+potions
+  healing
+    name = HEALING POTION
+    heal = 2d6
+  mana
+    name = MANA POTION
+    sp = 2d6+4

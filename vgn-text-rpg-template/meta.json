@@ -1,0 +1,35 @@
+{
+  "name": "vgn-text-rpg-template",
+  "imports": [],
+  "isPrivate": false,
+  "srcManifest": {
+    "input.js": {
+      "key": "d09dcf0d7b929b0112579c80cd75314c.js",
+      "size": 3746
+    },
+    "audio.js": {
+      "key": "68eb9e7c3b330b4de34b7983d5985144.js",
+      "size": 10263
+    },
+    "hud.js": {
+      "key": "9f394701b1e6d7429cd34a3a44148057.js",
+      "size": 1978
+    },
+    "engine.js": {
+      "key": "bbd0c0b4df793c9d1e09ba19b35aa3fd.js",
+      "size": 6773
+    },
+    "examplegame.js": {
+      "key": "f19e62cc482e7a619e3c80a8e45444e7.js",
+      "size": 8738
+    },
+    "rpggame.js": {
+      "key": "e9c35b643f72c03620ec07f85cb30912.js",
+      "size": 66016
+    },
+    "main.js": {
+      "key": "1103869e1c833776a52d59a55047eed0.js",
+      "size": 11792
+    }
+  }
+}
