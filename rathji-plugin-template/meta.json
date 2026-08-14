@@ -1,0 +1,8 @@
+{
+  "name": "rathji-plugin-template",
+  "imports": [
+    "simple-gen-footer"
+  ],
+  "isPrivate": false,
+  "srcManifest": {}
+}
