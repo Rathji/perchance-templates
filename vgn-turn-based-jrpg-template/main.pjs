@@ -1,0 +1,35 @@
+$meta
+  title = VGN Turn Based JRPG Template
+  description = A retro turn-based JRPG on the Video Game Network, in the style of Dragon Warrior, Final Fantasy and Ultima. Grid exploration, turn-based battles, four classes, equipment, magic, shops, leveling and save/load — all inside a CRT arcade cabinet shell.
+  tags = vgn, video game network, rpg, jrpg, turn-based, retro, dragon warrior, final fantasy, ultima, crt, arcade
+  image = https://user.uploads.dev/file/61c4cf71796e025fd70b5d3e2c0b1e04.jpg
+
+kv = {import:kv-plugin}
+
+// ============================================================================
+//  VGN CONFIG — edit this list to brand and tune the game.
+//  Every value below is read at boot by src/main.js (see the cfg() helper).
+//  ============================================================================
+config
+  // -- Branding -------------------------------------------------------------
+  gameTitle = VGN Turn Based JRPG Template // shown on the title screen
+  tagline = A retro turn-based JRPG — Dragon Warrior meets Final Fantasy meets Ultima.
+  coinPrompt = INSERT COIN ▶ PRESS START
+
+  // -- VGN network (do not change the hub URL — Beta requirement) -----------
+  backHubUrl = https://perchance.org/vgn-video-game-network
+  backHubLabel = RETURN TO VGN HUB
+
+  // -- Platform -------------------------------------------------------------
+  highScoreKey = vgn-turn-based-jrpg-template-best // localStorage key for hi-score
+  titleCfg = vgn-turn-based-jrpg-template          // small slug shown in the footer
+
+  // -- Player-facing "How to Play" body (shown in the How-To overlay) ------
+  howToPlay
+    Move — ARROWS / WASD
+    Confirm / Talk — ENTER / SPACE
+    Menu / Cancel — ESC / X
+    Pause — P
+    Explore the land, battle monsters for XP and gold, buy gear at the
+    shops, learn spells, rest at the inn, and save your quest.
+    $output = [this.joinItems("\n")]

@@ -1,0 +1,738 @@
+<!--
+  ============================================================================
+  VGN TURN-BASED JRPG  (slug: vgn-turn-based-jrpg)
+  Hub: https://perchance.org/vgn-video-game-network
+  ============================================================================
+
+  A Dragon Warrior / Final Fantasy / Ultima-style turn-based JRPG running on
+  the VGN generic arcade shell. The shell provides the CRT cabinet, boot
+  sequence, title/attract screen, pause, game-over, high scores, how-to-play,
+  chiptune audio and the coin-bar hub link. The GAME lives in src/:
+
+    main.pjs          — $meta + the `config` list (title, tagline, how-to text)
+    index.html        — THIS file: the cabinet DOM + CRT theme in <style>
+    src/main.js       — ENTRY: the VGN shell (boot, states, high scores, hub)
+    src/engine.js     — fixed-timestep loop + state machine (BOOT → TITLE →
+                        PLAYING → PAUSED → GAME_OVER) + retina canvas
+    src/input.js      — keyboard → named actions (shell consumes start/pause)
+    src/audio.js      — WebAudio chiptune SFX + looping music sequencer
+    src/hud.js        — the arcade HUD strip (score=GOLD, lives=party alive)
+    src/rpggame.js    — THE GAME MODULE: wires the RPG into the shell (see
+                        the module API at the top of that file)
+    src/game.js       — RPG state: maps, party, items, save/load (kv)
+    src/battle.js     — turn-based battle system
+    src/data.js       — classes, weapons, armor, items, spells, enemies
+    src/maps.js       — the world + interiors
+    src/render.js     — tile/sprite/monster drawing
+    src/ui.js         — menus (status, items, magic, equip, shop, save/load)
+
+  CONTROLS
+    Move — ARROWS / WASD     Confirm / Talk — ENTER / SPACE
+    Menu / Cancel — ESC / X  Pause — P
+
+  THE RUN: a run is a full adventure. If your party is wiped, the shell's
+  GAME OVER screen appears — INSERT COIN · CONTINUE revives the party at the
+  inn (half HP/MP and half gold lost), TITLE starts a brand-new game.
+
+  VGN BETA CHECKLIST (per the hub's "How to Join")
+  [x] Runs end-to-end with no console errors
+  [x] Core loop is actually playable
+  [x] CRT cabinet look retained (keep <style> + the #coinBar footer)
+  [x] Back-to-hub link present (the coin bar carries it)
+  [x] vgn- slug (vgn-turn-based-jrpg)
+  ============================================================================
+-->
+
+<style>
+  /* CRT pixel fonts — loaded from Google Fonts. Press Start 2P for headings
+     and buttons, VT323 for readable body text. */
+  @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap');
+
+  :root {
+    --clr-gold:    #ffd23e;
+    --clr-magenta: #ff2d95;
+    --clr-cyan:    #2de1ff;
+    --clr-green:   #39ff6e;
+    --clr-red:     #ff3b30;
+    --clr-bg:      #05010f;
+    --clr-panel:   #120a28;
+    --font-pixel:  'Press Start 2P', monospace;
+    --font-term:   'VT323', monospace;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0; padding: 0; width: 100%; height: 100%;
+    background: #000;
+    overflow: hidden;
+    font-family: var(--font-term);
+    color: #f4f4f4;
+  }
+  /* perchance's platform CSS centers body text; undo that */
+  body { text-align: left; }
+
+  #stage {
+    position: fixed;
+    inset: 0 0 28px 0;              /* leave room for the coin bar */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background:
+      radial-gradient(120% 90% at 50% 8%, #150a30 0%, #05010f 55%, #000 100%);
+  }
+
+  /* ---- the cabinet "screen" ------------------------------------------------- */
+  #screen {
+    position: relative;
+    width: min(100vw, calc((100vh - 32px) * 16 / 9));
+    aspect-ratio: 16 / 9;
+    background: #000;
+    border: 6px solid var(--clr-panel);
+    outline: 1px solid rgba(255, 45, 149, 0.55);
+    box-shadow:
+      0 0 0 1px #000,
+      0 0 22px rgba(255, 45, 149, 0.35),
+      0 0 60px rgba(45, 225, 255, 0.12),
+      inset 0 0 40px rgba(0, 0, 0, 0.8);
+    overflow: hidden;
+  }
+
+  canvas#gameCanvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+    image-rendering: -moz-crisp-edges;
+    image-rendering: crisp-edges;
+    image-rendering: pixelated;
+  }
+
+  /* ---- the RPG's own DOM layer (world, party bar, battle) -------------------- */
+  #rpgUi {
+    position: absolute;
+    inset: 0;
+    z-index: 5;
+    display: none;                  /* module toggles to flex when playing */
+    align-items: center;
+    justify-content: center;
+    padding: 40px 10px 6px;         /* clear the arcade HUD strip */
+  }
+  #rpgCol {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    width: min(96%, calc((100vh - 180px) * 1.4));
+    max-height: 100%;
+  }
+
+  #worldWrap {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 672 / 480;
+  }
+  canvas#world {
+    image-rendering: pixelated;
+    background: #000;
+    border: 2px solid #3a3358;
+    width: 100%;
+    height: 100%;
+  }
+  #msgbox {
+    position: absolute;
+    left: 4px; right: 4px; bottom: 4px;
+    background: rgba(8, 8, 16, 0.94);
+    border: 2px double #8a8a9a;
+    padding: 8px 10px;
+    font-size: 16px;
+    min-height: 42px;
+    color: #f0f0f0;
+    white-space: pre-wrap;
+    z-index: 6;
+  }
+
+  #partybar {
+    flex: 0 0 auto;
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 4px 14px;
+    background: rgba(18, 10, 40, 0.9);
+    border: 2px solid #3a3358;
+    padding: 5px 8px;
+    font-size: 13px;
+  }
+  .pmember { display: flex; align-items: center; gap: 6px; font-size: 13px; }
+  .pmember .pname { width: 78px; color: #cfc6ff; white-space: nowrap; overflow: hidden; }
+  .pbar { flex: 1; height: 11px; background: #1c1c28; border: 1px solid #444; position: relative; }
+  .pbar .fill { position: absolute; left: 0; top: 0; bottom: 0; background: #2e8b57; }
+  .pbar .fill.mp { background: #3a6fd8; }
+  .pbar .fill.dead { background: #7a1f1f; }
+  .pbar .txt { position: absolute; inset: 0; font-size: 9px; line-height: 11px; text-align: center; color: #fff; }
+
+  /* ---- battle screen (shown instead of the world while fighting) ------------ */
+  #battleScreen {
+    display: none;
+    flex-direction: column;
+    gap: 6px;
+    width: 100%;
+    max-height: 100%;
+  }
+  #battleTop { display: flex; gap: 6px; flex: 1 1 auto; min-height: 0; }
+  canvas#battleCanvas {
+    image-rendering: pixelated;
+    background: #000;
+    border: 2px solid #3a3358;
+    width: min(58%, 480px);
+    height: auto;
+  }
+  #battleLog {
+    flex: 1 1 auto;
+    min-width: 0;
+    background: rgba(18, 10, 40, 0.9);
+    border: 2px solid #3a3358;
+    padding: 6px;
+    font-size: 15px;
+    overflow: hidden;
+    white-space: pre-wrap;
+    color: #ddd;
+  }
+  #cmdWin {
+    flex: 0 0 auto;
+    width: 100%;
+    background: rgba(18, 10, 40, 0.9);
+    border: 2px solid #3a3358;
+    padding: 6px;
+  }
+  #cmdTitle { margin: 0 0 4px; color: var(--clr-gold); font-size: 14px; }
+  #cmdOptions { display: flex; flex-wrap: wrap; gap: 4px; }
+
+  .btn {
+    background: #14141f;
+    color: #ddd;
+    border: 2px solid #555;
+    padding: 6px 10px;
+    font-family: var(--font-term);
+    font-size: 14px;
+    cursor: pointer;
+  }
+  .btn:hover, .btn.sel { border-color: var(--clr-gold); color: var(--clr-gold); }
+
+  /* ---- RPG menu modal (status / items / shops / save / load) ----------------- */
+  #menuWrap {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 40;
+  }
+  #menuWin {
+    background: #12121c;
+    border: 3px double #8a8a9a;
+    box-shadow: 0 0 24px rgba(0, 0, 0, 0.8);
+    min-width: 400px;
+    max-width: 94vw;
+    max-height: 86vh;
+    overflow: auto;
+    padding: 12px;
+  }
+  #menuWin h2 { margin: 0 0 8px; color: var(--clr-gold); font-size: 16px; text-align: center; }
+  .mopt { padding: 5px 8px; font-size: 15px; cursor: pointer; border: 1px solid transparent; }
+  .mopt.sel { background: #223; border-color: var(--clr-gold); color: var(--clr-gold); }
+  .mopt .sub { color: #888; font-size: 13px; }
+  .mopt.disabled { color: #555; cursor: default; }
+  .mopt.disabled.sel { border-color: #666; color: #888; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0 18px; }
+  .statrow { display: flex; justify-content: space-between; font-size: 14px; padding: 1px 4px; }
+  .statrow .k { color: #888; } .statrow .v { color: #ddd; }
+
+  /* ---- touch controls -------------------------------------------------------- */
+  #touchCtl {
+    position: fixed;
+    right: 8px;
+    bottom: 38px;
+    display: grid;
+    grid-template-columns: 44px 44px 44px;
+    grid-template-rows: 44px 44px 44px;
+    gap: 2px;
+    z-index: 45;
+    opacity: 0.55;
+  }
+  #touchCtl .btn { font-size: 16px; padding: 0; }
+  #bUp { grid-column: 2; grid-row: 1; } #bLeft { grid-column: 1; grid-row: 2; }
+  #bDown { grid-column: 2; grid-row: 3; } #bRight { grid-column: 3; grid-row: 2; }
+  #bConfirm { grid-column: 3; grid-row: 3; } #bCancel { grid-column: 1; grid-row: 1; }
+
+  /* ---- CRT overlay: scanlines + slow scan band + vignette + flicker ---------- */
+  #crtFx {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 30;
+  }
+  #crtFx::before {                    /* scanlines */
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(
+      0deg, rgba(0, 0, 0, 0.24) 0 1px, transparent 1px 3px);
+    mix-blend-mode: multiply;
+  }
+  #crtFx::after {                     /* subtle vignette */
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(120% 100% at 50% 50%,
+      transparent 55%, rgba(0, 0, 0, 0.45) 100%);
+  }
+  .scan-band {                        /* slow rolling bright band */
+    position: absolute;
+    left: 0; right: 0;
+    height: 110px;
+    top: -130px;
+    background: linear-gradient(180deg, transparent,
+      rgba(255, 255, 255, 0.05) 50%, transparent);
+    animation: scanRoll 7s linear infinite;
+  }
+  @keyframes scanRoll { to { transform: translateY(calc(100vh + 150px)); } }
+  .flicker { animation: flicker 4s steps(60) infinite; }
+  @keyframes flicker {
+    0%, 100% { opacity: 1; }
+    92%      { opacity: 1; }
+    93%      { opacity: 0.92; }
+    94%      { opacity: 1; }
+    97%      { opacity: 0.96; }
+  }
+
+  /* ---- HUD ------------------------------------------------------------------- */
+  #hud {
+    position: absolute;
+    inset: 0 0 auto 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 10px 14px;
+    z-index: 10;
+    font-family: var(--font-pixel);
+    font-size: 10px;
+    letter-spacing: 1px;
+    pointer-events: none;
+    transition: opacity 0.25s ease;
+  }
+  #hud.off { opacity: 0; }
+  #hud .hud-item { line-height: 1.6; text-shadow: 2px 2px 0 #000; }
+  #scoreEl   { color: var(--clr-cyan); }
+  #livesEl   { color: var(--clr-gold); }
+  #timerEl   { color: var(--clr-magenta); }
+  #hudExtraEl {
+    position: absolute;
+    top: 34px; left: 14px;
+    font-family: var(--font-term);
+    font-size: 15px;
+    color: #cfc6ff;
+    text-shadow: 1px 1px 0 #000;
+  }
+
+  /* ---- overlays --------------------------------------------------------------- */
+  .overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 20;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 24px;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.35s ease, visibility 0.35s ease;
+  }
+  .overlay.show { opacity: 1; visibility: visible; }
+  .overlay-title {
+    font-family: var(--font-pixel);
+    font-size: clamp(16px, 3.4vw, 30px);
+    letter-spacing: 2px;
+    margin: 10px 0 0;
+    color: var(--clr-cyan);
+    text-shadow:
+      0 0 8px rgba(45, 225, 255, 0.8),
+      3px 3px 0 #000;
+  }
+  .overlay-sub {
+    margin: 8px 0 0;
+    font-size: clamp(15px, 2.4vw, 21px);
+    color: #cfc6ff;
+  }
+
+  /* ---- boot screen ------------------------------------------------------------- */
+  #bootOverlay { background: #000; justify-content: center; }
+  #bootFlash {
+    position: absolute;
+    inset: 0;
+    background: #fff;
+    opacity: 0;
+    animation: bootFlash 0.5s ease-out 0.05s 1;
+    pointer-events: none;
+  }
+  @keyframes bootFlash {
+    0%   { opacity: 1; }
+    100% { opacity: 0; }
+  }
+  #bootLines {
+    font-family: var(--font-term);
+    font-size: clamp(15px, 2.4vw, 20px);
+    color: var(--clr-green);
+    text-shadow: 0 0 6px rgba(57, 255, 110, 0.6);
+    text-align: left;
+    width: min(86%, 520px);
+    line-height: 1.5;
+    min-height: 130px;
+    white-space: pre-wrap;
+  }
+  #bootLines .dim { color: #7fffae; }
+  #bootLines::after {
+    content: '▮';
+    animation: blink 0.8s steps(1) infinite;
+  }
+  #bootLogo {
+    font-family: var(--font-pixel);
+    font-size: clamp(34px, 8vw, 64px);
+    color: var(--clr-gold);
+    letter-spacing: 8px;
+    margin: 14px 0 6px;
+    text-shadow:
+      0 0 10px rgba(255, 210, 62, 0.9),
+      4px 4px 0 #7a1f1f;
+    animation: bootLogoFlicker 1.2s steps(1) infinite;
+  }
+  @keyframes bootLogoFlicker {
+    0%, 100% { opacity: 1; }
+    7%  { opacity: 0.3; }
+    8%  { opacity: 1; }
+    42% { opacity: 1; }
+    43% { opacity: 0.5; }
+    44% { opacity: 1; }
+  }
+  #bootFoot {
+    font-family: var(--font-term);
+    font-size: 14px;
+    color: #7a7090;
+    margin-top: 10px;
+  }
+
+  /* ---- title screen ------------------------------------------------------------- */
+  #titleOverlay {
+    background:
+      linear-gradient(180deg,
+        rgba(5, 1, 15, 0.9) 0%, rgba(5, 1, 15, 0.72) 45%,
+        rgba(5, 1, 15, 0.9) 100%);
+  }
+  .title-logo {
+    font-family: var(--font-pixel);
+    font-size: clamp(40px, 9vw, 78px);
+    color: var(--clr-gold);
+    letter-spacing: 10px;
+    text-shadow:
+      0 0 14px rgba(255, 210, 62, 0.9),
+      0 0 40px rgba(255, 45, 149, 0.5),
+      5px 5px 0 #a11d2f;
+  }
+  .title-tagline {
+    margin: 12px 0 2px;
+    font-size: clamp(16px, 2.6vw, 22px);
+    color: var(--clr-cyan);
+    text-shadow: 0 0 8px rgba(45, 225, 255, 0.7), 2px 2px 0 #000;
+  }
+  .coin-prompt {
+    margin-top: 14px;
+    font-family: var(--font-pixel);
+    font-size: clamp(10px, 1.8vw, 14px);
+    color: var(--clr-gold);
+    letter-spacing: 1px;
+    text-shadow: 2px 2px 0 #000;
+  }
+  .coin-prompt .dot { color: var(--clr-magenta); animation: blink 1.1s steps(1) infinite; }
+  .press-start {
+    margin-top: 14px;
+    font-family: var(--font-pixel);
+    font-size: clamp(11px, 2vw, 15px);
+    color: var(--clr-green);
+    text-shadow: 0 0 8px rgba(57, 255, 110, 0.8), 2px 2px 0 #000;
+    animation: blink 1.2s steps(1) infinite;
+  }
+  @keyframes blink { 0%, 49% { opacity: 1; } 50%, 100% { opacity: 0; } }
+  .hi-score-line {
+    margin-top: 16px;
+    font-family: var(--font-pixel);
+    font-size: clamp(9px, 1.6vw, 12px);
+    color: var(--clr-gold);
+    letter-spacing: 2px;
+    text-shadow: 2px 2px 0 #000;
+  }
+  .title-controls {
+    margin-top: 18px;
+    font-size: clamp(15px, 2.2vw, 19px);
+    color: #9f96c9;
+  }
+
+  /* ---- buttons ------------------------------------------------------------------- */
+  .btn-row {
+    margin-top: 20px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    justify-content: center;
+  }
+  button.vgn-btn {
+    font-family: var(--font-pixel);
+    font-size: clamp(9px, 1.6vw, 12px);
+    letter-spacing: 1px;
+    padding: 12px 18px;
+    border: 2px solid #fff;
+    color: #fff;
+    background: var(--clr-magenta);
+    cursor: pointer;
+    box-shadow: 4px 4px 0 #000;
+    text-transform: uppercase;
+    transition: transform 0.06s ease, box-shadow 0.06s ease, background 0.15s ease;
+    user-select: none;
+  }
+  button.vgn-btn:hover  { background: #ff5cab; }
+  button.vgn-btn:active { transform: translate(3px, 3px); box-shadow: 1px 1px 0 #000; }
+  button.vgn-btn.ghost { background: transparent; color: var(--clr-cyan); border-color: var(--clr-cyan); }
+  button.vgn-btn.ghost:hover { background: rgba(45, 225, 255, 0.15); }
+  button.vgn-btn.gold { background: var(--clr-gold); color: #2a1500; }
+
+  /* ---- pause screen ---------------------------------------------------------------- */
+  #pauseOverlay { background: rgba(5, 1, 15, 0.82); }
+  .pause-hint {
+    margin-top: 14px;
+    font-family: var(--font-pixel);
+    font-size: clamp(9px, 1.6vw, 11px);
+    color: #9f96c9;
+  }
+
+  /* ---- game over screen ------------------------------------------------------------- */
+  #gameOverOverlay { background: rgba(10, 0, 8, 0.86); }
+  .go-title {
+    font-family: var(--font-pixel);
+    font-size: clamp(28px, 6.4vw, 52px);
+    color: var(--clr-red);
+    letter-spacing: 4px;
+    text-shadow:
+      0 0 12px rgba(255, 59, 48, 0.8),
+      4px 4px 0 #000;
+  }
+  .go-stats {
+    margin-top: 18px;
+    font-family: var(--font-pixel);
+    font-size: clamp(10px, 1.9vw, 14px);
+    line-height: 2.1;
+    letter-spacing: 1px;
+    color: #fff;
+    text-shadow: 2px 2px 0 #000;
+  }
+  .go-stats b { color: var(--clr-gold); }
+  .new-hi {
+    margin-top: 8px;
+    font-family: var(--font-pixel);
+    font-size: clamp(10px, 1.8vw, 13px);
+    color: var(--clr-green);
+    text-shadow: 0 0 8px rgba(57, 255, 110, 0.8);
+    animation: blink 0.8s steps(1) infinite;
+    min-height: 1.4em;
+  }
+  .insert-coin {
+    margin-top: 14px;
+    font-family: var(--font-pixel);
+    font-size: clamp(9px, 1.7vw, 12px);
+    color: var(--clr-gold);
+    animation: blink 1.2s steps(1) infinite;
+  }
+  .insert-coin .dot { color: var(--clr-magenta); }
+
+  /* ---- how-to-play screen ------------------------------------------------------------- */
+  #howtoOverlay { background: rgba(5, 1, 15, 0.94); }
+  #howToBody {
+    margin: 14px 0 0;
+    font-family: var(--font-term);
+    font-size: clamp(16px, 2.4vw, 21px);
+    line-height: 1.45;
+    color: #e8e3ff;
+    white-space: pre-wrap;
+  }
+  .howto-table {
+    margin: 14px auto 0;
+    border-collapse: collapse;
+    font-family: var(--font-term);
+    font-size: clamp(15px, 2.2vw, 19px);
+  }
+  .howto-table td {
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    padding: 4px 18px;
+  }
+  .howto-table td:first-child { color: var(--clr-cyan); }
+  .howto-table td:last-child  { color: #fff; }
+  .howto-note {
+    margin-top: 14px;
+    font-size: clamp(14px, 2vw, 17px);
+    color: #8b84ad;
+    max-width: 460px;
+  }
+
+  /* ---- coin bar footer (VGN identity — keep this) -------------------------------------- */
+  #coinBar {
+    position: fixed;
+    left: 0; right: 0; bottom: 0;
+    height: 28px;
+    z-index: 50;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 0 12px;
+    background: #0d0620;
+    border-top: 1px solid rgba(255, 45, 149, 0.6);
+    font-family: var(--font-term);
+    font-size: 16px;
+    letter-spacing: 1px;
+  }
+  #coinBar .bar-left {
+    color: var(--clr-gold);
+    text-shadow: 0 0 6px rgba(255, 210, 62, 0.6);
+    white-space: nowrap;
+  }
+  #coinBar .bar-left .dot { color: var(--clr-magenta); animation: blink 1.1s steps(1) infinite; }
+  #hubLink {
+    color: var(--clr-cyan);
+    text-decoration: none;
+    text-shadow: 0 0 6px rgba(45, 225, 255, 0.6);
+    white-space: nowrap;
+  }
+  #hubLink:hover { color: #fff; text-decoration: underline; }
+  #coinBar .bar-right { color: #6b6390; font-size: 14px; white-space: nowrap; }
+</style>
+
+<div id="stage">
+  <div id="screen" class="flicker">
+    <canvas id="gameCanvas"></canvas>
+
+    <!-- The RPG's own layer: world + party bar + battle UI (shown when playing) -->
+    <div id="rpgUi">
+      <div id="rpgCol">
+        <div id="worldWrap">
+          <canvas id="world" width="672" height="480"></canvas>
+          <div id="msgbox" hidden></div>
+        </div>
+        <div id="partybar"></div>
+
+        <div id="battleScreen">
+          <div id="battleTop">
+            <canvas id="battleCanvas" width="480" height="300"></canvas>
+            <div id="battleLog"></div>
+          </div>
+          <div id="cmdWin"><h3 id="cmdTitle">Battle</h3><div id="cmdOptions"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- HUD: driven by the game via ctx.hud (see src/hud.js) -->
+    <div id="hud" class="off">
+      <div class="hud-item" id="scoreEl">SCORE 000000</div>
+      <div class="hud-item" id="livesEl">1UP &times;4</div>
+      <div class="hud-item" id="timerEl">0:00</div>
+      <div id="hudExtraEl"></div>
+    </div>
+
+    <!-- CRT overlay stack (pointer-events: none) -->
+    <div id="crtFx">
+      <div class="scan-band"></div>
+    </div>
+
+    <!-- BOOT : CRT power-on sequence (auto-advances to TITLE) -->
+    <div id="bootOverlay" class="overlay show">
+      <div id="bootFlash"></div>
+      <div id="bootLines"></div>
+      <div id="bootLogo">VGN</div>
+      <div id="bootFoot">vgn-turn-based-jrpg &middot; v1.0.0</div>
+    </div>
+
+    <!-- TITLE / attract screen -->
+    <div id="titleOverlay" class="overlay">
+      <div class="title-logo">VGN</div>
+      <h1 class="overlay-title" id="titleEl">TURN-BASED JRPG</h1>
+      <p class="title-tagline" id="taglineEl"></p>
+      <p class="coin-prompt"><span class="dot">&bull;</span><span id="coinPromptTxt"> INSERT COIN &middot; PRESS START</span></p>
+      <p class="press-start" id="pressStartEl">PRESS START TO PLAY</p>
+      <p class="hi-score-line" id="titleHiScoreEl">HI-SCORE 000000</p>
+      <div class="btn-row">
+        <button class="vgn-btn" id="startBtn">INSERT COIN</button>
+        <button class="vgn-btn ghost" id="howtoBtn">HOW TO PLAY</button>
+      </div>
+      <p class="title-controls">ARROWS / WASD — MOVE &nbsp;&middot;&nbsp; ENTER — TALK &nbsp;&middot;&nbsp; P — PAUSE</p>
+    </div>
+
+    <!-- PAUSED -->
+    <div id="pauseOverlay" class="overlay">
+      <h2 class="overlay-title" style="color:var(--clr-gold)">PAUSED</h2>
+      <p class="pause-hint">P TO RESUME</p>
+      <div class="btn-row">
+        <button class="vgn-btn" id="resumeBtn">RESUME</button>
+        <button class="vgn-btn ghost" id="pauseHowtoBtn">HOW TO PLAY</button>
+        <button class="vgn-btn ghost" id="pauseRestartBtn">RESTART</button>
+        <button class="vgn-btn ghost" id="quitToTitleBtn">QUIT TO TITLE</button>
+      </div>
+    </div>
+
+    <!-- GAME OVER -->
+    <div id="gameOverOverlay" class="overlay">
+      <div class="go-title">GAME OVER</div>
+      <div class="go-stats" id="gameOverStatsEl"></div>
+      <div class="new-hi" id="newHiBanner"></div>
+      <p class="insert-coin"><span class="dot">&bull;</span> INSERT COIN TO CONTINUE</p>
+      <div class="btn-row">
+        <button class="vgn-btn gold" id="continueBtn">INSERT COIN &middot; CONTINUE</button>
+        <button class="vgn-btn ghost" id="gameOverTitleBtn">TITLE</button>
+      </div>
+    </div>
+
+    <!-- HOW TO PLAY -->
+    <div id="howtoOverlay" class="overlay">
+      <h2 class="overlay-title" id="howToTitleEl">HOW TO PLAY</h2>
+      <div id="howToBodyEl"></div>
+      <table class="howto-table" id="howToTable"></table>
+      <p class="howto-note" id="howToNoteEl"></p>
+      <div class="btn-row">
+        <button class="vgn-btn" id="howToBackBtn">BACK</button>
+      </div>
+    </div>
+  </div><!-- /#screen -->
+</div><!-- /#stage -->
+
+<!-- RPG modal menus (status / items / shops / save / load) live here -->
+<div id="menuWrap"><div id="menuWin"></div></div>
+
+<!-- Touch controls (d-pad + confirm/cancel) -->
+<div id="touchCtl">
+  <button id="bCancel" class="btn">&#10005;</button>
+  <button id="bUp" class="btn">&#9650;</button>
+  <button id="bLeft" class="btn">&#9664;</button>
+  <button id="bDown" class="btn">&#9660;</button>
+  <button id="bRight" class="btn">&#9654;</button>
+  <button id="bConfirm" class="btn">&#9166;</button>
+</div>
+
+<!-- VGN coin bar footer: INSERT COIN prompt + the mandatory back-to-hub link -->
+<footer id="coinBar">
+  <span class="bar-left"><span class="dot">&bull;</span> INSERT COIN &gt;&gt;</span>
+  <a id="hubLink" href="https://perchance.org/vgn-video-game-network" target="_blank" rel="noopener">&lt;&lt; RETURN TO VGN HUB</a>
+  <span class="bar-right">vgn-turn-based-jrpg</span>
+</footer>
+
+<!-- ============================================================================
+     ENTRY POINT — all application logic lives in ES modules under src/.
+     ============================================================================ -->
+<script type="module" src="src/main.js"></script>
