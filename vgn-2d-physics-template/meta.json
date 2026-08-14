@@ -1,0 +1,39 @@
+{
+  "name": "vgn-2d-physics-template",
+  "imports": [],
+  "isPrivate": false,
+  "srcManifest": {
+    "input.js": {
+      "key": "391dfe1a63b5dd90f2d1f52a0d04258c.js",
+      "size": 3719
+    },
+    "audio.js": {
+      "key": "6b61b037fc6e3fba8233ddb47d554b30.js",
+      "size": 8112
+    },
+    "hud.js": {
+      "key": "60e2607d6a18d609197879f067afefa7.js",
+      "size": 1969
+    },
+    "engine.js": {
+      "key": "ced8d3fbaa629e9b40b94ff8df69d984.js",
+      "size": 7846
+    },
+    "physics.js": {
+      "key": "a373d9945a5ae187b30fffd5da625962.js",
+      "size": 20523
+    },
+    "main.js": {
+      "key": "45b2e85a9bd7af1a3a46e21ddf8f8291.js",
+      "size": 11342
+    },
+    "breakoutgame.js": {
+      "key": "0a0d5add4e47278483c53a15624da2ed.js",
+      "size": 15161
+    },
+    "ponggame.js": {
+      "key": "fe2aa0cbd389505180ba3cb3b8579e60.js",
+      "size": 8425
+    }
+  }
+}
