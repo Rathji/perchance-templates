@@ -27,6 +27,24 @@ the original and only record.
 it will fail, and `fleet-backup.mjs` handles a failed slug badly enough to be worth avoiding (see
 `M-4` in `perchance-manager/docs/open-threads.md`). Nothing regenerates this one.
 
+### …and that only copy is incomplete
+
+Discovered 2026-08-14, by checking every file declared in a `srcManifest` against the file on disk.
+`top-down-rpg-template/meta.json` declares **7 `src/` files that are not here** and never were:
+
+    data.js  maps.js  render.js  game.js  battle.js  ui.js  main.js
+
+They were missed because the directory was captured 2026-08-10, before `perchance-fetch.mjs` had
+`--src` to download `srcManifest` entries at all. The same gap affected 32 directories across this
+repo and `generators`; 79 of the 86 missing files were backfilled on 2026-08-14 from live
+perchance. **These 7 could not be, because the generator is 404.** There is no source left to fetch
+them from.
+
+So what survives here is the generator's two panels and its `meta.json` — a manifest listing seven
+files that no longer exist anywhere. That is a permanent, partial loss, recorded rather than
+quietly left to be rediscovered. It is also the sharpest available argument for capturing a
+generator *before* you need the backup.
+
 The roster and the fleet accounting live in
 [perchance-manager](https://github.com/Rathji/perchance-manager) — `fleet-roster.txt` for the slug
 list and where each slug's copy lives, `docs/open-threads.md` for open work.
