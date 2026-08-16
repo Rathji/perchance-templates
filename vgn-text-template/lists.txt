@@ -33,18 +33,18 @@
 //    win()  gameover()  end the game immediately
 //
 //  TIPS:
-//    • `status`, `if`, `effect`, `onEnter` are JS code strings.
+//    • `status`, `if`, `effect`, `onEnter`, `score` are JS code strings.
 //      Keep them on ONE line, and don't use square brackets inside.
 //    • Your story `lines` must not contain square brackets.
 //    • The game auto-saves after every choice; CONTINUE resumes it.
-//      ESC quits to title (saved).
+//      P/ESC opens the pause menu (resume / how to play / restart / quit).
 // ════════════════════════════════════════════════════════════════
 
 $meta
   title = VGN Text Template
-  description = A text-based game template for the Video Game Network. Ships with a short sample adventure — edit the vgn list in main.pjs to write your own scenes, choices, inventory, variables and endings.
+  description = A text-based game template for the Video Game Network. Ships with a short sample adventure — edit the vgn list in main.pjs to write your own scenes, choices, inventory, variables and endings. Full VGN shell: CRT cabinet, power-on boot sequence, coin bar + hub link, chiptune music, pause menu, high scores.
   image = https://user.uploads.dev/file/ebfe64214b8b6c0a69cb973ef0902cbc.jpg
-  tags = text adventure, interactive fiction, template, vgn, text game, story, crt
+  tags = text adventure, interactive fiction, template, vgn, text game, story, crt, high score, chiptune, boot sequence
   header
     mode = minimal
 
@@ -74,6 +74,25 @@ vgn
   startScene = start
   promptText = WHAT WILL YOU DO?
 
+  // ── VGN shell config (coin bar / boot screen / high scores) ──
+  backHubUrl = https://perchance.org/rathjis-generators   // where the coin-bar link points
+  backHubLabel = RETURN TO MY PROJECTS
+  highScoreKey = vgn-text-template-best   // localStorage key for the hi-score
+  coinPrompt = INSERT COIN · PRESS START  // shown in the coin bar
+
+  // Score computed at the end of a run (JS, same scope as `status`).
+  // The best score is remembered and shown as HI-SCORE.
+  score = v.gold * 10 + v.hp * 5
+
+  // Text shown during the CRT power-on sequence (one line per entry).
+  boot
+    $output = [this.joinItems("\n")]
+    VGN VIDEO GAME NETWORK
+    CRT SIGNAL ............... OK
+    MEMORY ................... OK
+    AUDIO .................... OK
+    LOADING CARTRIDGE ........ OK
+
   // Runs once when a new game begins. Set your starting variables.
   init = v.hp = 5; v.gold = 3
 
@@ -88,8 +107,9 @@ vgn
     lists your options with numbers.
     Press 1-9 to take an action directly, or use up/down to
     highlight a choice and press Enter / Space.
+    Press P or ESC to pause at any time.
     On the gamepad: A/B/X/Y = choices 1-4, Start = Enter,
-    Select = quit to title (the game autosaves).
+    Select = pause menu.
     Your progress is saved after every choice. Use Continue on
     the title screen to pick up where you left off.
     To make this your own game, edit the vgn list in main.pjs.

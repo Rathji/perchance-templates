@@ -7,9 +7,13 @@
      usually don't need to touch it.
 
      Controls: press 1-9 to take an action, ↑/↓ to highlight
-     and ENTER to select, SPACE to continue, ESC to quit to
-     title (autosaved). Gamepad: A/B/X/Y = 1-4, START = ENTER,
-     SELECT = ESC, d-pad moves the highlight.
+     and ENTER to select, SPACE to continue, P/ESC to open the
+     pause menu. Gamepad: A/B/X/Y = 1-4, START = ENTER,
+     SELECT = pause, d-pad moves the highlight.
+
+     VGN shell (ported from vgn-generic-template): CRT power-on
+     boot sequence, coin bar footer with back-to-hub link, high
+     scores, pause menu, modal How-to-Play, chiptune music.
      ════════════════════════════════════════════════════════════ -->
 
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90' fill='%2333ff66'%3E%F0%9F%93%9C%3C/text%3E%3C/svg%3E">
@@ -34,6 +38,7 @@
   body{
     background:#07090f;color:#dce6f0;font-family:var(--term);font-size:1.2rem;
     text-align:left;overflow:hidden;display:flex;align-items:center;justify-content:center;
+    padding-bottom:28px; /* leave room for the VGN coin bar */
     background-image:
       radial-gradient(1000px 600px at 82% -10%, rgba(57,255,110,.05), transparent 60%),
       radial-gradient(900px 620px at 8% 110%, rgba(37,215,253,.05), transparent 60%);
@@ -57,7 +62,7 @@
     background:#010803;
     box-shadow:inset 0 0 0 2px rgba(57,255,110,.06), inset 0 0 70px rgba(0,0,0,.9), 0 2px 0 rgba(0,0,0,.8);
   }
-  #screen{position:absolute;inset:0}
+  #screen{position:absolute;inset:0;z-index:1}
 
   .screen-glow{position:absolute;inset:0;z-index:2;pointer-events:none;
     background:radial-gradient(125% 105% at 50% 45%, transparent 55%, rgba(0,0,0,.55) 100%),
@@ -66,9 +71,9 @@
     background:linear-gradient(115deg, transparent 42%, rgba(170,255,190,.06) 47%, transparent 53%);
     animation:sheen 8s ease-in-out infinite;}
   @keyframes sheen{0%,58%,100%{transform:translateX(-45%)}74%{transform:translateX(45%)}}
-  .scanlines{position:absolute;inset:0;z-index:3;pointer-events:none;mix-blend-mode:multiply;
+  .scanlines{position:absolute;inset:0;z-index:30;pointer-events:none;mix-blend-mode:multiply;
     background:repeating-linear-gradient(0deg, rgba(0,0,0,.3) 0 1px, transparent 1px 3px);}
-  .crt-flicker{position:absolute;inset:0;z-index:4;pointer-events:none;opacity:.5;mix-blend-mode:overlay;
+  .crt-flicker{position:absolute;inset:0;z-index:31;pointer-events:none;opacity:.5;mix-blend-mode:overlay;
     background:rgba(255,255,255,.02);animation:flicker 4s infinite;}
   @keyframes flicker{0%,100%{opacity:.45}49%{opacity:.5}50%{opacity:.32}51%{opacity:.5}}
 
@@ -205,6 +210,7 @@
   .tMenu{ display:flex; flex-direction:column; gap:7px; margin-top:10px; align-items:center; }
   .tMenu button{ min-width:210px; font-size:1em; padding:7px 14px; }
   .tCred{ margin-top:8px; font-size:.85em; color:var(--ph-dim); text-shadow:none; text-align:center; display:flex; flex-direction:column; gap:4px; }
+  .tCred .hiScore{ color:var(--ph); text-shadow:0 0 8px rgba(57,255,110,.55); letter-spacing:.1em; }
   .blink{ animation:blink 1.05s steps(1) infinite; }
 
   /* end screen */
@@ -213,7 +219,7 @@
   #endBtns{ display:flex; gap:10px; flex-wrap:wrap; margin-top:16px; justify-content:center; }
 
   /* VGN CRT adapt */
-  .monitor{ width:min(94vw, 1060px, calc((100svh - 150px) * 1.334)); }
+  .monitor{ width:min(94vw, 1060px, calc((100svh - 190px) * 1.334)); }
   .monitor > .panel{ padding:0; margin:0; background:transparent; border:none; border-radius:0; box-shadow:none; }
   .ctrl-panel{ display:flex; gap:8px; pointer-events:auto; }
   .panel .tbtn{ font-size:.4rem; padding:6px 9px; background:rgba(7,9,15,.62); }
@@ -224,6 +230,52 @@
     border-bottom:1px solid rgba(120,140,180,.2);
   }
   body.bare .led{ display:none; }
+
+  /* ══ OVERLAYS (boot / pause / how-to) — sit above the game, below scanlines ══ */
+  #bootOverlay,#pauseOverlay,#howtoOverlay{
+    position:absolute;inset:0;z-index:20;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    text-align:center;padding:22px;
+  }
+  #bootOverlay{ background:#000; }
+  #bootFlash{ position:absolute;inset:0;background:#fff;opacity:0;animation:bootFlash .5s ease-out .05s 1;pointer-events:none; }
+  @keyframes bootFlash{ 0%{opacity:1} 100%{opacity:0} }
+  #bootLines{
+    font-family:var(--term);font-size:clamp(14px,2.2vmin,19px);color:var(--ph);
+    text-shadow:0 0 6px rgba(57,255,110,.6);text-align:left;width:min(86%,520px);
+    line-height:1.5;min-height:150px;white-space:pre-wrap;
+  }
+  #bootLines::after{ content:"▮"; animation:blink .8s steps(1) infinite; }
+  #bootLogo{
+    font-family:var(--pix);font-size:clamp(30px,7vmin,54px);color:var(--ph);
+    letter-spacing:10px;margin:12px 0 4px;text-shadow:0 0 12px rgba(57,255,110,.9);
+    animation:bootFlicker 1.3s steps(1) infinite;
+  }
+  @keyframes bootFlicker{ 0%,100%{opacity:1} 7%{opacity:.3} 8%{opacity:1} 42%{opacity:1} 43%{opacity:.5} 44%{opacity:1} }
+  #bootFoot{ font-family:var(--term);font-size:14px;color:var(--ph-dim);margin-top:8px; }
+
+  #pauseOverlay{ background:rgba(2,16,10,.86); }
+  #pauseOverlay .p-title{ margin:0;font-size:clamp(22px,4vmin,34px);color:var(--ph);letter-spacing:.1em;text-shadow:0 0 14px rgba(57,255,110,.6); }
+  #pauseOverlay .p-hint{ margin:6px 0 0;color:var(--ph-dim); }
+  #pauseOverlay .p-btns{ display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-top:14px; }
+
+  #howtoOverlay{ background:rgba(2,16,10,.96); }
+  #howtoOverlay .p-title{ margin:0 0 8px;font-size:clamp(20px,3.6vmin,30px);color:var(--ph);letter-spacing:.1em;text-shadow:0 0 12px rgba(57,255,110,.6); }
+  #howtoBody{ max-width:720px;width:100%;text-align:left;font-size:1.08em;line-height:1.5;white-space:pre-wrap;color:var(--ph); }
+  #howtoOverlay .tbtnrow{ justify-content:center; }
+
+  /* ══ VGN COIN BAR FOOTER (identity — keep it) ══ */
+  #coinBar{
+    position:fixed;left:0;right:0;bottom:0;height:28px;z-index:50;
+    display:flex;align-items:center;justify-content:space-between;gap:10px;padding:0 12px;
+    background:#03110a;border-top:1px solid rgba(57,255,110,.35);
+    font-family:var(--term);font-size:16px;letter-spacing:1px;
+  }
+  #coinBar .bar-left{ color:var(--ph);text-shadow:0 0 6px rgba(57,255,110,.5);white-space:nowrap;overflow:hidden;text-overflow:ellipsis; }
+  #coinBar .bar-left .dot{ animation:blink 1.1s steps(1) infinite; }
+  #hubLink{ color:var(--ph);text-decoration:none;text-shadow:0 0 6px rgba(57,255,110,.5);white-space:nowrap;overflow:hidden;text-overflow:ellipsis; }
+  #hubLink:hover{ color:#fff;text-decoration:underline; }
+  #coinBar .bar-right{ color:var(--ph-dim);font-size:14px;white-space:nowrap;flex:none; }
 
   @media (max-width:600px){
     .term{ padding:12px 12px 60px; }
@@ -237,7 +289,7 @@
     <div id="screen">
 
       <!-- ===================== TITLE SCREEN ===================== -->
-      <div id="titleScreen">
+      <div id="titleScreen" hidden>
         <div id="titleCtn"></div>
         <div class="tMenu">
           <button id="startBtn" class="primary" onclick="newGame()">▶ NEW GAME</button>
@@ -269,6 +321,35 @@
         </div>
       </div>
 
+    </div>
+
+    <!-- ===================== BOOT SEQUENCE ===================== -->
+    <div id="bootOverlay">
+      <div id="bootFlash" aria-hidden="true"></div>
+      <div id="bootLines"></div>
+      <div id="bootLogo">VGN</div>
+      <div id="bootFoot">vgn-text-template · v1.1.0</div>
+    </div>
+
+    <!-- ===================== PAUSE MENU ===================== -->
+    <div id="pauseOverlay" hidden>
+      <h2 class="p-title">PAUSED</h2>
+      <p class="p-hint">P / ESC TO RESUME</p>
+      <div class="p-btns">
+        <button class="primary" onclick="resumeGame()">▶ RESUME</button>
+        <button onclick="howToPlay(true)">? HOW TO PLAY</button>
+        <button onclick="restartGame()">↻ RESTART</button>
+        <button onclick="quitToTitle()">✕ QUIT TO TITLE</button>
+      </div>
+    </div>
+
+    <!-- ===================== HOW TO PLAY ===================== -->
+    <div id="howtoOverlay" hidden>
+      <h2 class="p-title">HOW TO PLAY</h2>
+      <div id="howtoBody"></div>
+      <div class="tbtnrow">
+        <button class="primary" onclick="closeHowTo()">← BACK</button>
+      </div>
     </div>
 
     <div class="screen-glow" aria-hidden="true"></div>
@@ -310,6 +391,13 @@
     <span class="led"></span>
   </div>
 </div>
+
+<!-- ═══════════ VGN COIN BAR FOOTER (identity — keep it) ═══════════ -->
+<footer id="coinBar">
+  <span class="bar-left"><span class="dot">●</span> <span id="coinBarTxt">INSERT COIN · PRESS START</span></span>
+  <a id="hubLink" href="https://perchance.org/rathjis-generators" target="_blank" rel="noopener">◂◂ RETURN TO MY PROJECTS</a>
+  <span class="bar-right" id="coinBarFoot">vgn-text-template</span>
+</footer>
 
 <!-- ═══════════ CRT / GAMEPAD ENGINE ═══════════ -->
 <script>
@@ -423,7 +511,7 @@
   window.addEventListener("keyup", function(e){ reflectPad(e.key, false); });
 
   /* ── default hint text ── */
-  VGN.hints("1-9 / A B X Y = CHOOSE · ↑↓ + ENTER = SELECT · ESC = TITLE · SPACE = CONTINUE");
+  VGN.hints("1-9 / A B X Y = CHOOSE · ↑↓ + ENTER = SELECT · P / ESC = PAUSE · SPACE = CONTINUE");
 })();
 </script>
 
@@ -440,14 +528,26 @@
      title, lines, choices, to, end, onEnter, status (per scene)
    Choice config:
      text, to, if, effect, once
-   Author JS (in `if`/`effect`/`status`/`onEnter`) runs with the
+   Author JS (in `if`/`effect`/`status`/`score`/`onEnter`) runs with the
    player state in scope:  v, inv, has(), add(), remove(), say(),
    rand(), flag(), unflag(), win(), gameover().
+
+   VGN shell (ported from vgn-generic-template):
+     • CRT power-on boot sequence (bootSeq / skipBoot)
+     • coin bar footer with back-to-hub link (from vgn.backHubUrl/Label)
+     • high scores — vgn.score (JS expr) evaluated at run end, best
+       persisted to localStorage under vgn.highScoreKey
+     • pause menu (P/ESC) with resume / how-to / restart / quit
+     • modal How-to-Play overlay
+     • looping chiptune music sequencer (sfx.music)
    ════════════════════════════════════════════════════════════════ */
 
 var C = null;            // loaded game definition
 var S = null;            // live game state
 var muted = false;
+var paused = false;      // pause menu open
+var booting = false;     // boot sequence in progress
+var best = 0;            // hi-score from localStorage
 var choiceState = null;  // active choice input { list, sel, resolve }
 var waitingKey = null, waitingRes = null;
 
@@ -484,7 +584,7 @@ var sfx = {
     if (this.ctx && this.ctx.state === "suspended"){ this.ctx.resume(); }
   },
   on:function(){ return !muted; },
-  tone:function(freq, dur, type, vol){
+  tone:function(freq, dur, type, vol, when){
     if (!this.on()) return;
     this.init();
     if (!this.ctx) return;
@@ -493,7 +593,8 @@ var sfx = {
     o.frequency.value = freq;
     g.gain.value = vol || 0.07;
     o.connect(g); g.connect(this.ctx.destination);
-    var t0 = this.ctx.currentTime;
+    var t0 = (when === undefined) ? this.ctx.currentTime : when;
+    g.gain.setValueAtTime(vol || 0.07, t0);
     o.start(t0);
     g.gain.exponentialRampToValueAtTime(0.001, t0 + dur);
     o.stop(t0 + dur);
@@ -503,13 +604,59 @@ var sfx = {
   bad:function(){ this.tone(140, 0.4, "sawtooth", 0.07); },
   ding:function(){ this.tone(1040, 0.14, "square", 0.06); },
   ching:function(){ this.tone(1568, 0.09, "square", 0.06); this.tone(1175, 0.12, "square", 0.06); this.tone(880, 0.18, "square", 0.05); },
-  win:function(){ this.tone(523,0.15,"square",0.07); this.tone(659,0.15,"square",0.07); this.tone(784,0.15,"square",0.07); this.tone(1047,0.4,"square",0.08); }
+  win:function(){ this.tone(523,0.15,"square",0.07); this.tone(659,0.15,"square",0.07); this.tone(784,0.15,"square",0.07); this.tone(1047,0.4,"square",0.08); },
+  /* ── looping chiptune music (lookahead scheduler) ── */
+  midi:function(m){ return 440 * Math.pow(2, (m - 69) / 12); },
+  music:{
+    playing:false, timer:null, step:0, nextT:0, bpm:138,
+    lead:[ 69,null,72,74, 76,72,76,79,  77,74,77,81,  79,76,74,71 ],
+    bass:[ 45,45,45,45, 41,41,41,41,  43,43,43,43,  43,47,43,45 ],
+    start:function(){
+      if(this.playing) return;
+      sfx.init();
+      if(!sfx.ctx) return;
+      this.playing = true;
+      this.step = 0;
+      this.nextT = sfx.ctx.currentTime + 0.08;
+      this.timer = setInterval(function(){ sfx.music.tick(); }, 40);
+    },
+    stop:function(){
+      this.playing = false;
+      if(this.timer){ clearInterval(this.timer); this.timer = null; }
+    },
+    tick:function(){
+      if(!this.playing) return;
+      var stepDur = 60 / this.bpm / 2;
+      while(this.nextT < sfx.ctx.currentTime + 0.15){
+        var s = this.step % 16;
+        var lead = this.lead[s], bass = this.bass[s];
+        if(lead) sfx.tone(sfx.midi(lead), stepDur * 0.9, "square", 0.045, this.nextT);
+        if(bass) sfx.tone(sfx.midi(bass), stepDur * 0.95, "triangle", 0.055, this.nextT);
+        this.nextT += stepDur;
+        this.step++;
+      }
+    }
+  }
 };
 function soundToggle(){
   muted = !muted;
   muteBtn.textContent = "SOUND: " + (muted ? "OFF" : "ON");
-  if (!muted) sfx.ding();
+  if (!muted) { sfx.ding(); ensureMusic(); }
 }
+
+/* music unlocks on the first user gesture (autoplay policy) */
+function ensureMusic(){
+  if(muted) return;
+  sfx.init();
+  sfx.music.start();
+}
+function unlockAudio(){
+  ensureMusic();
+  document.removeEventListener("pointerdown", unlockAudio);
+  document.removeEventListener("keydown", unlockAudio);
+}
+document.addEventListener("pointerdown", unlockAudio);
+document.addEventListener("keydown", unlockAudio);
 
 /* ==================================================================
    2. PLAYER STATE & AUTHOR-JS EVALUATION
@@ -571,6 +718,13 @@ function loadGame(){
     init: val(v.init),
     status: val(v.status),
     help: val(v.help),
+    backHubUrl: val(v.backHubUrl) || "https://perchance.org/vgn-video-game-network",
+    backHubLabel: val(v.backHubLabel) || "RETURN TO VGN HUB",
+    highScoreKey: val(v.highScoreKey) || "vgn-text-template-best",
+    coinPrompt: val(v.coinPrompt) || "INSERT COIN · PRESS START",
+    titleCfg: val(v.titleCfg),
+    score: val(v.score),
+    boot: val(v.boot),
     scenes: {}
   };
   if(v.scenes && v.scenes.selectAll){
@@ -629,7 +783,97 @@ function showScreen(name){
   $("titleScreen").hidden = name !== "title";
   $("gameScreen").hidden = name !== "game";
   $("endScreen").hidden = name !== "end";
+  $("bootOverlay").hidden = name !== "boot";
+  $("pauseOverlay").hidden = true;
+  $("howtoOverlay").hidden = true;
   if(name !== "game"){ promptLine.textContent = ""; keypadEl.hidden = true; }
+}
+
+/* ==================================================================
+   4.5 BOOT SEQUENCE (CRT power-on, from vgn-generic-template)
+   ================================================================== */
+var BOOT_LINES_DEFAULT = [
+  "VGN VIDEO GAME NETWORK",
+  "CRT SIGNAL ............... OK",
+  "MEMORY ................... OK",
+  "AUDIO .................... OK",
+  "LOADING CARTRIDGE ........ OK"
+];
+function bootSeq(){
+  booting = true;
+  var lines = (C.boot && C.boot.trim()) ? C.boot.split("\n") : BOOT_LINES_DEFAULT;
+  var el = $("bootLines");
+  el.textContent = "";
+  showScreen("boot");
+  var i = 0;
+  var t = setInterval(function(){
+    if(i < lines.length){
+      var d = document.createElement("div");
+      d.textContent = lines[i];
+      el.appendChild(d);
+      i++;
+    } else {
+      clearInterval(t);
+      setTimeout(function(){ if(booting) skipBoot(); }, 800);
+    }
+  }, 210);
+}
+function skipBoot(){
+  if(!booting) return;
+  booting = false;
+  showScreen("title");
+  renderTitle();
+  refreshContinueBtn();
+}
+
+/* ==================================================================
+   4.6 HIGH SCORES (localStorage, key from vgn.highScoreKey)
+   ================================================================== */
+function loadBest(){
+  try { best = parseInt(localStorage.getItem(C.highScoreKey), 10) || 0; }
+  catch(e){ best = 0; }
+  return best;
+}
+function saveBest(n){
+  if(n <= best) return false;
+  best = n;
+  try { localStorage.setItem(C.highScoreKey, String(n)); return true; }
+  catch(e){ return false; }
+}
+function fmtScore(n){
+  n = Math.max(0, Math.floor(n || 0));
+  var s = String(n);
+  while(s.length < 6) s = "0" + s;
+  return s;
+}
+
+/* ==================================================================
+   4.7 PAUSE MENU + HOW-TO-PLAY OVERLAY (P/ESC)
+   ================================================================== */
+function setPaused(on){
+  paused = on;
+  $("pauseOverlay").hidden = !on;
+  if(on) sfx.blip();
+}
+function resumeGame(){
+  if(!paused) return;
+  setPaused(false);
+  sfx.blip();
+}
+function restartGame(){
+  setPaused(false);
+  newGame();
+}
+function howToPlay(fromPause){
+  sfx.blip();
+  if(fromPause){ paused = false; $("pauseOverlay").hidden = false; }
+  $("howtoOverlay").hidden = false;
+  var body = $("howtoBody");
+  body.textContent = C.help || DEFAULT_HELP;
+}
+function closeHowTo(){
+  $("howtoOverlay").hidden = true;
+  if(paused === false && $("pauseOverlay").hidden === false){ setPaused(true); }
 }
 
 /* ==================================================================
@@ -725,6 +969,14 @@ async function finishGame(kind){
   if(sc.lines) printLines(sc.lines);
   print("");
   print("MOVES TAKEN: " + (S.moves || 0));
+  var finalScore = 0;
+  try {
+    var scv = evalCode(C.score, makeCtx(), true);
+    finalScore = Math.max(0, Math.floor(+scv || 0));
+  } catch(e){}
+  var isHi = saveBest(finalScore);
+  print("SCORE: " + fmtScore(finalScore), "hero");
+  if(isHi) print("★ NEW HIGH SCORE ★", "good");
   var st = statusText(sc);
   if(st) print(st, "status dim");
   print("");
@@ -737,6 +989,8 @@ async function finishGame(kind){
 function playAgain(){ newGame(); }
 function backToTitle(){ quitToTitle(); }
 function quitToTitle(){
+  paused = false;
+  booting = false;
   if(choiceState){
     var r = choiceState.resolve;
     choiceState = null;
@@ -796,9 +1050,9 @@ function handleChoiceKey(e){
   } else if(k === "Enter" || k === " "){
     e.preventDefault();
     confirmChoice();
-  } else if(k === "Escape"){
+  } else if(k === "Escape" || k === "p" || k === "P"){
     e.preventDefault();
-    quitToTitle();
+    setPaused(true);
   }
 }
 
@@ -828,18 +1082,28 @@ function keyOk(){ if(choiceState) confirmChoice(); }
 function pause(text){
   print(text || "PRESS SPACE TO CONTINUE", "waitHint");
   return new Promise(function(res){
-    waitingKey = [" ", "Enter", "Escape"];
+    waitingKey = [" ", "Enter"];
     waitingRes = res;
-  });
-}
-function waitForKey(keys){
-  return new Promise(function(res){
-    waitingKey = keys; waitingRes = res;
   });
 }
 
 document.addEventListener("keydown", function(e){
   if(e.target && (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA")) return;
+  if(booting){ skipBoot(); return; }
+  if(!$("howtoOverlay").hidden){
+    if(e.key === "Escape" || e.key === "p" || e.key === "P" || e.key === "Enter" || e.key === " "){
+      e.preventDefault();
+      closeHowTo();
+    }
+    return;
+  }
+  if(paused){
+    if(e.key === "Escape" || e.key === "p" || e.key === "P"){
+      e.preventDefault();
+      resumeGame();
+    }
+    return;
+  }
   if(choiceState){ handleChoiceKey(e); return; }
   if(waitingKey){
     if(waitingKey.indexOf(e.key) >= 0){
@@ -847,11 +1111,9 @@ document.addEventListener("keydown", function(e){
       var k = waitingKey, r = waitingRes;
       waitingKey = null; waitingRes = null;
       r(e.key);
-    } else if(e.key === "Escape" && waitingKey.indexOf("Escape") < 0){
+    } else if(e.key === "Escape" || e.key === "p" || e.key === "P"){
       e.preventDefault();
-      var r2 = waitingRes;
-      waitingKey = null; waitingRes = null;
-      r2("Escape");
+      setPaused(true);
     }
     return;
   }
@@ -865,6 +1127,9 @@ document.addEventListener("keydown", function(e){
     if(e.key === "Enter" || e.key === " "){
       e.preventDefault();
       playAgain();
+    } else if(e.key === "Escape"){
+      e.preventDefault();
+      quitToTitle();
     }
   }
 });
@@ -897,8 +1162,9 @@ var DEFAULT_HELP = [
   "Press 1-9 to take an action directly, or use up/down to",
   "highlight a choice and press Enter / Space.",
   "",
+  "Press P or ESC to pause at any time.",
   "On the gamepad: A/B/X/Y = choices 1-4, Start = Enter,",
-  "Select = quit to title (the game autosaves).",
+  "Select = pause menu.",
   "",
   "Your progress is saved after every choice. Use Continue on",
   "the title screen to pick up where you left off.",
@@ -927,6 +1193,10 @@ function renderTitle(){
     titleCtn.appendChild(s);
   }
   titleCred.innerHTML = "";
+  var hs = document.createElement("div");
+  hs.className = "hiScore";
+  hs.textContent = "HI-SCORE " + fmtScore(best);
+  titleCred.appendChild(hs);
   var l1 = document.createElement("div");
   l1.textContent = (C.byline ? C.byline + " · " : "") + "PRESS ENTER TO START";
   titleCred.appendChild(l1);
@@ -938,20 +1208,6 @@ function renderTitle(){
   }
 }
 
-async function howToPlay(){
-  sfx.blip();
-  showScreen("game");
-  out = $("out");
-  out.innerHTML = "";
-  print("HOW TO PLAY", "hero good");
-  print("──────────────────────────────");
-  print("");
-  printLines(C.help || DEFAULT_HELP);
-  print("");
-  var k = await waitForKey([" ", "Enter", "Escape"]);
-  quitToTitle();
-}
-
 function fallbackConfig(){
   return {
     title: "VGN TEXT TEMPLATE",
@@ -960,6 +1216,11 @@ function fallbackConfig(){
     promptText: "WHAT WILL YOU DO?",
     startScene: "start",
     help: DEFAULT_HELP,
+    backHubUrl: "https://perchance.org/vgn-video-game-network",
+    backHubLabel: "RETURN TO VGN HUB",
+    highScoreKey: "vgn-text-template-best",
+    coinPrompt: "INSERT COIN · PRESS START",
+    score: "v.gold * 10 + v.hp * 5",
     scenes: {
       start: {
         title: "WELCOME",
@@ -986,61 +1247,20 @@ function initApp(){
   if(!C || !Object.keys(C.scenes).length){
     C = fallbackConfig();
   }
-  renderTitle();
-  showScreen("title");
-  refreshContinueBtn();
-  VGN.hints("1-9 / A B X Y = CHOOSE · ↑↓ + ENTER = SELECT · ESC = TITLE · SPACE = CONTINUE");
+
+  /* coin bar: hub link + coin prompt from the vgn config */
+  $("hubLink").href = C.backHubUrl;
+  $("hubLink").textContent = "◂◂ " + C.backHubLabel;
+  $("coinBarTxt").textContent = C.coinPrompt.toUpperCase();
+  $("coinBarFoot").textContent = C.titleCfg || window.generatorName || "vgn-text-template";
+  $("bootFoot").textContent = (C.titleCfg || window.generatorName || "vgn-text-template") + " · v1.1.0";
+
+  loadBest();
+  VGN.hints("1-9 / A B X Y = CHOOSE · ↑↓ + ENTER = SELECT · P / ESC = PAUSE · SPACE = CONTINUE");
+  bootSeq();
 }
 initApp();
 </script>
 
-<!-- ═══════════ BACK TO HUB BUTTON ═══════════ -->
-<style>
-  #rathjiBackBtn{
-    position:fixed;left:25%;bottom:18px;transform:translateX(-50%);z-index:2147483000;
-    display:flex;align-items:center;gap:10px;
-    padding:8px 16px 8px 8px;border-radius:999px;text-decoration:none;
-    background:rgba(13,15,21,.82);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
-    border:1px solid rgba(255,255,255,.16);box-shadow:0 8px 24px rgba(0,0,0,.45);
-    transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease;
-  }
-  #rathjiBackBtn .rb-badge{
-    width:28px;height:28px;flex:none;border-radius:50%;display:flex;align-items:center;justify-content:center;
-    background:linear-gradient(135deg,#8b5cf6,#d946ef);
-    font-family:system-ui,sans-serif;font-weight:700;font-size:15px;color:#fff;
-    box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 2px 6px rgba(139,92,246,.4);
-  }
-  #rathjiBackBtn .rb-label{
-    font-family:system-ui,sans-serif;font-size:14px;font-weight:600;color:#fff;line-height:1;
-  }
-  #rathjiBackBtn .rb-arrow{
-    flex:none;display:flex;align-items:center;justify-content:center;color:#c9b8ff;
-  }
-  #rathjiBackBtn:hover{
-    transform:translateX(-50%) translateY(-2px);
-    border-color:rgba(167,139,250,.65);
-    box-shadow:0 8px 24px rgba(0,0,0,.45),0 0 18px rgba(167,139,250,.35),inset 0 0 12px rgba(167,139,250,.08);
-  }
-  #rathjiBackBtn:focus-visible{outline:2px solid #a78bfa;outline-offset:2px}
-  @media(max-width:480px){
-    #rathjiBackBtn{width:44px;height:44px;padding:0;justify-content:center;border-radius:50%}
-    #rathjiBackBtn .rb-label,#rathjiBackBtn .rb-arrow{display:none}
-  }
-</style>
-<script>
-(function(){
-  if(document.getElementById("rathjiBackBtn")) return;
-  var a = document.createElement("a");
-  a.id = "rathjiBackBtn";
-  a.href = "https://perchance.org/rathjis-generators";
-  a.target = "_blank";
-  a.rel = "noopener";
-  a.setAttribute("aria-label", "Back to my projects");
-  a.title = "Back to my projects";
-  a.innerHTML =
-    '<span class="rb-badge">R</span>' +
-    '<span class="rb-label">My projects</span>' +
-    '<svg class="rb-arrow" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17L17 7M17 7H8M17 7v9"/></svg>';
-  document.body.appendChild(a);
-})();
-</script>
+<!-- back-to-hub link now lives in the VGN coin bar footer above -->
+

@@ -17,6 +17,9 @@
 
 <link rel="stylesheet" href="https://user.uploads.dev/file/67107d8c89844a7378e599e5110c369f.css"> <!-- BGN design system (hosted) -->
 
+<!-- Light / dark theme: set data-theme on <html> before first paint (saved → system preference → dark). -->
+<script>(function(){var t;try{t=localStorage.getItem("bgn_blank_theme");}catch(e){}if(t!=="light"&&t!=="dark"){try{t=window.matchMedia&&window.matchMedia("(prefers-color-scheme: light)").matches?"light":"dark";}catch(e){t="dark";}}document.documentElement.setAttribute("data-theme",t);})();</script>
+
 <!-- BGN Audio System: shared sound + music (SFX are WebAudio-synthesized; music URL below). -->
 <script>window.BGN_AUDIO = { music: "https://user.uploads.dev/file/3722354b767ff0c6c1d9b3dac1b28527.mp3" };</script>
 <script src="https://user.uploads.dev/file/346e6f5c64f15c0849bec19d5c57beb3.js"></script>
@@ -37,6 +40,55 @@ const STATE_VERSION=4;
 const MAX_ROOMS=Math.min(512, Math.max(16, Math.floor((state.length-1)/SLOT)));
 const CODE_CHARS="ABCDEFGHJKMNPQRSTUVWXYZ23456789";
 const MAX_PAYLOAD=2000;
+
+/* ── durable leaderboard (top ~50 scores) ──
+   Rooms use the first MAX_ROOMS*SLOT bytes; the leaderboard reserves the
+   last LB_BYTES of `state` so the two never collide. Ranks by higher score;
+   the top 10 are served by getScores. Survives restarts (durable bytes). */
+const LB_VERSION=1, LB_CAP=50, LB_NAME_MAX=24, LB_EXTRA_MAX=11, LB_ENTRY=44, LB_HEAD=2;
+const LB_BYTES=LB_HEAD+LB_CAP*LB_ENTRY;
+const LB_BASE=Math.max(state.length-LB_BYTES, 1+MAX_ROOMS*SLOT);
+const lbTimes=new Map(), lbNets=new Map();   // rate-limit trackers (per conn / per network group)
+function cleanField(s,max){ return String(s||"").trim().replace(/[\u0000-\u001f\u007f]/g,"").replace(/\s+/g," ").slice(0,max); }
+function lbInit(){ if(state[LB_BASE]!==LB_VERSION){ state.fill(0,LB_BASE,state.length); state[LB_BASE]=LB_VERSION; } }
+function lbRead(){
+  const a=[];
+  for(let i=0;i<LB_CAP;i++){
+    const e=LB_BASE+LB_HEAD+i*LB_ENTRY;
+    if(state[e]!==1)continue;
+    let name=""; for(let k=1;k<=LB_NAME_MAX;k++){ const c=state[e+k]; if(!c)break; name+=String.fromCharCode(c); }
+    let extra=""; for(let k=0;k<LB_EXTRA_MAX;k++){ const c=state[e+33+k]; if(!c)break; extra+=String.fromCharCode(c); }
+    a.push({i,
+      name,
+      score:((state[e+25]<<24)|(state[e+26]<<16)|(state[e+27]<<8)|state[e+28])>>>0,
+      ts:((state[e+29]<<24)|(state[e+30]<<16)|(state[e+31]<<8)|state[e+32])>>>0,
+      extra});
+  }
+  return a;
+}
+function lbWriteSlot(i,name,score,ts,extra){
+  const e=LB_BASE+LB_HEAD+i*LB_ENTRY;
+  state.fill(0,e,e+LB_ENTRY);
+  state[e]=1;
+  const nb=[]; for(let k=0;k<name.length&&k<LB_NAME_MAX;k++)nb.push(name.charCodeAt(k));
+  for(let k=0;k<nb.length;k++)state[e+1+k]=nb[k];
+  const xb=[]; for(let k=0;k<extra.length&&k<LB_EXTRA_MAX;k++)xb.push(extra.charCodeAt(k));
+  for(let k=0;k<xb.length;k++)state[e+33+k]=xb[k];
+  state[e+25]=(score>>>24)&255; state[e+26]=(score>>>16)&255; state[e+27]=(score>>>8)&255; state[e+28]=score&255;
+  state[e+29]=(ts>>>24)&255; state[e+30]=(ts>>>16)&255; state[e+31]=(ts>>>8)&255; state[e+32]=ts&255;
+}
+function lbBetter(asc,a,b){ if(asc)return a.score<b.score||(a.score===b.score&&a.ts<b.ts); return a.score>b.score||(a.score===b.score&&a.ts<b.ts); }
+function lbSubmit(name,score,ts,extra,asc){
+  lbInit();
+  const a=lbRead();
+  if(a.length<LB_CAP){
+    for(let i=0;i<LB_CAP;i++){ if(state[LB_BASE+LB_HEAD+i*LB_ENTRY]!==1){ lbWriteSlot(i,name,score,ts,extra); return; } }
+    return;
+  }
+  let wi=-1; const w={score:0,ts:0};
+  for(const en of a){ if(wi===-1||lbBetter(asc,w,en)){ wi=en.i; w.score=en.score; w.ts=en.ts; } }
+  if(lbBetter(asc,{score,ts},w))lbWriteSlot(wi,name,score,ts,extra);
+}
 
 let rooms=new Map();           // code -> room object (live cache)
 const conns=new Map();         // conn.id -> {code, role}
@@ -262,6 +314,24 @@ self.rpc={
     if(isChatBanned(text))return JSON.stringify({ok:false,err:"blocked"});
     pubsub.publish(topic(room.code),JSON.stringify({t:"chat",role,text,ts:nowSec()}));
     return JSON.stringify({ok:true});
+  },
+  submitScore({conn},data){
+    let p; try{ p=JSON.parse(data); }catch(e){ return JSON.stringify({ok:false,err:"bad_request"}); }
+    const now=Date.now();
+    if(now-(lbTimes.get(conn.id)||0)<1200)return JSON.stringify({ok:false,err:"rate"});   // per connection
+    lbTimes.set(conn.id,now);
+    if(now-(lbNets.get(conn.net[3])||0)<6000)return JSON.stringify({ok:false,err:"rate"}); // per network group
+    lbNets.set(conn.net[3],now);
+    const name=cleanField(p.name,24)||"Player";
+    const score=Math.max(0,Math.min(0xffffffff,Math.floor(Number(p.score)||0)));
+    const extra=cleanField(p.extra,11);
+    lbSubmit(name,score,Math.floor(now/1000),extra,false);
+    return JSON.stringify({ok:true});
+  },
+  getScores({conn},data){
+    lbInit();
+    const a=lbRead().sort(function(x,y){ return lbBetter(false,x,y)?-1:1; }).slice(0,10);
+    return JSON.stringify({scores:a});
   }
 };
 
@@ -281,6 +351,7 @@ self.onclose=({conn})=>{
 };
 
 loadRooms();
+lbInit();
 </script>
 
 <!-- ═══ NAV: back to the hub ═══ -->
@@ -296,7 +367,14 @@ loadRooms();
       </svg>
       ← Boardgame Network
     </a>
-    <span class="bgn-nav-title">[gameTitle]</span>
+    <div class="bgn-nav-right">
+      <span class="bgn-nav-title">[gameTitle]</span>
+      <a class="bgn-nav-projects" id="rathjiBackBtn" href="[projectsUrl]" target="_blank" rel="noopener" title="Rathji's Projects" aria-label="Rathji's Projects">
+        <span class="rb-badge">[authorInitial]</span>
+        <span class="rb-label">Rathji's Projects</span>
+      </a>
+      <button id="themeBtn" class="btn btn-ghost btn-sm theme-btn" type="button" title="Toggle light / dark theme" aria-label="Toggle light or dark theme">🌙</button>
+    </div>
   </div>
 </nav>
 
@@ -341,9 +419,20 @@ loadRooms();
       </button>
     </div>
 
-    <div style="display:flex; justify-content:center; margin-top:18px">
+    <div class="bgn-diff" id="diffRow">
+      <span class="muted small" style="letter-spacing:.05em; text-transform:uppercase">🤖 Machine difficulty</span>
+      <div class="diff-btns">
+        <button class="chip" data-diff="easy">Easy</button>
+        <button class="chip" data-diff="normal">Normal</button>
+        <button class="chip" data-diff="hard">Hard</button>
+      </div>
+    </div>
+
+    <div style="display:flex; justify-content:center; margin-top:18px; flex-wrap:wrap; gap:10px">
       <button class="btn btn-ghost" id="helpBtn">❓ How it works</button>
-      <button class="btn btn-ghost" id="shareBtn" style="margin-left:10px" title="Download this table as JSON or a PNG">📤 Share</button>
+      <button class="btn btn-ghost" id="guideBtn">🧩 Template guide</button>
+      <button class="btn btn-ghost" id="lbBtn">🏆 Leaderboard</button>
+      <button class="btn btn-ghost" id="shareBtn" title="Download this table as JSON or a PNG">📤 Share</button>
     </div>
 
     <div id="continuePanel" class="panel center" style="margin-top:22px" hidden>
@@ -429,6 +518,7 @@ loadRooms();
           <button class="btn btn-gold" id="newGameBtn">Restart</button>
           <button class="btn btn-ghost" id="claimBtn" hidden>Claim win</button>
           <button class="btn btn-ghost" id="menuBtn">Back to lobby</button>
+          <button class="btn btn-ghost" id="overLbBtn" hidden>🏆 Leaderboard</button>
           <button class="btn btn-ghost" id="tableHelpBtn" title="How it works">❓</button>
           <button class="btn btn-ghost" id="saveBtn" hidden>💾 Save</button>
         </div>
@@ -446,15 +536,56 @@ loadRooms();
   </div>
 </div>
 
+<!-- ═══ LEADERBOARD MODAL ═══ -->
+<div class="lb-overlay" id="lbModal" hidden>
+  <div class="lb-modal">
+    <button class="lb-close" id="lbCloseBtn" title="Close">✕</button>
+    <div class="lb-title">🏆 Leaderboard</div>
+    <p class="muted small" style="margin:6px 0 2px">Top 10 scores, shared across every game built on this template.</p>
+    <div class="lbname-row">
+      <label for="lbNameInput">Your name</label>
+      <input id="lbNameInput" maxlength="24" autocomplete="off" spellcheck="false">
+    </div>
+    <div class="lb-rows" id="lbRowsEl"><div class="lb-empty">Loading…</div></div>
+    <div style="display:flex; justify-content:center; margin-top:14px">
+      <button class="btn btn-gold" id="lbDoneBtn">Done</button>
+    </div>
+  </div>
+</div>
+
 <!-- ═══ FOOTER ═══ -->
 <footer class="bgn-footer">
   <div class="ornament">✦</div>
-  <p>Part of <b style="color:var(--bgn-gold2)">The Boardgame Network</b> · <a href="[hubUrl]">Browse the shelf</a></p>
+  <p>Part of <b style="color:var(--bgn-gold2,var(--bgn-accent2))">The Boardgame Network</b> · <a href="[hubUrl]">Browse the shelf</a></p>
   <p>Made with the BGN template on <a href="https://perchance.org" target="_blank" rel="noopener">Perchance</a></p>
 </footer>
 
 <style>
 /* ═══ BGN BLANK TEMPLATE ═══ */
+.bgn-nav-projects{
+  display:inline-flex;align-items:center;gap:8px;flex:none;
+  padding:6px 14px 6px 6px;border-radius:999px;
+  background:rgba(13,15,21,.82);border:1px solid rgba(255,255,255,.14);
+  box-shadow:0 6px 18px rgba(0,0,0,.3);
+  text-decoration:none;color:#fff;font-family:var(--bgn-sans,system-ui);
+  transition:transform .2s ease,border-color .2s ease,box-shadow .2s ease;
+}
+.bgn-nav-projects:hover{ transform:translateY(-1px); border-color:rgba(167,139,250,.65); box-shadow:0 8px 20px rgba(0,0,0,.4),0 0 14px rgba(139,92,246,.35); }
+.bgn-nav-projects .rb-badge{
+  width:26px;height:26px;flex:0 0 26px;border-radius:50%;
+  display:inline-flex;align-items:center;justify-content:center;
+  background:linear-gradient(135deg,#8b5cf6,#d946ef);color:#fff;
+  font-size:14px;font-weight:700;line-height:1;user-select:none;
+}
+.bgn-nav-projects .rb-label{ font-size:13px;font-weight:600;line-height:1;white-space:nowrap; }
+@media(max-width:560px){
+  .bgn-nav-projects{ position:fixed;left:16px;bottom:16px;z-index:450;padding:8px 16px 8px 8px;box-shadow:0 8px 24px rgba(0,0,0,.35); }
+  .bgn-nav-projects .rb-label{ font-size:14px; }
+}
+.bgn-nav-right{ display:flex; align-items:center; gap:12px; min-width:0; }
+.bgn-nav-right .bgn-nav-title{ min-width:0; }
+.theme-btn{ flex:none; width:38px; height:38px; padding:0; display:flex; align-items:center; justify-content:center; font-size:1.05rem; line-height:1; }
+@media(max-width:560px){ .bgn-nav-right{ gap:8px; } .theme-btn{ width:34px; height:34px; } }
 .bgn-lobby{ max-width:760px; margin:0 auto; }
 .bgn-modes{ display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:14px; margin-top:18px; }
 .bgn-mode{ background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02)); border:1px solid rgba(255,255,255,.12); border-radius:14px; padding:24px 16px; text-align:center; cursor:pointer; transition:transform .12s, box-shadow .12s, border-color .12s; color:inherit; font:inherit; }
@@ -462,6 +593,9 @@ loadRooms();
 .bgn-mode-icon{ font-size:2rem; display:block; margin-bottom:8px; }
 .bgn-mode-name{ font-weight:800; font-size:1.05rem; display:block; }
 .bgn-mode-sub{ font-size:.8rem; opacity:.7; display:block; margin-top:4px; }
+
+.bgn-diff{ display:flex; flex-direction:column; align-items:center; gap:8px; margin-top:20px; }
+.diff-btns{ display:flex; gap:8px; flex-wrap:wrap; justify-content:center; }
 
 .bgn-table{ display:grid; grid-template-columns:auto 320px; gap:18px; align-items:start; justify-content:center; }
 @media (max-width:900px){ .bgn-table{ grid-template-columns:minmax(0,1fr); justify-content:stretch; } }
@@ -520,6 +654,128 @@ loadRooms();
 .bgn-room-code{ display:flex; align-items:center; justify-content:center; gap:8px; margin-bottom:8px; font-size:.8rem; opacity:.8; }
 .bgn-room-code b{ font-size:1.7rem; letter-spacing:6px; color:#f6e6a4; opacity:1; }
 .btn[disabled]{ opacity:.45; cursor:default; }
+
+/* the platform injects `button:not([disabled]){color:inherit}`, which would turn
+   gold-button text into the page text color — re-assert the dark text on gold */
+.btn.btn-gold, .btn.btn-gold:hover{ color:#221803; }
+
+/* ══════ leaderboard modal ══════ */
+.lb-overlay{ position:fixed; inset:0; z-index:9500; background:rgba(5,8,16,.66); display:flex; align-items:center; justify-content:center; padding:18px; }
+.lb-modal{ position:relative; width:min(420px,100%); max-height:min(82vh,720px); overflow:auto; background:#17131f; border:1px solid rgba(212,175,55,.45); border-radius:14px; box-shadow:0 18px 60px rgba(0,0,0,.7); padding:24px 22px 20px; text-align:center; }
+.lb-close{ position:absolute; top:10px; right:10px; width:32px; height:32px; border-radius:999px; border:0; background:rgba(0,0,0,.4); color:#fff; cursor:pointer; font-size:14px; line-height:1; }
+.lb-close:hover{ background:rgba(0,0,0,.65); }
+.lb-title{ font-family:var(--bgn-serif,serif); font-size:1.3rem; color:var(--bgn-accent2,#f2dc8b); }
+.lbname-row{ display:flex; align-items:center; justify-content:center; gap:8px; margin:12px 0; }
+.lbname-row label{ font-size:.78rem; text-transform:uppercase; letter-spacing:.05em; color:var(--bgn-muted,#c8c3c9); }
+.lbname-row input{ background:rgba(0,0,0,.35); border:1px solid rgba(255,255,255,.25); border-radius:8px; color:inherit; padding:7px 10px; width:170px; text-align:center; }
+.lb-rows{ min-width:280px; display:grid; gap:6px; margin:4px 0 6px; }
+.lb-row{ display:flex; align-items:center; gap:10px; padding:6px 12px; border-radius:8px; background:rgba(255,255,255,.04); font-size:.9rem; }
+.lb-row .rk{ color:var(--bgn-gold2,#d4af37); font-weight:700; width:26px; text-align:right; }
+.lb-row .nm{ flex:1; text-align:left; }
+.lb-row .sc{ font-weight:700; }
+.lb-row.top{ background:rgba(212,175,55,.12); border:1px solid rgba(212,175,55,.35); }
+.lb-empty{ color:var(--bgn-muted,#c8c3c9); font-size:.85rem; padding:8px 0; }
+
+/* ═══ LIGHT THEME ═══
+   data-theme is set on <html> before first paint by the theme-init
+   script near the top of this file (saved → prefers-color-scheme → dark). */
+:root[data-theme="light"]{
+  color-scheme:light;
+  --bgn-bg:#f5efe0;
+  --bgn-bg2:#efe6d0;
+  --bgn-panel:#fdf9ee;
+  --bgn-accent:#b07d13;
+  --bgn-accent2:#7c5f10;
+  --bgn-accent3:#8f721d;
+  --bgn-cream:#2b2113;
+  --bgn-text:#43351f;
+  --bgn-muted:#8a7b5e;
+  --bgn-green:#1d8a6d;
+  --bgn-line:rgba(122,92,32,.22);
+}
+:root[data-theme="light"] body{
+  background-image:
+    radial-gradient(1100px 700px at 85% -10%, rgba(176,125,19,.10), transparent 60%),
+    radial-gradient(900px 640px at -12% 15%, rgba(47,174,140,.07), transparent 60%),
+    linear-gradient(180deg,#f8f2e2,#f1e8d2 45%,#f6efde);
+}
+:root[data-theme="light"] .goldtext{ background:linear-gradient(180deg,#8a6a1c 0%,#b07d13 45%,#7a5c10 100%); }
+:root[data-theme="light"] .game-hero{
+  background:
+    radial-gradient(700px 380px at 15% -20%, rgba(176,125,19,.14), transparent 60%),
+    radial-gradient(700px 380px at 85% 120%, rgba(47,174,140,.09), transparent 60%),
+    linear-gradient(180deg,#f3ebd6,#f6efde);
+}
+:root[data-theme="light"] .game-hero.has-img{
+  background-image:linear-gradient(180deg, rgba(248,243,228,.82), rgba(248,243,228,.9)), var(--bgn-hero-img,none);
+}
+:root[data-theme="light"] .bgn-nav{ background:rgba(248,243,228,.82); }
+:root[data-theme="light"] .bgn-nav-brand{ color:#3d2f14; }
+:root[data-theme="light"] .bgn-footer{ background:rgba(248,243,228,.8); }
+:root[data-theme="light"] .bgn-nav-projects{ background:rgba(255,255,255,.75); border-color:rgba(140,106,36,.35); color:#3d2f14; box-shadow:0 6px 18px rgba(90,70,25,.18); }
+:root[data-theme="light"] .bgn-nav-projects:hover{ color:#3d2f14; }
+:root[data-theme="light"] .theme-btn{ background:rgba(255,255,255,.7); color:#7c5f10; }
+:root[data-theme="light"] .bgn-help-close, :root[data-theme="light"] .lb-close, :root[data-theme="light"] .bgn-lounge-close{ color:#fff; }
+:root[data-theme="light"] .bgn-avatar{ box-shadow:0 0 0 2px rgba(140,106,36,.3); }
+:root[data-theme="light"] .btn-gold{
+  background:linear-gradient(180deg,#f7e7ab,#d4af37 55%,#a07e18);
+  box-shadow:0 8px 24px rgba(168,125,19,.28), inset 0 1px 0 rgba(255,255,255,.6);
+}
+:root[data-theme="light"] .btn-ghost{ color:#43351f; border-color:rgba(140,106,36,.42); background:rgba(255,255,255,.55); }
+:root[data-theme="light"] .btn-ghost:hover{ color:#7c5f10; border-color:#b07d13; }
+:root[data-theme="light"] .panel{ background:linear-gradient(180deg,#fffdf6,rgba(255,255,255,.6)); }
+:root[data-theme="light"] .tag{ background:rgba(176,125,19,.12); color:#7c5f10; border-color:rgba(140,106,36,.4); }
+:root[data-theme="light"] .chip{ background:rgba(255,255,255,.6); color:#6d6047; }
+:root[data-theme="light"] .chip.on{ background:linear-gradient(180deg,#f7e7ab,#d4af37); color:#221803; }
+:root[data-theme="light"] .field,
+:root[data-theme="light"] select,
+:root[data-theme="light"] .bgn-chat-compose input,
+:root[data-theme="light"] .lbname-row input{
+  color-scheme:light; background:#fffdf4; color:#43351f; border-color:rgba(140,106,36,.3);
+}
+:root[data-theme="light"] select option{ background:#fffdf4; color:#43351f; }
+:root[data-theme="light"] #joinCodeInput{ background:#fffdf4 !important; border-color:rgba(140,106,36,.35) !important; color:#43351f !important; }
+:root[data-theme="light"] .bgn-mode{
+  background:linear-gradient(180deg, rgba(255,255,255,.9), rgba(255,255,255,.55));
+  border-color:rgba(140,106,36,.25);
+  box-shadow:0 12px 32px rgba(90,70,25,.14);
+}
+:root[data-theme="light"] .bgn-mode:hover{ border-color:var(--bgn-accent); box-shadow:0 20px 44px rgba(90,70,25,.24), 0 0 0 1px var(--bgn-accent); }
+:root[data-theme="light"] .bgn-player{ background:rgba(255,255,255,.65); border-color:rgba(140,106,36,.25); }
+:root[data-theme="light"] .bgn-player.on{ border-color:var(--bgn-accent); box-shadow:0 0 14px rgba(176,125,19,.3); }
+:root[data-theme="light"] .bgn-timer{ background:rgba(255,255,255,.7); border-color:rgba(140,106,36,.4); }
+:root[data-theme="light"] .bgn-timer.low{ color:#c2451d; border-color:rgba(200,90,40,.6); }
+:root[data-theme="light"] .bgn-stage{ background:rgba(255,255,255,.5); border-color:rgba(140,106,36,.4); }
+:root[data-theme="light"] .bgn-banner{ color:var(--bgn-accent3); }
+:root[data-theme="light"] .bgn-chat{ border-top-color:rgba(140,106,36,.2); }
+:root[data-theme="light"] .bgn-chat-msgs{ background:rgba(140,106,36,.07); }
+:root[data-theme="light"] .bgn-chat-msgs:empty::before{ color:#8a7b5e; }
+:root[data-theme="light"] .chat-item b, :root[data-theme="light"] .log-item b, :root[data-theme="light"] .lb-row .rk{ color:var(--bgn-accent2); }
+:root[data-theme="light"] .chat-item .chat-time{ color:#9a8d76; }
+:root[data-theme="light"] .bgn-log{ background:rgba(140,106,36,.07); }
+:root[data-theme="light"] .log-item{ border-bottom-color:rgba(140,106,36,.12); }
+:root[data-theme="light"] .bgn-room{ border-color:rgba(140,106,36,.5); }
+:root[data-theme="light"] .bgn-room-code b{ color:var(--bgn-accent3); }
+:root[data-theme="light"] .bgn-help,
+:root[data-theme="light"] .lb-modal{
+  background:linear-gradient(180deg,#fffdf6,#f6efdd);
+  border-color:rgba(140,106,36,.4);
+  box-shadow:0 26px 80px rgba(60,45,10,.35), 0 0 0 1px rgba(140,106,36,.15);
+}
+:root[data-theme="light"] .bgn-help h3, :root[data-theme="light"] .lb-title{ color:var(--bgn-accent2); }
+:root[data-theme="light"] .bgn-help code{ background:rgba(176,125,19,.12); border-color:rgba(140,106,36,.3); color:#7c5f10; }
+:root[data-theme="light"] .lb-row{ background:rgba(255,255,255,.6); }
+:root[data-theme="light"] .lb-row.top{ background:rgba(176,125,19,.16); border-color:rgba(176,125,19,.4); }
+:root[data-theme="light"] .bgn-lounge-btn{ background:#e9e2cd; color:#43351f; border-color:#cabb92; }
+:root[data-theme="light"] .bgn-lounge-frame{ background:#fdf9ee; }
+:root[data-theme="light"] #bgnAudioBtn{
+  background:linear-gradient(150deg,#fffdf4,#e9e2cd); color:#7c5f10;
+  box-shadow:0 6px 18px rgba(90,70,25,.25);
+}
+:root[data-theme="light"] #bgnAudioBtn:hover{ box-shadow:0 10px 26px rgba(90,70,25,.35), 0 0 14px rgba(176,125,19,.25); }
+:root[data-theme="light"] #bgnAudioBtn.muted{ color:#8a8298; }
+:root[data-theme="light"] #bgnAudioVol{ background:rgba(255,255,255,.96); border-color:rgba(140,106,36,.35); }
+:root[data-theme="light"] #bgnAudioVol span{ color:#8a7b5e; }
 </style>
 
 <script>
@@ -529,11 +785,46 @@ loadRooms();
 /* ══════════ theme config (from main.pjs) ══════════ */
 function val(n,d){ if(n==null)return d; var v=(n&&typeof n.evaluateItem==="function")?n.evaluateItem():n.evaluateItem; return v==null?d:String(v); }
 var rootRef = window.root||{};
-document.body.style.setProperty("--bgn-accent", val(rootRef.accentColor,"#d4af37"));
+var darkAccent = val(rootRef.accentColor,"#d4af37");
+function isLight(){ return document.documentElement.getAttribute("data-theme")==="light"; }
+function shade(hex,amt){
+  var m=String(hex||"#d4af37").replace("#","");
+  if(m.length===3)m=m.replace(/./g,function(c){return c+c;});
+  if(!/^[0-9a-f]{6}$/i.test(m))return "#b07d13";
+  var n=parseInt(m,16),r=n>>16&255,g=n>>8&255,b=n&255;
+  function k(v){ var x=amt<0?v*(1+amt):v+(255-v)*amt; return Math.max(0,Math.min(255,Math.round(x))); }
+  function h(v){ var s=v.toString(16); return s.length===1?"0"+s:s; }
+  return "#"+h(k(r))+h(k(g))+h(k(b));
+}
+var lightAccent = shade(darkAccent,-0.42);   // darkened so it reads on light backgrounds
+function setAccent(t){ document.body.style.setProperty("--bgn-accent", t==="light"?lightAccent:darkAccent); }
+setAccent(isLight()?"light":"dark");
+document.body.setAttribute("data-dark-accent",darkAccent);
 function sfx(n){ if(window.BGN&&BGN.sfx)BGN.sfx.play(n); }
 var heroImg = val(rootRef.heroImage,"").trim();
 var hero = document.getElementById("gameHero");
 if(heroImg && hero){ hero.classList.add("has-img"); hero.style.setProperty("--bgn-hero-img","url('"+heroImg+"')"); }
+
+/* ══════════ light / dark theme toggle ══════════ */
+(function(){
+  var btn=document.getElementById("themeBtn"); if(!btn)return;
+  var icons={dark:"🌙",light:"☀️"};
+  function sync(){
+    var t=isLight()?"light":"dark";
+    btn.textContent=icons[t];
+    btn.title="Switch to "+(t==="light"?"dark":"light")+" mode";
+    btn.setAttribute("aria-label",btn.title);
+  }
+  btn.addEventListener("click",function(){
+    var next=isLight()?"dark":"light";
+    document.documentElement.setAttribute("data-theme",next);
+    try{ localStorage.setItem("bgn_blank_theme",next); }catch(e){}
+    setAccent(next);
+    sync();
+    sfx("flip");
+  });
+  sync();
+})();
 
 /* ══════════ table state ══════════
    Two roles per table: "host" (the room creator) and "guest".
@@ -577,6 +868,14 @@ const deleteSaveBtn=document.getElementById("deleteSaveBtn");
 const saveBtn=document.getElementById("saveBtn");
 const pHost=document.getElementById("pHost");
 const pGuest=document.getElementById("pGuest");
+const lbBtn=document.getElementById("lbBtn");
+const overLbBtn=document.getElementById("overLbBtn");
+const lbModal=document.getElementById("lbModal");
+const lbNameInput=document.getElementById("lbNameInput");
+const lbRowsEl=document.getElementById("lbRowsEl");
+const lbCloseBtn=document.getElementById("lbCloseBtn");
+const lbDoneBtn=document.getElementById("lbDoneBtn");
+const guideBtn=document.getElementById("guideBtn");
 
 function turnRoleFor(n){ return ((n+(game.first?1:0))%2)===0?"host":"guest"; }
 function roleName(r){ return r==="host"?"Host":"Guest"; }
@@ -707,11 +1006,13 @@ function updateButtons(){
     newGameBtn.style.display=game.over?"":"none";
     menuBtn.textContent="Exit match";
     claimBtn.hidden=!(game.status===2&&!game.over&&!game.oppPresent);
+    overLbBtn.hidden=!game.over;
   }else{
     newGameBtn.textContent="Restart";
     newGameBtn.style.display="";
     menuBtn.textContent="Back to lobby";
     claimBtn.hidden=true;
+    overLbBtn.hidden=!game.over;
     saveBtn.style.display=!game.over?"":"none";
   }
   const myTurn=game.mode!=="online"||(game.sockOpen&&game.status===2&&turnRoleFor(game.serverTurn)===game.myRole);
@@ -725,6 +1026,7 @@ function renderAll(){
   updateButtons();
   renderLog();
   syncTimer();
+  maybeSubmitScore();
 }
 
 /* ══════════ modes ══════════ */
@@ -735,6 +1037,7 @@ function resetTable(){
   game.locked=false;
   timerKey=""; timerStop();
   aiThinking=false;
+  lbAutoSubmitted=false;
   if(aiTimer){ clearTimeout(aiTimer); aiTimer=null; }
 }
 function startMode(mode){
@@ -777,10 +1080,26 @@ function exitToLobby(){
    computer player by overriding AI_DO_TURN() (return a string
    describing what the AI did, or null to log nothing). The turn
    flow, banner, turn timer, and saving are all wired up for you. */
+
+/* ── AI difficulty (Easy / Normal / Hard) ──
+   Selected in the lobby, persisted as bgn_ai_diff. Read the current
+   level in your bot with window.__bgn_ai_diff() — or just reference
+   AI_DIFF directly (same scope as AI_DO_TURN). The built-in passive
+   bot only varies its think time. */
+let AI_DIFF="normal";
+try{ const s=localStorage.getItem("bgn_ai_diff"); if(s==="easy"||s==="normal"||s==="hard")AI_DIFF=s; }catch(e){}
+function setDiff(d){
+  AI_DIFF=d;
+  try{ localStorage.setItem("bgn_ai_diff",d); }catch(e){}
+  document.querySelectorAll(".diff-btns .chip").forEach(function(b){ b.classList.toggle("on",b.dataset.diff===d); });
+}
+window.__bgn_ai_diff=function(){ return AI_DIFF; };
+
 let aiThinking=false, aiTimer=null;
 function AI_DO_TURN(){
   return "passed the turn";
 }
+function aiDelayMs(){ return AI_DIFF==="easy"?350:(AI_DIFF==="hard"?1500:900); }
 function aiPassTurn(){
   if(game.mode!=="ai"||game.over)return;
   if(turnRoleFor(game.log.length)!=="guest")return;
@@ -796,7 +1115,80 @@ function aiPassTurn(){
     sfx("turn");
     renderAll();
     saveGame();
-  },900);
+  },aiDelayMs());
+}
+
+/* ══════════ leaderboard (top scores, server-shared) ══════════
+   A lazy background socket (separate from the table socket) that is
+   only opened when someone views the leaderboard or submits a score.
+   Name persists in localStorage under bgn_lb_name. */
+const LB_NAME_KEY="bgn_lb_name";
+function lbName(){ try{ return localStorage.getItem(LB_NAME_KEY)||"Player"; }catch(e){ return "Player"; } }
+function setLbName(n){ try{ localStorage.setItem(LB_NAME_KEY,String(n).trim().slice(0,24)||"Player"); }catch(e){} }
+let lbSock=null, lbReady=false, lbBack=800, lbQueue=null;
+function lbConnect(){
+  if(lbSock||!rootRef.createServerSocket)return;
+  try{ lbSock=rootRef.createServerSocket(); }catch(e){ return; }
+  lbSock.addEventListener("open",function(){
+    lbReady=true; lbBack=800;
+    if(lbQueue){ const q=lbQueue; lbQueue=null; lbSubmitNow(q.name,q.score,q.extra); }
+  });
+  lbSock.addEventListener("close",function(e){
+    lbReady=false;
+    if(e.code===4403)return;
+    setTimeout(function(){ lbConnect(); }, Math.min(15000,lbBack)+Math.random()*500);
+    lbBack=Math.min(15000,lbBack*2);
+  });
+}
+function lbSubmitNow(name,score,extra){
+  if(!lbSock||lbSock.readyState!==1)return;
+  lbSock.rpc.submitScore(JSON.stringify({name:name,score:score,extra:extra})).catch(function(){});
+}
+function lbSubmitScore(name,score,extra){
+  if(!lbSock)lbConnect();
+  if(!lbReady){ lbQueue={name:name,score:score,extra:extra}; return; }
+  lbSubmitNow(name,score,extra);
+}
+function lbGetScores(cb){
+  if(!lbSock)lbConnect();
+  if(!lbReady){ setTimeout(function(){ lbGetScores(cb); },600); return; }
+  lbSock.rpc.getScores("").then(function(r){
+    let o; try{ o=JSON.parse(r); }catch(e){ cb([]); return; }
+    cb(o.scores||[]);
+  }).catch(function(){ cb([]); });
+}
+function lbRenderRows(list){
+  if(!list.length){ lbRowsEl.innerHTML='<div class="lb-empty">No scores yet — finish a game to set one.</div>'; return; }
+  lbRowsEl.innerHTML=list.map(function(x,i){
+    return '<div class="lb-row'+(i<3?" top":"")+'"><span class="rk">#'+(i+1)+'</span><span class="nm">'+esc(x.name)+'</span><span class="sc">'+x.score+' pts</span></div>';
+  }).join("");
+}
+function openLb(){
+  lbNameInput.value=lbName();
+  lbModal.hidden=false;
+  lbRowsEl.innerHTML='<div class="lb-empty">Loading…</div>';
+  lbGetScores(lbRenderRows);
+}
+function closeLb(){
+  setLbName(lbNameInput.value);
+  lbNameInput.value=lbName();
+  lbModal.hidden=true;
+}
+/* ── builder hook ──
+   Override window.__bgn_lb_score = function(){ return myScore; } to make
+   the template auto-submit your score at game end (set game.over = true
+   and the normal UI refresh triggers it). Online: only the host submits. */
+let lbAutoSubmitted=false;
+window.__bgn_lb_score=function(){ return null; };
+function maybeSubmitScore(){
+  if(!game.over||lbAutoSubmitted)return;
+  if(game.mode==="online"&&game.myRole!=="host")return;
+  let sc=null;
+  try{ sc=window.__bgn_lb_score(); }catch(e){ sc=null; }
+  if(typeof sc==="number"&&isFinite(sc)&&sc>=0){
+    lbAutoSubmitted=true;
+    lbSubmitScore(lbName(),Math.floor(sc),game.mode||"");
+  }
 }
 
 /* ══════════ help modal ══════════ */
@@ -815,10 +1207,27 @@ const HELP_HTML='<h2 class="goldtext">How the Blank table works</h2>'
   +'<p><b>Room code</b> — share it and your opponent joins instantly. If they disconnect they can rejoin with the same code, or you can <b>Claim win</b> if they abandon. When a match ends, <b>Rematch</b> flips who goes first.</p>'
   +'<h3>Building your game</h3>'
   +'<p>Swap the <code>#stageEl</code> placeholder for your board. On your turn submit a payload through the <code>move</code> rpc and end matches with <code>endGame</code> (the server comment at the top of this file documents the layout). For single-player, override <code>AI_DO_TURN()</code> to return a string describing what the bot did. Everything else is already handled.</p>'
+  +'<p><b>🧩 Making your own game?</b> Open the <b>Template guide</b> in the lobby — it walks through the 4-step remix and the new builder hooks (leaderboard score, AI difficulty).</p>'
   +'<button class="btn btn-gold" id="helpDoneBtn">Got it</button>';
+const GUIDE_HTML='<h2 class="goldtext">🧩 The Blank template, decoded</h2>'
+  +'<p class="muted">This generator is a <b>ready-to-fork multiplayer table</b> for the Boardgame Network: rooms, room codes, turn order, presence, rematch, saves, sounds and a shared leaderboard — with <b>no game logic</b>. Your game drops into the stage below.</p>'
+  +'<h3>Remix in 4 steps</h3>'
+  +'<p><b>1. Fork it.</b> Copy this generator to a new name.</p>'
+  +'<p><b>2. Edit <code>main.pjs</code></b> — the config at the top: <code>hubUrl</code>, <code>gameTitle</code>, <code>gameTagline</code>, <code>gameKicker</code>, <code>gameGenre</code>, <code>gamePlayers</code>, <code>accentColor</code>, <code>heroImage</code>, and your own <code>projectsUrl</code>.</p>'
+  +'<p><b>3. Replace <code>#stageEl</code></b> with your board/UI. For single-player, override <code>AI_DO_TURN()</code> to return a string describing what your bot did.</p>'
+  +'<p><b>4. Wire your rules in.</b> On your turn, submit your move payload through the <code>move</code> rpc and declare the end with <code>endGame</code> (the server comment at the top of this file documents the layout).</p>'
+  +'<h3>Builder hooks</h3>'
+  +'<p><b>🏆 Leaderboard:</b> define <code>window.__bgn_lb_score = function(){ return myScore; }</code>. When a match ends (<code>game.over = true</code>), your score is submitted automatically — online, only the host submits, and the name comes from the leaderboard modal.</p>'
+  +'<p><b>🤖 AI difficulty:</b> the lobby lets players pick Easy/Normal/Hard, persisted as <code>AI_DIFF</code> (localStorage <code>bgn_ai_diff</code>). Read the level in your bot with <code>window.__bgn_ai_diff()</code>.</p>'
+  +'<button class="btn btn-gold" id="guideDoneBtn">Got it</button>';
 function openHelp(){
   helpBody.innerHTML=HELP_HTML;
   document.getElementById("helpDoneBtn").addEventListener("click",closeHelp);
+  helpOverlay.hidden=false;
+}
+function openTemplateGuide(){
+  helpBody.innerHTML=GUIDE_HTML;
+  document.getElementById("guideDoneBtn").addEventListener("click",closeHelp);
   helpOverlay.hidden=false;
 }
 function closeHelp(){ helpOverlay.hidden=true; }
@@ -1074,14 +1483,25 @@ saveBtn.addEventListener("click",function(){ saveGame(); flashBanner("Table save
 document.getElementById("helpBtn").addEventListener("click",openHelp);
 document.getElementById("tableHelpBtn").addEventListener("click",openHelp);
 document.getElementById("helpCloseBtn").addEventListener("click",closeHelp);
+guideBtn.addEventListener("click",openTemplateGuide);
+lbBtn.addEventListener("click",openLb);
+overLbBtn.addEventListener("click",openLb);
+lbCloseBtn.addEventListener("click",closeLb);
+lbDoneBtn.addEventListener("click",closeLb);
+lbNameInput.addEventListener("keydown",function(e){ if(e.key==="Enter")closeLb(); });
+lbModal.addEventListener("click",function(e){ if(e.target===lbModal)closeLb(); });
+document.querySelectorAll(".diff-btns .chip").forEach(function(b){
+  b.addEventListener("click",function(){ setDiff(b.dataset.diff); });
+});
+setDiff(AI_DIFF);
 helpOverlay.addEventListener("click",function(e){ if(e.target===helpOverlay)closeHelp(); });
-document.addEventListener("keydown",function(e){ if(e.key==="Escape"&&!helpOverlay.hidden)closeHelp(); });
+document.addEventListener("keydown",function(e){ if(e.key==="Escape"){ if(!helpOverlay.hidden)closeHelp(); if(!lbModal.hidden)closeLb(); } });
 
 refreshContinuePanel();
 renderAll();
 
 /* debug/testing handle for browser_eval */
-window.__t = { game, turnRoleFor, applyServerSnap, passTurn, startMode, exitToLobby, doCreateRoom, doJoinRoom, refreshFromServer, saveGame, continueGame, deleteSave, aiPassTurn, AI_DO_TURN, openHelp, closeHelp };
+window.__t = { game, turnRoleFor, applyServerSnap, passTurn, startMode, exitToLobby, doCreateRoom, doJoinRoom, refreshFromServer, saveGame, continueGame, deleteSave, aiPassTurn, AI_DO_TURN, AI_DIFF, setDiff, openHelp, closeHelp, openTemplateGuide, openLb, closeLb, lbName, setLbName, lbSubmitScore, maybeSubmitScore, resetTable, renderAll };
 
 /* ══════════ share / export (bgn-share.js) ══════════ */
 (function(){
@@ -1126,9 +1546,15 @@ window.__t = { game, turnRoleFor, applyServerSnap, passTurn, startMode, exitToLo
 })();
 </script>
 
-<!-- BGN Lounge: one shared chat across every BGN game -->
+<!-- BGN Lounge: one shared chat across every BGN game.
+     Standard floating-button layout (shared with the hub):
+       bottom-right anchor  .lobby-fab  (hub only)  right:22px; bottom:22px;  z-index:500
+       Lounge pill          #loungeBtn               right:22px; bottom:94px;  z-index:9000
+       modal overlays                               z-index:9100+
+     "My projects" is nav, not a corner action: top-right in bgn-nav, and it
+     floats bottom-LEFT on small screens (see .bgn-nav-projects above). -->
 <style>
-.bgn-lounge-btn{position:fixed;right:16px;bottom:16px;z-index:9000;background:#2b3a55;color:#eef;border:1px solid #45557a;border-radius:999px;padding:10px 16px;cursor:pointer;font:600 14px/1 system-ui;box-shadow:0 4px 16px rgba(0,0,0,.45);}
+.bgn-lounge-btn{position:fixed;right:22px;bottom:94px;z-index:9000;background:#2b3a55;color:#eef;border:1px solid #45557a;border-radius:999px;padding:10px 16px;cursor:pointer;font:600 14px/1 system-ui;box-shadow:0 4px 16px rgba(0,0,0,.45);}
 .bgn-lounge-btn:hover{background:#37507a;}
 .bgn-lounge-overlay{position:fixed;inset:0;z-index:9100;background:rgba(5,8,16,.6);display:none;align-items:center;justify-content:center;padding:18px;}
 .bgn-lounge-overlay.open{display:flex;}
@@ -1157,5 +1583,53 @@ window.__t = { game, turnRoleFor, applyServerSnap, passTurn, startMode, exitToLo
   window.addEventListener("message",function(e){
     if(e.data&&e.data.type==="bgn-lounge-sound"){ try{ if(window.BGN&&window.BGN.sfx)window.BGN.sfx.play("draw"); }catch(_){} }
   });
+})();
+</script>
+
+<!-- ═══ FULLSCREEN TOGGLE (self-contained) ═══ -->
+<style>
+#fsToggleBtn{
+  position:fixed;right:16px;bottom:16px;z-index:9999;
+  width:44px;height:44px;padding:0;
+  display:flex;align-items:center;justify-content:center;
+  border:1px solid rgba(255,255,255,.22);border-radius:50%;
+  background:rgba(18,20,30,.55);color:#eae6f5;
+  cursor:pointer;opacity:.4;
+  transition:opacity .18s ease,background .18s ease;
+  box-shadow:0 4px 14px rgba(0,0,0,.35);
+  -webkit-tap-highlight-color:transparent;
+}
+#fsToggleBtn:hover,#fsToggleBtn:focus-visible{ opacity:1; background:rgba(18,20,30,.8); }
+:fullscreen, :-webkit-full-screen{ width:100vw; height:100vh; height:100dvh; }
+</style>
+<button type="button" id="fsToggleBtn" title="Enter fullscreen" aria-label="Enter fullscreen">
+  <svg id="fsIcon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"></svg>
+</button>
+<script>
+(function(){
+  var btn=document.getElementById("fsToggleBtn"); if(!btn)return;
+  var doc=document, dd=doc.documentElement, icon=document.getElementById("fsIcon");
+  var req=dd.requestFullscreen||dd.webkitRequestFullscreen;
+  var ext=doc.exitFullscreen||doc.webkitExitFullscreen;
+  var ENTER='<path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/>';
+  var EXIT='<path d="M8 3v3a2 2 0 0 1-2 2H3"/><path d="M21 8h-3a2 2 0 0 1-2-2V3"/><path d="M3 16h3a2 2 0 0 1 2 2v3"/><path d="M16 21v-3a2 2 0 0 1 2-2h3"/>';
+  var isFs=function(){ return doc.fullscreenElement||doc.webkitFullscreenElement; };
+  var enabled=doc.fullscreenEnabled!==false||doc.webkitFullscreenEnabled!==false;
+  if(!enabled||!req||!ext){ btn.style.display="none"; return; }
+  function hide(){ btn.style.display="none"; }
+  function paint(){
+    var fs=isFs();
+    icon.innerHTML=fs?EXIT:ENTER;
+    btn.title=fs?"Exit fullscreen":"Enter fullscreen";
+    btn.setAttribute("aria-label",btn.title);
+  }
+  btn.addEventListener("click",function(){
+    if(isFs()){ ext.call(doc); return; }
+    var p=req.call(dd);
+    if(p&&p.catch)p.catch(hide);
+  });
+  doc.addEventListener("fullscreenchange",paint);
+  doc.addEventListener("webkitfullscreenchange",paint);
+  paint();
 })();
 </script>
