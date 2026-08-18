@@ -1,0 +1,25 @@
+{
+  "name": "bgn-hex-template",
+  "imports": [
+    "server-plugin"
+  ],
+  "isPrivate": false,
+  "srcManifest": {
+    "template/style.css": {
+      "key": "a768b02aa0bafb542551c718c8809355.css",
+      "size": 14628
+    },
+    "hex.js": {
+      "key": "34774564914135754665c21e687dad2e.js",
+      "size": 27314
+    },
+    "hexview.js": {
+      "key": "5a20056ac96b6504e938244e5b9cb564.js",
+      "size": 13472
+    },
+    "bgn-audio.js": {
+      "key": "9b4c02cf5ca52700a4048a66e7a9c934.js",
+      "size": 17228
+    }
+  }
+}

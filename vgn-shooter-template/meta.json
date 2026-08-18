@@ -1,0 +1,13 @@
+{
+  "name": "vgn-shooter-template",
+  "imports": [
+    "kv-plugin"
+  ],
+  "isPrivate": false,
+  "srcManifest": {
+    "vgn-shooter-template.html": {
+      "key": "835dcef354a176f18aae8d961a625b43.txt",
+      "size": 54877
+    }
+  }
+}

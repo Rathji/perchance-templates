@@ -1,0 +1,332 @@
+<link rel="stylesheet" href="src/style.css">
+
+<div id="appCtn">
+
+  <div id="titleScreen" class="screen">
+    <h1 class="gameTitle">Turn-Based Strategy Template</h1>
+    <p class="subtitle">A heroes-style template — overland hex map, towns, heroes, and tactical combat</p>
+    <div class="menuBtns">
+      <button id="newGameBtn" class="bigBtn">New Game</button>
+      <button id="continueBtn" class="bigBtn" hidden>Continue</button>
+      <button id="multiplayerBtn" class="bigBtn">Multiplayer</button>
+      <button id="rejoinBtn" class="bigBtn" hidden>Rejoin Online Match</button>
+      <button id="editorBtn" class="bigBtn">Map Editor</button>
+    </div>
+    <div class="howto">
+      <h3>How to play</h3>
+      <ul>
+        <li>Click your hero, then click a hex to move. Visit resource piles, mines and dwellings on the way.</li>
+        <li>Enter your town to build structures and recruit creatures.</li>
+        <li>Click wandering monsters, enemy heroes and enemy towns to attack them.</li>
+        <li>Capture every enemy town and defeat every enemy hero to win.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div id="setupScreen" class="overlay" hidden>
+    <div class="win" style="max-width:560px">
+      <h2>New Game</h2>
+      <div class="setupRow">
+        <label for="setupSize">Map size</label>
+        <select id="setupSize">
+          <option value="small">Small (20x14)</option>
+          <option value="medium" selected>Medium (24x16)</option>
+          <option value="large">Large (30x20)</option>
+        </select>
+      </div>
+      <div class="setupRow">
+        <label for="setupHumans">Human players (hotseat)</label>
+        <select id="setupHumans">
+          <option value="1" selected>1</option>
+          <option value="2">2</option>
+          <option value="3">3</option>
+          <option value="4">4</option>
+        </select>
+      </div>
+      <div class="setupRow">
+        <label for="setupPlayers">AI opponents</label>
+        <select id="setupPlayers">
+          <option value="0">0</option>
+          <option value="1" selected>1</option>
+          <option value="2">2</option>
+          <option value="3">3</option>
+        </select>
+      </div>
+      <div class="setupRow">
+        <label for="setupFaction">Your faction</label>
+        <select id="setupFaction">
+          <option value="castle" selected>Castle — humans</option>
+          <option value="rampart">Rampart — elves</option>
+          <option value="necropolis">Necropolis — undead</option>
+          <option value="stronghold">Stronghold — orcs</option>
+        </select>
+      </div>
+      <div class="setupRow">
+        <label for="setupDifficulty">Difficulty</label>
+        <select id="setupDifficulty">
+          <option value="easy">Easy</option>
+          <option value="normal" selected>Normal</option>
+          <option value="hard">Hard</option>
+        </select>
+      </div>
+      <div class="modalBtns">
+        <button class="btn" id="setupCancelBtn">Cancel</button>
+        <button class="btn primary" id="setupStartBtn">Start Game</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="multiplayerScreen" class="overlay" hidden>
+    <div class="win" style="max-width:560px">
+      <h2>Online Multiplayer</h2>
+      <p class="sub">2-player turn-based match over the Perchance match server. The host picks the map; the guest joins with a code.</p>
+      <div id="mpCreate" class="mpPane">
+        <div class="setupRow">
+          <label for="mpSize">Map size</label>
+          <select id="mpSize">
+            <option value="small">Small (20x14)</option>
+            <option value="medium" selected>Medium (24x16)</option>
+            <option value="large">Large (30x20)</option>
+          </select>
+        </div>
+        <div class="setupRow">
+          <label for="mpFaction">Your faction</label>
+          <select id="mpFaction">
+            <option value="castle" selected>Castle — humans</option>
+            <option value="rampart">Rampart — elves</option>
+            <option value="necropolis">Necropolis — undead</option>
+            <option value="stronghold">Stronghold — orcs</option>
+          </select>
+        </div>
+        <div class="modalBtns">
+          <button class="btn primary" id="mpCreateBtn">Create Lobby</button>
+          <button class="btn" id="mpStartBtn" disabled>Start Game</button>
+          <button class="btn" id="mpCancelBtn">Cancel</button>
+        </div>
+        <div id="mpCodeCtn" hidden>
+          <div class="mpLabel">Share this code with your opponent:</div>
+          <div id="mpCode" class="mpCode"></div>
+          <div id="mpStatus" class="muted">Waiting for opponent to join…</div>
+        </div>
+      </div>
+      <div class="mpDivider"><span>or join with a code</span></div>
+      <div id="mpJoin" class="mpPane">
+        <div class="setupRow">
+          <label for="mpCodeInput">Match code</label>
+          <input id="mpCodeInput" maxlength="5" style="width:110px;text-transform:uppercase" placeholder="ABCD">
+        </div>
+        <div class="modalBtns">
+          <button class="btn primary" id="mpJoinBtn">Join Game</button>
+        </div>
+        <div id="mpJoinStatus" class="muted"></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="gameScreen" class="screen" hidden>
+    <div id="topbar">
+      <div id="calendarEl" class="tbItem"></div>
+      <div id="resEl" class="tbItem"></div>
+      <div class="tbSpacer"></div>
+      <div id="turnEl" class="tbItem"></div>
+      <button id="endTurnBtn" class="btn">End Turn</button>
+      <button id="leaveMatchBtn" class="btn" hidden>Leave Match</button>
+    </div>
+    <div id="mapWrap">
+      <canvas id="mapCanvas"></canvas>
+    </div>
+    <div id="heroStrip"></div>
+  </div>
+
+  <div id="editorScreen" class="screen" hidden>
+    <div id="editorTop">
+      <h2>Map Editor</h2>
+      <select id="editorSize">
+        <option value="small">Small (20x14)</option>
+        <option value="medium" selected>Medium (24x16)</option>
+        <option value="large">Large (30x20)</option>
+      </select>
+      <button id="editorRandomBtn" class="btn">Random Terrain</button>
+      <button id="editorImportBtn" class="btn">Import Game</button>
+      <div class="tbSpacer"></div>
+      <button id="editorExportBtn" class="btn">Export Map</button>
+      <button id="editorTestBtn" class="btn primary">Test Play</button>
+      <button id="editorBackBtn" class="btn">Back</button>
+    </div>
+    <div id="editorBody">
+      <div id="editorPalette"></div>
+      <div id="editorWrap"><canvas id="editorCanvas"></canvas></div>
+    </div>
+  </div>
+
+  <div id="townScreen" class="overlay" hidden></div>
+  <div id="heroScreen" class="overlay" hidden></div>
+
+  <div id="combatScreen" hidden>
+    <div id="combatHead"></div>
+    <div id="combatWrap"><canvas id="combatCanvas"></canvas></div>
+    <div id="combatPanel"></div>
+  </div>
+
+  <div id="modalCtn" hidden></div>
+  <div id="toastCtn"></div>
+
+</div>
+
+<script type="text/x-server-plugin">
+// Online multiplayer relay for the turn-based strategy template.
+// Two players (host = seat 1 = pid 0, guest = seat 2 = pid 1) play a match by
+// passing the full serialized game state between turns. The server is a light
+// reflector: it stores each match's state in a fixed slot of the durable
+// `state` buffer (so reconnects and reloads can pull the latest state), and
+// broadcasts every turn update to both players over a per-match pubsub topic.
+//
+// state layout:
+//   [0..3]         magic "TBS1"
+//   slot headers:  SLOTS=48 headers of HDR=56 bytes, starting at offset 8
+//     off 0   active (0/1)
+//     off 1   code[5] (A-Z + 2-9, space padded)
+//     off 6   phase (0 waiting for guest, 1 started)
+//     off 7   turnPid
+//     off 16  dataLen (uint32)
+//     off 24  lastActivity (float64 ms)
+//   slot data: BASE + slot*DATA_SIZE, fixed 131072 bytes each
+const SLOTS = 48, HDR = 56, BASE = 8 + SLOTS * HDR, DATA_SIZE = 131072;
+const ALPHABET = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
+const MAGIC = [0x54, 0x42, 0x53, 0x31];
+
+const hdr = i => 8 + i * HDR;
+const dataBase = i => BASE + i * DATA_SIZE;
+function setU32(o, v) { state[o] = v & 255; state[o + 1] = (v >>> 8) & 255; state[o + 2] = (v >>> 16) & 255; state[o + 3] = (v >>> 24) & 255; }
+function getU32(o) { return state[o] | (state[o + 1] << 8) | (state[o + 2] << 16) | (state[o + 3] << 24); }
+function setF64(o, v) { new DataView(state.buffer).setFloat64(o, v, true); }
+function getF64(o) { return new DataView(state.buffer).getFloat64(o, true); }
+function setStr(o, s, max) { for (let i = 0; i < max; i++) state[o + i] = i < s.length ? (s.charCodeAt(i) & 255) : 32; }
+function getStr(o, max) { let s = ''; for (let i = 0; i < max; i++) { const c = state[o + i]; if (c === 32 || c === 0) break; s += String.fromCharCode(c); } return s; }
+function slotActive(i) { return state[hdr(i)] === 1; }
+function slotCode(i) { return getStr(hdr(i) + 1, 5); }
+function slotPhase(i) { return state[hdr(i) + 6]; }
+function findSlot(code) { for (let i = 0; i < SLOTS; i++) if (slotActive(i) && slotCode(i) === code) return i; return -1; }
+function freeSlot() { for (let i = 0; i < SLOTS; i++) if (!slotActive(i)) return i; return -1; }
+function oldestSlot() { let best = -1, bestT = Infinity; for (let i = 0; i < SLOTS; i++) if (slotActive(i)) { const t = getF64(hdr(i) + 24); if (t < bestT) { bestT = t; best = i; } } return (Date.now() - bestT > 5 * 60 * 1000) ? best : -1; }
+function writeData(i, text) { if (text.length > DATA_SIZE) return false; const o = dataBase(i); for (let j = 0; j < text.length; j++) state[o + j] = text.charCodeAt(j) & 255; setU32(hdr(i) + 16, text.length); return true; }
+function readData(i) { const len = getU32(hdr(i) + 16); if (len <= 0 || len > DATA_SIZE) return ''; let s = ''; const o = dataBase(i); for (let j = 0; j < len; j++) s += String.fromCharCode(state[o + j]); return s; }
+
+const connLobby = new Map(); // conn.id -> {code, seat}
+const seats = new Map();     // code -> [conn|null, conn|null]
+const topicOf = code => 'l:' + code;
+const seatPid = seat => seat - 1;
+function connSeat(code, conn) { const s = seats.get(code); if (!s) return 0; if (s[0] && s[0].id === conn.id) return 1; if (s[1] && s[1].id === conn.id) return 2; return 0; }
+
+function genCode() {
+  for (let tries = 0; tries < 200; tries++) {
+    let c = '';
+    for (let i = 0; i < 4; i++) c += ALPHABET[Math.floor(Math.random() * ALPHABET.length)];
+    if (findSlot(c) < 0) return c;
+  }
+  return 'AAAA';
+}
+
+function cleanupConn(conn) {
+  const cl = connLobby.get(conn.id);
+  if (!cl) return;
+  connLobby.delete(conn.id);
+  const s = seats.get(cl.code);
+  let hasConn = false;
+  if (s) {
+    if (s[cl.seat - 1] && s[cl.seat - 1].id === conn.id) s[cl.seat - 1] = null;
+    hasConn = (s[0] !== null) || (s[1] !== null);
+    const slot = findSlot(cl.code);
+    if (slot >= 0) {
+      if (slotPhase(slot) === 0 && !hasConn) {
+        state[hdr(slot)] = 0; // abandoned waiting lobby -> free slot
+        setU32(hdr(slot) + 16, 0);
+      } else {
+        setF64(hdr(slot) + 24, Date.now());
+      }
+    }
+    if (!hasConn) seats.delete(cl.code);
+  }
+  pubsub.publish(topicOf(cl.code), '{"t":"left","seat":' + cl.seat + '}');
+}
+
+self.rpc = {
+  createLobby({conn}) {
+    let slot = freeSlot();
+    if (slot < 0) slot = oldestSlot();
+    if (slot < 0) return '{"ok":0,"err":"server_full"}';
+    const code = genCode();
+    setStr(hdr(slot) + 1, code, 5);
+    state[hdr(slot)] = 1;
+    state[hdr(slot) + 6] = 0;
+    state[hdr(slot) + 7] = 0;
+    setU32(hdr(slot) + 16, 0);
+    setF64(hdr(slot) + 24, Date.now());
+    conn.subscribe(topicOf(code));
+    connLobby.set(conn.id, { code, seat: 1 });
+    seats.set(code, [conn, null]);
+    return '{"ok":1,"code":"' + code + '","seat":1,"phase":0}';
+  },
+  joinLobby({conn}, data) {
+    let code = '';
+    try { code = String(JSON.parse(data).code || '').toUpperCase().trim(); } catch (e) { code = ''; }
+    const slot = findSlot(code);
+    if (slot < 0) return '{"ok":0,"err":"not_found"}';
+    const s = seats.get(code) || [null, null];
+    let seat = 0;
+    if (s[0] === null) seat = 1;
+    else if (s[1] === null) seat = 2;
+    else if (s[0].id === conn.id) seat = 1;
+    else if (s[1].id === conn.id) seat = 2;
+    else {
+      // both seats occupied but one may be a dropped connection of this player
+      const old = (s[0].net && s[0].net[3] === conn.net[3]) ? 1 : (s[1].net && s[1].net[3] === conn.net[3]) ? 2 : 0;
+      if (old) { s[old - 1] = conn; seat = old; }
+      else return '{"ok":0,"err":"full"}';
+    }
+    if (s[seat - 1] === null || s[seat - 1].id !== conn.id) s[seat - 1] = conn;
+    conn.subscribe(topicOf(code));
+    connLobby.set(conn.id, { code, seat });
+    seats.set(code, s);
+    setF64(hdr(slot) + 24, Date.now());
+    const phase = slotPhase(slot);
+    if (phase === 1) {
+      const stored = readData(slot);
+      if (stored) return '{"ok":1,"code":"' + code + '","seat":' + seat + ',"phase":1,"state":' + JSON.stringify(stored) + '}';
+    } else {
+      // both players present and game not started — let the host know
+      pubsub.publish(topicOf(code), '{"t":"join","seat":' + seat + '}');
+    }
+    return '{"ok":1,"code":"' + code + '","seat":' + seat + ',"phase":' + phase + '}';
+  },
+  sendState({conn}, data) {
+    const cl = connLobby.get(conn.id);
+    if (!cl) return '{"ok":0,"err":"no_lobby"}';
+    const slot = findSlot(cl.code);
+    if (slot < 0) return '{"ok":0,"err":"no_slot"}';
+    let p = null;
+    try { p = JSON.parse(data); } catch (e) { return '{"ok":0,"err":"bad_data"}'; }
+    if (!p || typeof p.state !== 'string') return '{"ok":0,"err":"bad_data"}';
+    if (p.lastActed !== seatPid(cl.seat)) return '{"ok":0,"err":"not_your_turn"}';
+    const wasWaiting = slotPhase(slot) === 0;
+    state[hdr(slot) + 6] = 1;
+    state[hdr(slot) + 7] = (p.turn | 0) & 255;
+    if (!writeData(slot, data)) return '{"ok":0,"err":"too_big"}';
+    setF64(hdr(slot) + 24, Date.now());
+    const kind = wasWaiting ? 'started' : 'state';
+    pubsub.publish(topicOf(cl.code),
+      '{"t":"' + kind + '","turn":' + (p.turn | 0) + ',"nonce":' + (p.nonce | 0) + ',"state":' + JSON.stringify(p.state) + '}');
+    return '{"ok":1}';
+  },
+  leaveLobby({conn}) { cleanupConn(conn); return '{"ok":1}'; },
+};
+
+self.onclose = ({conn}) => cleanupConn(conn);
+
+// initialise magic on first run
+if (state[0] !== MAGIC[0] || state[1] !== MAGIC[1]) {
+  for (let i = 0; i < 4; i++) state[i] = MAGIC[i];
+}
+</script>
+
+<script type="module" src="src/main.js"></script>

@@ -1,0 +1,70 @@
+{
+  "name": "vgn-turn-based-strategy-template",
+  "imports": [
+    "kv-plugin",
+    "server-plugin"
+  ],
+  "isPrivate": false,
+  "srcManifest": {
+    "hex.js": {
+      "key": "710ba811144dd97b1a178a173eab8b2f.js",
+      "size": 1287
+    },
+    "app.js": {
+      "key": "f5fef720902d1c44ebc314ff5f3f93d6.js",
+      "size": 721
+    },
+    "style.css": {
+      "key": "3e492a6ae7706bd83d1654eafdaf2a5e.css",
+      "size": 13816
+    },
+    "data.js": {
+      "key": "dc87dfcb2721803bcdc67da454a686fc.js",
+      "size": 17364
+    },
+    "engine.js": {
+      "key": "40b832adc0f17d9729ab4f765a0f7725.js",
+      "size": 38536
+    },
+    "combat.js": {
+      "key": "f57d62a6faba83ec9f02c4579b1519d9.js",
+      "size": 18704
+    },
+    "ai.js": {
+      "key": "b06c40b6e52526ab2212eca6873772bd.js",
+      "size": 7982
+    },
+    "render.js": {
+      "key": "cc0b02c3d232c958ed0f1f91c20a5606.js",
+      "size": 22413
+    },
+    "hud.js": {
+      "key": "1aefd282b2f14a11e71c68a4e1eaa736.js",
+      "size": 4072
+    },
+    "mapui.js": {
+      "key": "f5a0b2b25a48bc84c8b33ad08b63b644.js",
+      "size": 7667
+    },
+    "screens.js": {
+      "key": "903ca7e9ffe3d5a8596e40ea64fa0df8.js",
+      "size": 27222
+    },
+    "main.js": {
+      "key": "373263e8350e947be8878c2a926abe0c.js",
+      "size": 9763
+    },
+    "mapformat.js": {
+      "key": "a7200e88e26622c290b04f992e6f7cad.js",
+      "size": 3421
+    },
+    "editor.js": {
+      "key": "93992ffd2d02ae2c955acc219e7e2891.js",
+      "size": 12851
+    },
+    "online.js": {
+      "key": "2954b0771bc9c33e2297d230ca19d2e4.js",
+      "size": 6092
+    }
+  }
+}

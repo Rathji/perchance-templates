@@ -1,0 +1,75 @@
+$meta
+  title = Turn-Based Strategy Template
+  description = A reusable heroes-style turn-based strategy template: hex adventure map, towns, heroes, resources, tactical combat, and AI. Build your own TBS game on this framework.
+  tags = template, strategy, turn-based, framework, fantasy, hex
+  header
+    mode = minimal
+
+kv = {import:kv-plugin}
+createServerSocket = {import:server-plugin}
+
+// Config defaults (user-tweakable) — the game logic lives in src/ (see src/main.js).
+// The in-game setup screen reads these as starting values.
+gameConfig
+  mapSize = medium // small | medium | large
+  players = 2 // total players (2-4) — humans + AI opponents
+  humans = 1 // hotseat: how many of those players are human on this device (1-4, pass-and-play)
+  faction = castle // your faction: castle | rampart | necropolis | stronghold
+  difficulty = normal // easy | normal | hard
+  // Optional: author a fixed map instead of random gen. Export one from the
+  // in-game Map Editor (title screen) — one line per row, characters are:
+  //   terrain: . grass  d dirt  s sand  n snow  ~ water  r rock  f forest
+  //   towns:   0-3 player starts (hero spawns next to each)  T neutral town
+  //   objects: G gold  W wood  O ore  E gems  C crystal  S sulfur  M mercury
+  //            $ chest  A artifact  D dwelling  X monsters  * gold mine
+  //            H shrine  v mana well  m windmill  P trade post  R refugee camp
+  //            g graveyard  t watchtower  B bank (g/t/B guarded — prize on win)
+  //            b boat (water is impassable; walk a hero next to a boat to sail)
+  // map
+  //   0.........ffffff....
+  //   ...G....~..fffff....
+  //   .....T..~...........
+  //   ........~...........
+  //   .........rr...A.....
+  //   ........*rr.........
+  //   .........rr.T.......
+  //   .........rr.........
+  //   .........rr.........
+  //   .....D..............
+  //   .............X......
+  //   ....................
+  //   ..............$.....
+  //   ............ffff...1
+
+
+// ============================================================
+// DEVELOPMENT BACKLOG — higher ^weight = higher priority.
+// Move finished items into the backlogDone list below.
+// ============================================================
+backlog
+  More starting heroes (2-3 per player) & hero archetypes^6
+  Adventure spells — town portal, summon boat, dimension door^5
+  In-game guide / tutorial overlay so template users can swap in their own content^5
+  Sound & music integration^4
+
+// Things already built (keep as the "done" reference)
+backlogDone
+  Online multiplayer via server-plugin — host a match, share a code, guest joins over the Perchance match server; full game state passes between turns with reconnect + leave/rejoin^7
+  Game setup screen — map size, AI opponent count (0-3), faction choice, difficulty^10
+  Hotseat multiplayer — 2+ humans on one device (pass-and-play, per-player turns/income/hero strips)^8
+  Walls & sieges — attacking a fortified town is a siege: walls +def, archer towers, moat slow; defending heroes garrison their town^7
+  Water & boats — water is impassable; moored boats (editor char b) let heroes sail, auto-disembark leaves the boat behind^7
+  Morale & luck — faction-synergy morale (bonus actions / hesitation, undead immune) + luck crits; poison, fear and magic-immunity specials^6
+  Map editor — paint hex maps in-browser, export as text, author via gameConfig.map^9
+  Map object variety — shrines, mana wells, windmills, trade posts, graveyards, towers, banks, refugee camps^8
+  Hex overland map, random terrain gen, pathfinding, movement points
+  Resources, captureable mines, treasure piles, chests
+  Towns — building chains, recruitment, weekly growth, buy heroes
+  4 factions x 7 creature tiers (base + upgrades, special abilities)
+  Heroes — stats, XP, level-up skill choices, spellbook, 7 army slots
+  Artifacts — hero equipment slots (weapon/head/body/neck/feet) + treasure artifacts found on the map
+  Tactical combat — initiative, move/attack, ranged, retaliation, charge, fly, heal, wait/defend/retreat, quick battle, spells
+  Calendar — days/weeks/months, daily income, weekly growth
+  AI — greedy adventure AI + scripted combat AI
+  Save/load via kv plugin, win/lose conditions
+

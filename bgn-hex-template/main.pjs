@@ -1,0 +1,27 @@
+// ─────────────────────────────────────────────────────────────
+//  BGN HEX TEMPLATE — main.pjs
+//  A ready-to-fork hex-grid table for the Boardgame Network:
+//  the full hex rule framework (movement points, terrain costs,
+//  elevation + water, line of sight, range disks, capture) on top of
+//  the online multiplayer table (rooms, turn order, presence, chat).
+//  Fork this generator and build YOUR game on the framework —
+//  see the "HEX DEMO GAME" section in index.html, and the
+//  framework in src/hex.js + src/hexview.js.
+// ─────────────────────────────────────────────────────────────
+
+$meta
+  title = BGN Hex Template
+  description = A hex-grid framework for the Boardgame Network: movement points, terrain costs, elevation (climbing + high-ground sight), water, line of sight, range and area measurement, capture, plus the online multiplayer table. Fork it and build a hex game.
+  tags = template, hex, strategy, wargame, two player, multiplayer, online, rooms, elevation
+  image = https://user.uploads.dev/file/f421fda36aa7155c4ad43df7004eecc6.png
+
+hubUrl = https://perchance.org/bgn-boardgame-network
+gameTitle = BGN Hex Template
+gameTagline = A hex battlefield with the rules built in: climb, move, measure, capture. The framework is ready — build your game on it.
+gameKicker = Move · Measure · Capture
+gameGenre = Hex Strategy
+gamePlayers = 2 players
+accentColor = #d4af37
+heroImage = https://user.uploads.dev/file/f421fda36aa7155c4ad43df7004eecc6.png
+
+createServerSocket = {import:server-plugin}

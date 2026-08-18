@@ -1,0 +1,26 @@
+kv = {import:kv-plugin}
+
+title
+  NOVA STRIKE
+
+tagline
+  A fast arena shooter. Survive the swarm.
+  Outrun. Outgun. Outlast.
+  The swarm is endless. You are not.
+  Hold the line, pilot.
+
+waveIntro
+  Here they come!
+  They're multiplying...
+  Hold the line, pilot.
+  The swarm grows restless.
+  No mercy.
+  This is the deep end.
+
+$meta
+  title = NOVA STRIKE — Arena Shooter
+  description = A fast top-down arena shooter built from the vgn-shooter-template. Dodge, aim, and survive the endless swarm.
+  image = https://user.uploads.dev/file/dc894ccc5f3f294b6be9e6579da1a038.jpg
+  tags = shooter, game, arena, action
+  header
+    mode = minimal
