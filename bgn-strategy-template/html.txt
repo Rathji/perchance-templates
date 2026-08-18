@@ -3,8 +3,8 @@
 :root{--bg:#0b1626;--panel:#122741;--panel2:#0e2036;--line:#2b4a70;--text:#dbe7f4;--dim:#7e97b3;--gold:var(--bgn-accent,#d4af37);--green:#7cff7c}
 *{box-sizing:border-box}
 html,body{margin:0;padding:0;height:100%;background:var(--bg);color:var(--text);font-family:var(--bgn-sans);overflow:hidden}
-body{text-align:left}
-#app{display:flex;flex-direction:column;height:100vh}
+body{text-align:left;display:flex;flex-direction:column}
+#app{display:flex;flex-direction:column;flex:1;min-height:0}
 #topbar{display:flex;align-items:center;gap:14px;padding:7px 14px;background:linear-gradient(#16293e,#0e2036);border-bottom:2px solid var(--line);flex-wrap:wrap}
 #title{font-size:16px;letter-spacing:3px;color:var(--gold);font-weight:bold;white-space:nowrap;font-family:var(--bgn-serif)}
 #title small{color:var(--dim);font-size:10px;letter-spacing:1px;margin-left:6px}
@@ -35,8 +35,8 @@ button.small{padding:3px 8px;font-size:12px}
 .actRow{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin:4px 0}
 #zoneinfo{padding:9px 12px;border-bottom:1px solid var(--line);font-size:13px;min-height:70px}
 #zoneinfo h4{margin:0 0 4px;font-size:13px;color:var(--gold);letter-spacing:1px;font-family:var(--bgn-serif)}
-#log{flex:1;overflow-y:auto;padding:8px 12px;font-size:12px;line-height:1.45}
-#log div{padding:2px 0;border-bottom:1px solid rgba(43,74,112,.25)}
+#logEl{flex:1;overflow-y:auto;padding:8px 12px;font-size:12px;line-height:1.45}
+#logEl div{padding:2px 0;border-bottom:1px solid rgba(43,74,112,.25)}
 .lt{color:var(--dim);margin-right:6px}
 .lw{color:var(--gold);font-weight:bold}
 .lbad{color:#e07f6a}
@@ -71,17 +71,54 @@ button.small{padding:3px 8px;font-size:12px}
 .warn{color:#e07f6a;font-size:12px}
 input[type=checkbox]{accent-color:var(--gold)}
 .zoneBtn{display:inline-flex;align-items:center;gap:5px;margin:2px}
+.bgn-nav{flex-shrink:0;height:40px;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:0 14px;z-index:40}
+.bgn-nav-brand{text-decoration:none}
+.bgn-nav-title{font-family:var(--bgn-serif);font-size:.78rem;color:var(--dim);letter-spacing:.1em;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:38vw}
+.bgn-footer{flex-shrink:0;margin:0;padding:7px 14px;text-align:center;background:rgba(10,9,18,.6);border-top:1px solid var(--line)}
+.bgn-footer a{color:var(--bgn-accent2,#d4af37);font-size:12px;letter-spacing:.08em;text-transform:uppercase;text-decoration:none}
+.bgn-footer a:hover{color:var(--bgn-accent)}
+.bgn-footer .footnote{margin:2px 0 0;font-size:11px;color:var(--dim)}
+#turnEl{font-size:12px;color:var(--gold);font-weight:bold;white-space:nowrap;border:1px solid rgba(212,175,55,.35);border-radius:999px;padding:2px 10px;background:rgba(212,175,55,.07)}
+.fs-open-btn{position:absolute;top:10px;right:10px;z-index:6;background:rgba(10,14,24,.72);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.35);color:#fff;border-radius:8px;padding:7px 13px;cursor:pointer;font-size:13px;line-height:1}
+.fs-open-btn:hover{border-color:var(--bgn-accent);box-shadow:0 0 14px rgba(212,175,55,.45);background:rgba(10,14,24,.85)}
+.fs-open-btn[hidden]{display:none!important}
+#fsOverlay{position:fixed;inset:0;z-index:9500;background:#0b0e15;color:#fff;display:flex;flex-direction:column;font-family:var(--bgn-sans)}
+#fsOverlay[hidden]{display:none!important}
+.fs-topbar{display:flex;align-items:center;gap:14px;padding:8px 14px;background:rgba(15,18,28,.96);border-bottom:1px solid rgba(212,175,55,.28);flex-shrink:0;flex-wrap:wrap}
+#fsStatusEl{flex:1;font-size:14px;min-width:0}
+#fsStatusEl b{color:var(--gold)}
+#fsActionsCtn{display:flex;gap:8px;align-items:center}
+.fs-board{flex:1;min-height:0;position:relative;background:#0b0e15;overflow:hidden}
+.fs-board canvas{position:absolute;inset:0;width:100%;height:100%;image-rendering:pixelated;max-width:100%;max-height:100%}
+.fs-board #board{border:0}
+.fs-corner{position:absolute;z-index:5}
+.fs-tile{top:14px;right:14px}
+.fs-tile:empty{display:none}
+.fs-meeple{bottom:14px;right:14px}
+.fs-meeple:empty{display:none}
+#fsExitBtn{font-size:13px;padding:9px 16px;white-space:nowrap}
+.bgn-mode-cards{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:10px 0 4px}
+.bgn-mode{display:flex;flex-direction:column;align-items:flex-start;gap:5px;text-align:left;background:#1d3a5f;border:1px solid #3b6aa0;color:#dbe9f8;border-radius:8px;padding:12px;cursor:pointer;font-family:var(--bgn-sans);font-size:13px;line-height:1.3}
+.bgn-mode:hover{border-color:var(--gold);background:#28507f}
+.bgn-mode b{font-size:15px;color:var(--gold)}
+.bgn-mode small{color:var(--dim);font-size:11px}
+@media(max-width:560px){.bgn-mode-cards{grid-template-columns:1fr}}
 </style>
 
 <!-- BGN Audio System: shared sound + music (SFX are WebAudio-synthesized; music URL below). -->
-<script>window.BGN_AUDIO = { music: "https://user.uploads.dev/file/d12bdc015888e3a692b5d233aadf3951.mp3" };</script>
+<script>window.BGN_AUDIO = { music: "https://user.uploads.dev/file/d12bdc015888e3a692b5d233aadf3951.mp3", muted: true };</script>
 <script src="https://user.uploads.dev/file/346e6f5c64f15c0849bec19d5c57beb3.js"></script>
 <script src="https://user.uploads.dev/file/2ca2c779727012d212d20a0f915d73df.js"></script> <!-- BGN share/export toolkit (bgn-share.js) -->
 
+<nav class="bgn-nav">
+  <a class="bgn-nav-brand" id="navHubLink" href="https://perchance.org/bgn-boardgame-network">Boardgame Network</a>
+  <span class="bgn-nav-title" id="navTitleEl"></span>
+</nav>
 <div id="app">
   <div id="topbar">
     <div id="title"></div>
     <div id="status">Loading…</div>
+    <b id="turnEl" title="Current turn"></b>
     <div id="topbtns">
       <button id="helpBtn" onclick="openHelp()">?</button>
       <button id="saveBtn" onclick="doSave()">Save</button>
@@ -93,19 +130,157 @@ input[type=checkbox]{accent-color:var(--gold)}
   <div id="main">
     <div id="boardCtn">
       <canvas id="board" width="900" height="450"></canvas>
+      <button class="fs-open-btn" id="fsOpenBtn" title="Full screen map" hidden>⛶ Full screen</button>
     </div>
     <div id="side">
       <div id="strip"></div>
       <div id="powercard"></div>
       <div id="actions"></div>
       <div id="zoneinfo"></div>
-      <div id="log"></div>
+      <div id="logEl" class="bgn-log"></div>
     </div>
   </div>
 </div>
+<footer class="bgn-footer">
+  <a id="footerHubLink" href="https://perchance.org/bgn-boardgame-network">The Boardgame Network</a>
+  <p class="footnote">A remixable strategy template from the Boardgame Network.</p>
+<!-- BGN self-check: paste next to "Browse the shelf" in your footer -->
+<a href="#" onclick="openBgnAudit();return false;" style="margin-left:12px;color:var(--bgn-accent2,#f2dc8b);font-weight:600;text-decoration:none" title="Check this generator against the BGN standards">Audit</a>
+<div id="bgnAuditOverlay" hidden><div class="bgn-audit-box"><div class="bgn-audit-head"><span>🛡️ BGN standards check</span><button onclick="closeBgnAudit()">✕</button></div><iframe id="bgnAuditFrame"></iframe></div></div>
+<style>
+#bgnAuditOverlay{position:fixed;inset:0;z-index:9800;background:rgba(5,7,12,.88);display:flex;align-items:center;justify-content:center;padding:18px}
+#bgnAuditOverlay[hidden]{display:none}
+.bgn-audit-box{width:min(920px,94vw);height:min(82vh,780px);background:#0a0912;border:1px solid rgba(212,175,55,.35);border-radius:14px;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.6)}
+.bgn-audit-head{display:flex;justify-content:space-between;align-items:center;padding:9px 14px;color:#f2dc8b;font:600 14px Cinzel,serif;border-bottom:1px solid rgba(212,175,55,.16)}
+.bgn-audit-head button{background:none;border:1px solid rgba(212,175,55,.3);color:#f2dc8b;border-radius:6px;cursor:pointer}
+</style>
+<script>
+function openBgnAudit(){
+  var f=document.getElementById("bgnAuditFrame");
+  f.src="https://a8d7e032445565364ff28d0e6ddda014.perchance.org/bgn-standards-checker?g="+encodeURIComponent(window.generatorName)+"&embed=1&v="+Date.now();
+  document.getElementById("bgnAuditOverlay").hidden=false;
+  document.body.style.overflow="hidden";
+}
+function closeBgnAudit(){
+  document.getElementById("bgnAuditOverlay").hidden=true;
+  document.body.style.overflow="";
+}
+document.addEventListener("keydown",function(e){ if(e.key==="Escape") closeBgnAudit(); });
+document.getElementById("bgnAuditOverlay").addEventListener("click",function(e){ if(e.target.id==="bgnAuditOverlay") closeBgnAudit(); });
+</script>
+</footer>
 <div id="modalCtn" style="display:none"></div>
 <div id="toast"></div>
 <div id="tooltip"></div>
+
+<div id="fsOverlay" hidden>
+  <div class="fs-topbar">
+    <span id="fsStatusEl"></span>
+    <span id="fsActionsCtn"></span>
+    <button id="fsExitBtn" class="btn btn-gold">✕ Exit</button>
+  </div>
+  <div class="fs-board" id="fsBoardArea"></div>
+  <div class="fs-corner fs-tile" id="fsTileCtn"></div>
+  <div class="fs-corner fs-meeple" id="fsMeepleCtn"></div>
+</div>
+
+<script>
+/* ══════════════════════════════════════════════════════════════
+   BGN FULLSCREEN BOARD — window.bgnFullscreen
+   register({canvas, tile?, meeple?, resize?}) → reveals the ⛶
+   button. Canvas (and optional tile/meeple) are MOVED into the
+   overlay, never cloned, and restored to their original parent
+   and order on close. Overlay status mirrors the page banner.
+   ══════════════════════════════════════════════════════════════ */
+var fsOverlay = document.getElementById("fsOverlay");
+var fsOpenBtn = document.getElementById("fsOpenBtn");
+var fsStatusEl = document.getElementById("fsStatusEl");
+var bannerEl = document.getElementById("status");
+(function(){
+  if (window.bgnFullscreen) return;
+  var fsExitBtn = document.getElementById("fsExitBtn");
+  var fsBoardArea = document.getElementById("fsBoardArea");
+  var fsTileCtn = document.getElementById("fsTileCtn");
+  var fsMeepleCtn = document.getElementById("fsMeepleCtn");
+  if (!fsOverlay || !fsOpenBtn) return;
+
+  var opts = null;
+  var _fsOrig = [];   // elements are MOVED (never cloned); restore reverse order
+  var prevOverflow = "";
+
+  function moveInto(el, target){
+    if (!el) return;
+    _fsOrig.push({el: el, parent: el.parentNode, next: el.nextSibling});
+    target.appendChild(el);
+  }
+  function restoreMoved(){
+    for (var i = _fsOrig.length - 1; i >= 0; i--){
+      var m = _fsOrig[i];
+      if (m.parent && m.el.parentNode !== m.parent) m.parent.insertBefore(m.el, m.next);
+    }
+    _fsOrig = [];
+  }
+  function fsRefit(){
+    if (opts && typeof opts.resize === "function"){ try { opts.resize(); } catch(e){} }
+  }
+  function syncStatus(){
+    if (!fsStatusEl) return;
+    fsStatusEl.textContent = bannerEl ? bannerEl.textContent : "";
+  }
+  function tryNativeFullscreen(on){
+    try {
+      if (on){
+        if (fsOverlay.requestFullscreen){ fsOverlay.requestFullscreen().catch(function(){}); }
+        else if (fsOverlay.webkitRequestFullscreen){ fsOverlay.webkitRequestFullscreen(); }
+      } else {
+        if (document.fullscreenElement || document.webkitFullscreenElement){
+          if (document.exitFullscreen) document.exitFullscreen().catch(function(){});
+          else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+        }
+      }
+    } catch(e){}
+  }
+  function openFullscreen(){
+    if (!fsOverlay.hidden) return;
+    moveInto(opts && opts.canvas, fsBoardArea);
+    if (opts && opts.tile && fsTileCtn) moveInto(opts.tile, fsTileCtn);
+    if (opts && opts.meeple && fsMeepleCtn) moveInto(opts.meeple, fsMeepleCtn);
+    prevOverflow = document.body.style.overflow;
+    fsOverlay.hidden = false;
+    document.body.style.overflow = "hidden";
+    syncStatus();
+    fsRefit();
+    tryNativeFullscreen(true);
+  }
+  function closeFullscreen(){
+    if (fsOverlay.hidden) return;
+    fsOverlay.hidden = true;
+    document.body.style.overflow = prevOverflow;
+    restoreMoved();
+    fsRefit();
+    tryNativeFullscreen(false);
+  }
+
+  window.bgnFullscreen = {
+    register: function(o){
+      if (!o || !o.canvas) return;
+      opts = { canvas: o.canvas, tile: o.tile || null, meeple: o.meeple || null,
+               resize: (typeof o.resize === "function") ? o.resize : null };
+      fsOpenBtn.hidden = false;
+    },
+    open: openFullscreen,
+    close: closeFullscreen,
+    isOpen: function(){ return !fsOverlay.hidden; }
+  };
+
+  if (fsOpenBtn) fsOpenBtn.addEventListener("click", openFullscreen);
+  if (fsExitBtn) fsExitBtn.addEventListener("click", closeFullscreen);
+  window.addEventListener("resize", function(){ if (!fsOverlay.hidden) fsRefit(); });
+  document.addEventListener("keydown", function(e){
+    if (e.key === "Escape" && !fsOverlay.hidden){ closeFullscreen(); return; }
+  }, true);
+})();
+</script>
 
 <script type="text/x-server-plugin">
 // bgn-strategy-template online server - lobby, relay and state cache. All of this is PUBLIC source.
@@ -115,7 +290,7 @@ const CODE_CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 function makeCode(){ let s=""; for(let i=0;i<4;i++) s+=CODE_CHARS[Math.floor(Math.random()*CODE_CHARS.length)]; return s; }
 function roomOf(conn){ return rooms.get(connRooms.get(conn.id)); }
 function broadcast(room, obj){ pubsub.publish("room:"+room.code, JSON.stringify(obj)); }
-function playerList(room){ return room.players.map(x=>({connId:x.connId, name:x.name, power:x.power})); }
+function playerList(room){ return room.players.map(x=>({connId:x.connId, name:x.name, power:x.power, gone:!!x.gone})); }
 
 /* ── durable leaderboard (fastest conquests, lives at the end of `state`) ──
    Fewer turns = better (asc). The server otherwise keeps rooms in ephemeral
@@ -169,7 +344,7 @@ self.rpc = {
     let info; try { info = JSON.parse(data); } catch(e){ info = {}; }
     let code; do { code = makeCode(); } while (rooms.has(code));
     const room = { code, hostId:conn.id, max: Math.max(2, Math.min(6, info.max||6)), // ~cap: bump here too if you raise maxPlayers in main.pjs
-      players:[{connId:conn.id, name:String(info.name||"Host").slice(0,20), power:-1}],
+      players:[{connId:conn.id, name:String(info.name||"Host").slice(0,20), power:-1, gone:false}],
       started:false, lastState:"" };
     if (rooms.size > 60) { const first = rooms.keys().next().value; rooms.delete(first); }
     rooms.set(code, room); connRooms.set(conn.id, code);
@@ -181,10 +356,22 @@ self.rpc = {
     const code = String(info.code||"").trim().toUpperCase();
     const room = rooms.get(code);
     if (!room) return JSON.stringify({error:"Room not found"});
-    if (room.started) return JSON.stringify({error:"This game has already started"});
+    const name = String(info.name||"").slice(0,20).trim() || "Player";
+    const existing = room.players.find(p=>p.name===name);
+    if (room.started) {
+      // Rejoin-by-code: a player who refreshed (and whose seat was kept) may
+      // re-attach by name so a refresh brings them straight back into the game.
+      if (!existing) return JSON.stringify({error:"This game has already started"});
+      if (!existing.gone) return JSON.stringify({error:"Already in room"});
+      existing.connId = conn.id; existing.gone = false;
+      connRooms.set(conn.id, code);
+      conn.subscribe("room:"+code);
+      broadcast(room, {t:"rejoin", players:playerList(room)});
+      return JSON.stringify({code, connId:conn.id, host:false, rejoined:true, power:existing.power, players:playerList(room)});
+    }
     if (room.players.length >= room.max) return JSON.stringify({error:"Room is full"});
     if (room.players.some(p=>p.connId===conn.id)) return JSON.stringify({error:"Already in room"});
-    room.players.push({connId:conn.id, name:String(info.name||"Player").slice(0,20), power:-1});
+    room.players.push({connId:conn.id, name, power:-1, gone:false});
     connRooms.set(conn.id, code);
     conn.subscribe("room:"+code);
     broadcast(room, {t:"lobby", players:playerList(room)});
@@ -268,13 +455,32 @@ self.onmessage = ({conn, data}) => {
   let msg; try { msg = JSON.parse(data); } catch(e){ return; }
   const room = roomOf(conn); if (!room) return;
   if (msg.t === "state") room.lastState = (typeof msg.d === "string") ? msg.d : "";
+  if (msg.t === "result") {
+    // Enforce turn order server-side: only the current phase player's intents pass.
+    let cur = -1;
+    try { const o = JSON.parse(room.lastState); if (o && typeof o.phasePlayer === "number") cur = o.phasePlayer; } catch(e){}
+    const d = msg.d;
+    const sender = (d && typeof d.player === "number") ? d.player : -1;
+    if (room.hostId !== conn.id && cur >= 0 && sender !== cur) {
+      conn.send(JSON.stringify({t:"err", e:"not_your_turn"}));
+      return;
+    }
+  }
   broadcast(room, {f:conn.id, t:msg.t, d:msg.d});
 };
 self.onclose = ({conn}) => {
   const code = connRooms.get(conn.id); if (!code) return;
   const room = rooms.get(code); if (!room) { connRooms.delete(conn.id); return; }
-  room.players = room.players.filter(p=>p.connId!==conn.id);
+  const pl = room.players.find(p=>p.connId===conn.id);
   connRooms.delete(conn.id);
+  if (room.started && pl && room.hostId !== conn.id) {
+    // In a running game, keep the seat (marked gone) so the player can rejoin
+    // by code after a refresh; the host's AI plays for them meanwhile.
+    pl.gone = true;
+    broadcast(room, {t:"gone", connId:conn.id, players:playerList(room)});
+    return;
+  }
+  room.players = room.players.filter(p=>p.connId!==conn.id);
   if (room.players.length===0) { rooms.delete(code); return; }
   broadcast(room, {t:"leave", connId:conn.id, players:playerList(room)});
   if (room.hostId === conn.id) {
@@ -345,6 +551,7 @@ const CONFIG = {
   gameSubtitle: cfgVal(root.gameSubtitle) || "",
   tagline:      cfgVal(root.tagline) || "",
   accentColor:  cfgVal(root.accentColor) || "#e6b320",
+  hubUrl:       cfgVal(root.hubUrl) || "https://perchance.org/bgn-boardgame-network",
   maxPlayers:   Math.max(2, Math.min(8, Number(cfgVal(root.maxPlayers)) || 6)),
 };
 CONFIG.powers = root.powers.selectAll.map(n => ({
@@ -423,8 +630,8 @@ function toast(msg){
   const t=el("toast"); t.textContent=msg; t.style.opacity=1;
   clearTimeout(toastTimer); toastTimer=setTimeout(()=>{ t.style.opacity=0; }, 2600);
 }
-function log(msg){ G.log.push(msg); if(G.log.length>300) G.log.splice(0,G.log.length-300); if(el("log")){ renderLog(); } }
-function setStatus(msg){ el("status").innerHTML = msg; }
+function log(msg){ G.log.push(msg); if(G.log.length>300) G.log.splice(0,G.log.length-300); if(el("logEl")){ renderLog(); } }
+function setStatus(msg){ el("status").innerHTML = msg; if (!fsOverlay.hidden) fsStatusEl.textContent = bannerEl.textContent; }
 
 function openModal(html){
   el("modalCtn").innerHTML = '<div class="modal"><div class="box">'+html+'</div></div>';
@@ -543,14 +750,17 @@ function startAction(){
   if (G.phase==="economic") payIncome(p);
   if (ctrl==="local"){
     setStatus('<span style="color:'+p.color+'">'+p.short+'</span> — Turn '+G.turn+' · <b>'+PHASE_LABEL[G.phase]+'</b>');
+    if (el("turnEl")) el("turnEl").textContent = p.short+" · "+PHASE_LABEL[G.phase]+" · Turn "+G.turn;
     toast(p.short+": "+PHASE_LABEL[G.phase]+" phase");
     render();
     if (G.mode==="online") sendState();
   } else if (ctrl==="remote"){
     setStatus('Waiting for <span style="color:'+p.color+'">'+p.short+'</span> to play '+PHASE_LABEL[G.phase]+'…');
+    if (el("turnEl")) el("turnEl").textContent = "Waiting for "+p.short;
     sendState();
   } else {
     setStatus(p.short+' (AI) — '+PHASE_LABEL[G.phase]+'…');
+    if (el("turnEl")) el("turnEl").textContent = p.short+" (AI)";
     runAI(p);
   }
 }
@@ -865,6 +1075,7 @@ function checkEliminations(){
 function endGame(winner, msg){
   G.winner = winner?winner.idx:null;
   G.over = true;
+  if (el("turnEl")) el("turnEl").textContent = "Game over";
   if(winner && (G.net ? winner.idx===G.net.myPowerIdx : winner.human)) sfx("win");
   else sfx("lose");
   log("🏁 "+msg);
@@ -1261,7 +1472,7 @@ function renderZoneInfo(){
   el("zoneinfo").innerHTML=h;
 }
 function renderLog(){
-  const lc=el("log");
+  const lc=el("logEl");
   lc.innerHTML = G.log.slice(-160).map(l=>'<div>'+l.replace(/</g,"&lt;")+'</div>').join("");
   lc.scrollTop=lc.scrollHeight;
 }
@@ -1436,6 +1647,11 @@ function confirmQty(){
 
 // ============================== ONLINE ==============================
 let netState={ myConnId:null, roomCode:null, isHost:false, myPowerIdx:-1, myName:"Player" };
+const REJOIN_KEY = "bgn_room_rejoin";
+function savedRoomInfo(){ try{ const s=localStorage.getItem(REJOIN_KEY); if(!s) return null; const o=JSON.parse(s); return (o && o.code) ? o : null; }catch(e){ return null; } }
+function saveRoomInfo(code, name){ try{ localStorage.setItem(REJOIN_KEY, JSON.stringify({code:String(code||"").toUpperCase(), name:String(name||"").slice(0,20)})); }catch(e){} }
+function clearRoomInfo(){ try{ localStorage.removeItem(REJOIN_KEY); }catch(e){} }
+function escapeHtml(s){ return String(s==null?"":s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
 
 function netConnect(opts){
   closeModal();
@@ -1448,9 +1664,18 @@ function netConnect(opts){
     const payload = JSON.stringify({name, max:CONFIG.maxPlayers});
     const p = opts.isHost ? socket.rpc.createRoom(payload) : socket.rpc.joinRoom(JSON.stringify({code:opts.code, name}));
     p.then(reply=>{
-      let info; try{ info=JSON.parse(reply); }catch(e){ openModal('<h2>Error</h2><p>'+reply+'</p><button onclick="openSetup()">Back</button>'); return; }
-      if (info.error){ openModal('<h2>Error</h2><p>'+info.error+'</p><button onclick="openSetup()">Back</button>'); return; }
+      let info; try{ info=JSON.parse(reply); }catch(e){ openModal('<h2>Error</h2><p>'+escapeHtml(reply)+'</p><button onclick="openSetup()">Back</button>'); return; }
+      if (info.error){ openModal('<h2>Error</h2><p>'+escapeHtml(info.error)+'</p><button onclick="openSetup()">Back</button>'); return; }
       netState.myConnId=info.connId; netState.roomCode=info.code; netState.isHost=opts.isHost; netState.myName=name;
+      netState.myPowerIdx = (typeof info.power === "number") ? info.power : -1;
+      saveRoomInfo(info.code, name);
+      if (info.rejoined){
+        if (!G) newGame({mode:"online", isHost:netState.isHost, myPowerIdx:netState.myPowerIdx, remote:[], name:netState.myName});
+        if (G.net){ G.net.myConnId=netState.myConnId; G.net.roomCode=netState.roomCode; G.net.myName=netState.myName; G.net.synced=true; }
+        socket.send(JSON.stringify({t:"reqstate"}));
+        setStatus("Rejoined — waiting for the host…");
+        return;
+      }
       showLobby(info.players, info);
     }).catch(e=>{ openModal('<h2>Network Error</h2><p>'+(e&&e.message||e)+'</p><button onclick="openSetup()">Back</button>'); });
   });
@@ -1484,6 +1709,30 @@ function onNetMessage(msg){
     toast("The host left the game");
     return;
   }
+  if (msg.t==="err"){
+    toast(msg.e==="not_your_turn" ? "Not your turn — wait for the current player." : (msg.e||"Server error"));
+    return;
+  }
+  if (msg.t==="gone"){
+    toast("A player disconnected — they can rejoin with the room code.");
+    if (G && G.net && G.net.isHost && msg.players){
+      G.net.remote = new Set(msg.players.filter(x=>x.connId!==netState.myConnId && !x.gone).map(x=>x.power));
+      render();
+    }
+    return;
+  }
+  if (msg.t==="rejoin"){
+    if (G && G.net && G.net.isHost && msg.players){
+      G.net.remote = new Set(msg.players.filter(x=>x.connId!==netState.myConnId && !x.gone).map(x=>x.power));
+      render();
+    }
+    toast("A player rejoined the game");
+    return;
+  }
+  if (msg.t==="reqstate"){
+    if (G && G.net && G.net.isHost) sendState();
+    return;
+  }
   if (msg.t==="chat"){ appendChat(msg.d); return; }
   if (msg.t==="rematch"){ doRematch(); return; }
   if (msg.t==="state"){
@@ -1501,7 +1750,7 @@ function showLobby(players, info){
   let rows = players.map(x=>{
     const isMe = x.connId===netState.myConnId;
     return '<div class="actRow" style="justify-content:space-between">'+
-      '<span>'+(isMe?'<b>▶ ':'')+x.name+(x.connId===netState.myConnId?' (you)':(x.connId===netState.roomHostId?" (host)":""))+(isMe?'</b>':'')+'</span>'+
+      '<span>'+(isMe?'<b>▶ ':'')+escapeHtml(x.name)+(x.connId===netState.myConnId?' (you)':(x.connId===netState.roomHostId?" (host)":""))+(x.gone?' <span class="muted">(away)</span>':'')+(isMe?'</b>':'')+'</span>'+
       '<span>'+(x.power>=0?'<span style="color:'+POWERS[x.power].color+'">'+POWERS[x.power].short+'</span>':'<span class="muted">no power</span>')+'</span>'+
       '</div>';
   }).join("");
@@ -1514,24 +1763,37 @@ function showLobby(players, info){
     ? '<button class="primary" onclick="hostStart()" style="margin-top:8px">Start Game</button>'
     : '<p class="muted">Waiting for the host to start…</p>';
   openModal('<h2>War Room</h2>'+
-    '<p>Room code:</p><div class="bigCode">'+netState.roomCode+'</div>'+
+    '<p>Room code:</p><div class="bigCode">'+escapeHtml(netState.roomCode)+'</div>'+
     '<h3>Players ('+players.length+'/'+CONFIG.maxPlayers+')</h3><div id="lobbyPlayers">'+rows+'</div>'+
     '<h3>Choose your superpower</h3>'+powerBtns+
     '<div style="margin-top:10px">'+hostRow+'</div>'+
-    '<button onclick="leaveRoom()" style="margin-top:8px">Leave Room</button>');
+    '<div class="actRow" style="margin-top:8px">'+
+      '<button id="copyCodeBtn" class="btn btn-ghost btn-sm" onclick="copyRoomCode()">Copy code</button>'+
+      '<button id="leaveBtn" class="btn btn-ghost btn-sm" onclick="leaveRoom()">Leave</button>'+
+    '</div>');
+}
+function copyRoomCode(){
+  if (!netState.roomCode) return;
+  const txt = netState.roomCode;
+  if (navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(txt).then(()=>toast("Room code copied")).catch(()=>{ toast("Room code: "+netState.roomCode); });
+  } else {
+    toast("Room code: "+netState.roomCode);
+  }
 }
 function pickPower(powerIdx){
   if (!netState.roomCode) return;
-  socket.rpc.setPower(JSON.stringify({code:netState.roomCode, power:powerIdx})).then(()=>{});
+  socket.rpc.setPower(JSON.stringify({code:netState.roomCode, power:powerIdx})).then(()=>{}).catch(()=>{});
 }
 function hostStart(){
   socket.rpc.startGame(JSON.stringify({code:netState.roomCode})).then(reply=>{
     let info; try{ info=JSON.parse(reply); }catch(e){ return; }
     if (info.error){ toast(info.error); return; }
-  });
+  }).catch(()=>{});
 }
 function leaveRoom(){
-  if (socket) socket.rpc.leaveRoom(JSON.stringify({})).then(()=>{});
+  clearRoomInfo();
+  if (socket) socket.rpc.leaveRoom(JSON.stringify({})).then(()=>{}).catch(()=>{});
   try{ socket && socket.close(); }catch(e){}
   openSetup();
 }
@@ -1693,10 +1955,10 @@ function sendChat(){
 let chatLog=[];
 function appendChat(d){
   if (!d) return;
-  chatLog.push(d);
+  chatLog.push({name:String(d.name||"Player").slice(0,40), text:String(d.text||"").slice(0,400)});
   if (chatLog.length>60) chatLog=chatLog.slice(-60);
   const c=el("chatCtn"); if (!c) return;
-  c.innerHTML = chatLog.map(m=>'<div class="chatLine"><span class="chatName">'+m.name.replace(/</g,"&lt;")+':</span> '+m.text.replace(/</g,"&lt;")+'</div>').join("");
+  c.innerHTML = chatLog.map(m=>'<div class="chatLine"><span class="chatName">'+escapeHtml(m.name)+':</span> '+escapeHtml(m.text)+'</div>').join("");
   c.scrollTop=c.scrollHeight;
 }
 
@@ -1733,15 +1995,21 @@ async function openSetup(){
     (saved?'<h3>Continue</h3>'+
       '<button class="primary" onclick="continueGame()">Continue Saved Game</button> '+
       '<button onclick="deleteSave()">Delete Save</button>':'')+
-    '<h3>New Game</h3>'+
+    '<h3>Choose a mode</h3>'+
+    '<div class="bgn-mode-cards">'+
+      '<button class="bgn-mode" data-mode="local" onclick="localMode()"><b>🎮 LOCAL PLAY</b><small>Battle five AIs solo, or hot-seat with friends on this device.</small></button>'+
+      '<button class="bgn-mode" data-mode="online" onclick="onlineMode()"><b>🌐 ONLINE PLAY</b><small>Fight friends across the internet via a room code.</small></button>'+
+    '</div>'+
+    '<p style="margin-top:10px"><button onclick="showLb()">🏆 Leaderboard</button> <button onclick="openHelp()">How to play</button> <button onclick="openTemplateGuide()">🧩 Template guide</button></p>'
+  );
+}
+function localMode(){
+  openModal('<h2>Local Play</h2>'+
     '<p class="muted">Single-player: you against five AIs.</p>'+
     '<button class="powerBtn" onclick="soloMode()" style="background:#1d3a5f;color:#fff;width:100%;padding:8px">🎖 SOLO — pick your superpower</button>'+
     '<p class="muted" style="margin-top:8px">Hot-seat: two or more humans on this screen.</p>'+
     '<button class="powerBtn" onclick="hotseatMode()" style="background:#1d3a5f;color:#fff;width:100%;padding:8px">👥 HOT-SEAT — choose human players</button>'+
-    '<p class="muted" style="margin-top:8px">Online: play against friends on perchance.org.</p>'+
-    '<button class="powerBtn" onclick="onlineMode()" style="background:#1d3a5f;color:#fff;width:100%;padding:8px">🌐 ONLINE — multiplayer room</button>'+
-    '<p style="margin-top:10px"><button onclick="showLb()">🏆 Leaderboard</button> <button onclick="openHelp()">How to play</button> <button onclick="openTemplateGuide()">🧩 Template guide</button></p>'
-  );
+    '<p style="margin-top:10px"><button onclick="openSetup()">Back</button></p>');
 }
 function soloMode(){
   const btns = POWERS.map((p,i)=>'<button class="powerBtn" onclick="startSolo('+i+')"><span class="swatch" style="background:'+p.color+'"></span> Play as '+p.short+' — '+p.name+'</button>').join("");
@@ -1768,13 +2036,16 @@ function startHotseat(){
   startGame();
 }
 function onlineMode(){
+  const savedRoom = savedRoomInfo();
   openModal('<h2>Online Multiplayer</h2>'+
-    '<p class="muted">One player creates a room and hosts the game; friends join with the 4-letter code. Games need all players connected while it runs. The host\'s browser simulates the world.</p>'+
-    '<h3>Nickname</h3><input type="text" id="netName" placeholder="Your name" value="Commander" maxlength="20">'+
+    '<p class="muted">One player creates a room and hosts the game; friends join with the room code. Games need all players connected while it runs. The host\'s browser simulates the world.</p>'+
+    '<h3>Nickname</h3><input type="text" id="netName" placeholder="Your name" value="'+(savedRoom?escapeHtml(savedRoom.name):'Commander')+'" maxlength="20">'+
+    (savedRoom?'<h3>Rejoin</h3>'+
+      '<button class="primary" onclick="rejoinRoom()">↩ Rejoin room '+escapeHtml(savedRoom.code)+'</button>':'')+
+    '<h3>Create a room</h3>'+
+    '<button id="createRoomBtn" class="btn btn-gold" onclick="createRoom()">Create room</button>'+
     '<h3>Join a room</h3>'+
-    '<div style="display:flex;gap:6px"><input type="text" id="roomCode" placeholder="Room code (4 letters)" maxlength="4" style="flex:1"><button onclick="joinRoom()">Join</button></div>'+
-    '<h3>Or create one</h3>'+
-    '<button class="primary" onclick="createRoom()">Create Room</button>'+
+    '<div style="display:flex;gap:6px"><input type="text" id="joinCodeInput" placeholder="Room code (4 letters)" maxlength="5" style="flex:1"><button onclick="joinRoom()">Join</button></div>'+
     '<div style="margin-top:8px"><button onclick="openSetup()">Back</button></div>');
 }
 function createRoom(){
@@ -1782,10 +2053,16 @@ function createRoom(){
   netConnect({isHost:true, name});
 }
 function joinRoom(){
-  const code=(el("roomCode")&&el("roomCode").value.trim().toUpperCase())||"";
+  const code=(el("joinCodeInput")&&el("joinCodeInput").value.trim().toUpperCase())||"";
   const name=(el("netName")&&el("netName").value.trim())||"Player";
   if (!code){ toast("Enter a room code"); return; }
   netConnect({isHost:false, code, name});
+}
+function rejoinRoom(){
+  const info = savedRoomInfo();
+  if (!info){ toast("No saved room"); return; }
+  const name=(el("netName")&&el("netName").value.trim())||info.name;
+  netConnect({isHost:false, code:info.code, name});
 }
 async function continueGame(){
   const o=await loadAutosave();
@@ -1866,7 +2143,7 @@ Object.assign(window, {
   openModal, closeModal,
   buildArmy, buildNavy, buildNavySea, sellRes, buyRes, research, buildNuke, buildLstar,
   prospectBtn, aidBtn, confirmAid, setMode, qtySync, confirmQty, endPhaseBtn,
-  doSave, openSetup, soloMode, startSolo, hotseatMode, startHotseat, onlineMode, createRoom, joinRoom,
+  doSave, openSetup, soloMode, startSolo, hotseatMode, startHotseat, localMode, onlineMode, createRoom, joinRoom, rejoinRoom, copyRoomCode,
   setDiff, renderDiffBtns,
   continueGame, deleteSave, openHelp, openTemplateGuide, pickPower, hostStart, leaveRoom, requestRematch, sendChat,
   showLb, saveLbName, showLbRefresh,
@@ -1913,6 +2190,10 @@ window.openShare = openShare;
   const rs=document.documentElement.style;
   rs.setProperty("--gold", CONFIG.accentColor);
   el("board").width=CW; el("board").height=CH;
+  const navT=el("navTitleEl"); if (navT) navT.textContent = CONFIG.gameTitle;
+  const navL=el("navHubLink"); if (navL) navL.href = CONFIG.hubUrl;
+  const ftL=el("footerHubLink"); if (ftL) ftL.href = CONFIG.hubUrl;
+  if (window.bgnFullscreen) window.bgnFullscreen.register({ canvas: el("board"), resize: ()=>render() });
   const saved = await hasAutosave();
   if (saved){
     setStatus('A saved game was found.');
@@ -2002,7 +2283,7 @@ window.openShare = openShare;
   label.textContent = "My projects";
   var arrow = document.createElement("span");
   arrow.className = "rb-arrow";
-  arrow.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="12" height="12"><path d="M7 17L17 7"/><path d="M8 7h9v9"/></svg>';
+  arrow.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="12" height="12"><path d="M7 17L17 7"/><path d="M8 7h9v9"/></svg>';
   a.appendChild(badge);
   a.appendChild(label);
   a.appendChild(arrow);

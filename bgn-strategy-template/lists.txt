@@ -1,6 +1,7 @@
 $meta
   title = bgn-strategy-template
   description = A remixable strategy-game template from the Boardgame Network. Ships with the full 'Supremacy 1984' cold-war game as a working demo: territories, resources & markets, armies and navies, R&D, nukes, 1-6 players, hot-seat and online multiplayer. Fork it, edit the lists below (powers, resources, phases, tuning) — or swap in a whole new map via src/mapdata.js — and you have your own strategy game.
+  image = https://user.uploads.dev/file/44473d906752140fbe250720bdfebde2.jpg
   tags = template, strategy, board game, wargame, multiplayer, remix, 1984, cold war
   header
     mode = minimal
@@ -37,9 +38,15 @@ createServerSocket = {import:server-plugin}
 templateName = BGN Strategy Template
 gameTitle = Supremacy 1984
 gameSubtitle = THE GAME OF THE SUPERPOWERS
+gameTagline = Six superpowers struggle for global domination.
+gameKicker = COLD WAR STRATEGY
+gameGenre = Strategy / Wargame
+gamePlayers = 1-6 players
 tagline = Six superpowers struggle for global domination. Control territory to prospect oil, minerals and grain — sell them for cash to build armies, navies and nuclear weapons. Conquer the world… or end it in nuclear winter.
-accentColor = #e6b320
+accentColor = #d4af37
 maxPlayers = 6
+hubUrl = https://perchance.org/bgn-boardgame-network
+heroImage = https://user.uploads.dev/file/44473d906752140fbe250720bdfebde2.jpg
 
 // ── POWERS ──
 powers

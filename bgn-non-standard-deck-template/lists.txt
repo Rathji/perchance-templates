@@ -31,7 +31,11 @@ $meta
   tags = template, card game, custom deck, two player, multiplayer, online, strategy, board game network
   image = https://user.uploads.dev/file/8014231655ead3f16565e76b801d5b01.jpg
 
-hubUrl = https://perchance.org/bgn-checkers  // ← SET THIS to your network hub's URL
+hubUrl = https://perchance.org/bgn-boardgame-network  // ← SET THIS to your network hub's URL
+
+// Shared card-rendering plugin — every BGN game that plays with cards uses
+// the same SVG deck: cardDeck("AS"), cardDeck("10C"), cardDeck("back"), …
+cardDeck = {import:card-deck-plugin}
 
 // ═══════════════════════════════════════════════════════════════════
 //  ═══ TEMPLATE SETTINGS — EDIT ME ═══

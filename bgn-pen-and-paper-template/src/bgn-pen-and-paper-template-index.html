@@ -663,7 +663,7 @@ app.importJSON=function(str){
 /* ── screenshot ── */
 function cloneWithStyles(src){
   var clone=src.cloneNode(true);
-  clone.setAttribute("xmlns","http://www.w3.org/1999/xhtml");
+  clone.setAttribute("xmlns","https://www.w3.org/1999/xhtml");
   var PROPS=["display","position","top","left","width","height","min-width","min-height","aspect-ratio","box-sizing",
     "padding-top","padding-right","padding-bottom","padding-left","margin-top","margin-right","margin-bottom","margin-left",
     "grid-template-columns","grid-template-rows","gap","grid-gap","align-items","justify-content","justify-items","align-content","flex-direction","flex-wrap",
@@ -691,7 +691,7 @@ app.renderBoardImage=function(){
   var w=el.offsetWidth,h=el.offsetHeight;
   if(!w||!h)return Promise.resolve(null);
   var scale=3;
-  var svg='<svg xmlns="http://www.w3.org/2000/svg" width="'+w+'" height="'+h+'">'+
+  var svg='<svg xmlns="https://www.w3.org/2000/svg" width="'+w+'" height="'+h+'">'+
     '<foreignObject width="100%" height="100%">'+new XMLSerializer().serializeToString(cloneWithStyles(el))+'</foreignObject></svg>';
   return new Promise(function(resolve){
     var img=new Image();

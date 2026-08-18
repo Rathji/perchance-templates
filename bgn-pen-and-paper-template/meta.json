@@ -1,6 +1,7 @@
 {
   "name": "bgn-pen-and-paper-template",
   "imports": [
+    "server-plugin",
     "upload-plugin"
   ],
   "isPrivate": false,
@@ -10,8 +11,8 @@
       "size": 14628
     },
     "bgn-pen-and-paper-template-index.html": {
-      "key": "eb3c12686df6f96197703bb5f798fac0.txt",
-      "size": 70191
+      "key": "fcd77404273666f8e5ea321ef364fb95.txt",
+      "size": 70193
     }
   }
 }

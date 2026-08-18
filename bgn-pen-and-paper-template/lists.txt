@@ -24,6 +24,17 @@ $meta
   tags = template, puzzle, pen and paper, game, crossword, word search, sudoku, boggle
   image = https://user.uploads.dev/file/4c07b8ae91af227e6c04962d17a82257.jpg
 
+// ── BGN chrome config — read by the BGN frame (nav, hero, footer) ──
+hubUrl = https://perchance.org/bgn-boardgame-network
+gameTitle = Pen & Paper Template
+gameTagline = A reusable shell for pen-and-paper games — fresh puzzles every play
+gameKicker = Boardgame Network template
+gameGenre = Word · Pen-and-paper
+gamePlayers = 1 (hotseat) · 2 (online)
+accentColor = #d4af37
+heroImage = https://user.uploads.dev/file/4c07b8ae91af227e6c04962d17a82257.jpg
+
+createServerSocket = {import:server-plugin}
 uploadPlugin = {import:upload-plugin}
 
 // Shared leaderboard: a single public editable text file in this generator's

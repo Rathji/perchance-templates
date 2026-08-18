@@ -27,7 +27,7 @@ $meta
   tags = template, card deck, playing cards, svg, boardgame network, card game, online
   image = https://user.uploads.dev/file/9716647880420e7fb412d4dd5c411622.jpg
 
-hubUrl = https://perchance.org/bgn-checkers  // ← SET THIS to your network hub's URL
+hubUrl = https://perchance.org/bgn-boardgame-network  // BGN network hub
 gameTitle = Standard Deck Cards
 gameTagline = A drop-in playing deck for the Boardgame Network — premium SVG faces and an ornate card back, hover-to-enlarge, save &amp; share, plus a ready-made online duel to copy into your own game.
 gameKicker = Template · Cards · Build · Play
@@ -50,3 +50,4 @@ rulesConfig
   duelRounds = 5
 
 createServerSocket = {import:server-plugin}  // powers the online duel (Beat the Card)
+cardDeck = {import:card-deck-plugin}  // shared BGN playing-card plugin — same deck on every network game

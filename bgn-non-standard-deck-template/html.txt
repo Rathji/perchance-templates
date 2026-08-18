@@ -33,7 +33,7 @@
 <link rel="stylesheet" href="https://user.uploads.dev/file/67107d8c89844a7378e599e5110c369f.css"> <!-- BGN design system (hosted) -->
 
 <!-- BGN Audio System: shared sound + music (SFX are WebAudio-synthesized; music URL below). -->
-<script>window.BGN_AUDIO = { music: "https://user.uploads.dev/file/704005f12d53eda1f95bd43115247f4c.mp3" };</script>
+<script>window.BGN_AUDIO = { music: "https://user.uploads.dev/file/704005f12d53eda1f95bd43115247f4c.mp3", muted: true };</script>
 <script src="https://user.uploads.dev/file/346e6f5c64f15c0849bec19d5c57beb3.js"></script>
 <script src="https://user.uploads.dev/file/9d516fcdb94e4414444cd6fae716ff50.js"></script> <!-- BGN shared SVG card engine (bgn-deck.js) -->
 <script src="https://user.uploads.dev/file/2ca2c779727012d212d20a0f915d73df.js"></script> <!-- BGN share/export toolkit (bgn-share.js) -->
@@ -669,6 +669,7 @@ loadRooms();
 
     <div style="display:flex; justify-content:center; margin-top:18px">
       <button class="btn btn-ghost" id="lbBtn">🏆 Leaderboard</button>
+      <button class="btn btn-ghost" id="helpBtn" title="How to play" style="margin-left:10px">❓ Help</button>
       <button class="btn btn-ghost" id="shareBtn" style="margin-left:10px" title="Download this game as JSON or a PNG">📤 Share</button>
     </div>
 
@@ -701,6 +702,7 @@ loadRooms();
   <!-- ═══ GAME TABLE ═══ -->
   <section id="gameCtn" hidden>
     <div class="bgn-table cya-table">
+      <button class="fs-open-btn" id="fsOpenBtn" title="Full screen map" hidden>⛶ Full screen</button>
 
       <div class="panel bgn-boardpanel cya-boardpanel">
 
@@ -821,6 +823,9 @@ loadRooms();
 .lb-row .sc{ font-weight:700; }
 .lb-row.top{ background:rgba(212,175,55,.12); border:1px solid rgba(212,175,55,.35); }
 .lb-empty{ color:var(--bgn-muted,#c9d3e5); font-size:.85rem; padding:8px 0; }
+.help-cols{ display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:12px 14px; max-width:540px; margin:2px auto 14px; text-align:left; font-size:.88rem; line-height:1.5; color:var(--bgn-text,#ece7da); }
+.help-cols b{ display:block; margin-bottom:2px; font-size:.78rem; letter-spacing:.06em; text-transform:uppercase; }
+@media (max-width:380px){ .help-cols{ grid-template-columns:1fr; max-width:300px; } }
 </style>
 
 <div class="promo" id="lbModal" hidden>
@@ -835,10 +840,84 @@ loadRooms();
   </div>
 </div>
 
+<div class="promo bgn-help" id="helpModal" hidden>
+  <div class="promo-title">❓ How to play</div>
+  <div class="help-cols">
+    <div><b class="goldtext">Goal</b><br>Stack matching cards in your rows for points, then cover an opponent's row with a matching card to steal the whole pile. Most points when the deck runs out wins.</div>
+    <div><b class="goldtext">1 · Draw</b><br>Draw cards at the start of each turn.</div>
+    <div><b class="goldtext">2 · Play</b><br>Start rows or add matching cards to your own rows.</div>
+    <div><b class="goldtext">3 · Cover &amp; steal</b><br>Play a matching card onto an opponent's row to take the whole pile.</div>
+    <div><b class="goldtext">4 · Score</b><br>When the deck runs out, the most points win. Wild cards play as any type.</div>
+    <div><b class="goldtext">Modes</b><br>Hotseat (two players, one screen), vs the Machine, or Online with a room code.</div>
+  </div>
+  <button class="btn btn-gold" id="helpCloseBtn">Got it</button>
+</div>
+
+<!-- ═══ FULLSCREEN BOARD OVERLAY ═══
+     Generic full-screen board for canvas games: a game registers its canvas
+     (+ optional tile-in-hand and meeple-chooser elements and a resize fn)
+     via window.bgnFullscreen.register({canvas, tile, meeple, resize}). The
+     registered elements are MOVED in and restored on close — never cloned. -->
+<div id="fsOverlay" hidden>
+  <div class="fs-topbar">
+    <span id="fsStatusEl"></span>
+    <span id="fsActionsCtn"></span>
+    <button id="fsExitBtn" class="btn btn-gold">✕ Exit</button>
+  </div>
+  <div class="fs-board" id="fsBoardArea">
+    <div id="fsCanvasCtn"></div>
+    <div id="fsTileCtn" class="fs-corner fs-tile"></div>
+    <div id="fsMeepleCtn" class="fs-corner fs-meeple"></div>
+  </div>
+</div>
+
+<style>
+/* ═══ fullscreen board ═══ */
+.fs-open-btn{ position:absolute; top:10px; right:10px; z-index:6; background:rgba(10,14,24,.72); -webkit-backdrop-filter:blur(8px); backdrop-filter:blur(8px); border:1px solid rgba(255,255,255,.3); border-radius:8px; color:inherit; font:inherit; font-size:.78rem; font-weight:600; padding:8px 14px; cursor:pointer; transition:border-color .15s, box-shadow .15s; }
+.fs-open-btn:hover{ border-color:var(--bgn-accent,#d4af37); box-shadow:0 0 14px rgba(212,175,55,.35); }
+#fsOverlay{ position:fixed; inset:0; z-index:9500; background:#0b0e15; display:flex; flex-direction:column; }
+#fsOverlay .fs-topbar{ flex:none; display:flex; align-items:center; gap:12px; padding:10px 16px; background:rgba(255,255,255,.05); border-bottom:1px solid rgba(255,255,255,.12); }
+#fsOverlay #fsStatusEl{ flex:1; min-width:0; font-size:.85rem; opacity:.9; text-align:left; }
+#fsOverlay #fsActionsCtn{ display:flex; align-items:center; gap:8px; flex:none; }
+#fsOverlay #fsExitBtn{ flex:none; }
+#fsOverlay .fs-board{ flex:1; min-height:0; position:relative; }
+#fsOverlay #fsCanvasCtn{ position:absolute; inset:0; }
+#fsOverlay .fs-board canvas{ position:absolute; inset:0; width:100%; height:100%; }
+#fsOverlay .fs-corner{ position:absolute; z-index:2; display:flex; align-items:center; justify-content:center; min-width:70px; min-height:70px; background:rgba(13,15,21,.72); -webkit-backdrop-filter:blur(6px); backdrop-filter:blur(6px); border:1px solid rgba(255,255,255,.18); border-radius:10px; }
+#fsOverlay .fs-tile{ top:14px; right:14px; }
+#fsOverlay .fs-meeple{ bottom:14px; right:14px; }
+#fsOverlay .fs-tile:empty{ display:none; }
+#fsOverlay .fs-meeple:empty{ display:none; }
+</style>
+
 <footer class="bgn-footer">
   <div class="ornament">◆</div>
   <p>[gameTitle] — a custom-deck card game built from the BGN Non-Standard Deck Template.</p>
   <p class="footnote">Made with the BGN template on <a href="https://perchance.org" target="_blank" rel="noopener">Perchance</a></p>
+  <!-- BGN self-check: paste next to "Browse the shelf" in your footer -->
+  <a href="#" onclick="openBgnAudit();return false;" style="margin-left:12px;color:var(--bgn-accent2,#f2dc8b);font-weight:600;text-decoration:none" title="Check this generator against the BGN standards">Audit</a>
+  <div id="bgnAuditOverlay" hidden><div class="bgn-audit-box"><div class="bgn-audit-head"><span>🛡️ BGN standards check</span><button onclick="closeBgnAudit()">✕</button></div><iframe id="bgnAuditFrame"></iframe></div></div>
+  <style>
+  #bgnAuditOverlay{position:fixed;inset:0;z-index:9800;background:rgba(5,7,12,.88);display:flex;align-items:center;justify-content:center;padding:18px}
+  #bgnAuditOverlay[hidden]{display:none}
+  .bgn-audit-box{width:min(920px,94vw);height:min(82vh,780px);background:#0a0912;border:1px solid rgba(212,175,55,.35);border-radius:14px;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.6)}
+  .bgn-audit-head{display:flex;justify-content:space-between;align-items:center;padding:9px 14px;color:#f2dc8b;font:600 14px Cinzel,serif;border-bottom:1px solid rgba(212,175,55,.16)}
+  .bgn-audit-head button{background:none;border:1px solid rgba(212,175,55,.3);color:#f2dc8b;border-radius:6px;cursor:pointer}
+  </style>
+  <script>
+  function openBgnAudit(){
+    var f=document.getElementById("bgnAuditFrame");
+    f.src="https://a8d7e032445565364ff28d0e6ddda014.perchance.org/bgn-standards-checker?g="+encodeURIComponent(window.generatorName)+"&embed=1&v="+Date.now();
+    document.getElementById("bgnAuditOverlay").hidden=false;
+    document.body.style.overflow="hidden";
+  }
+  function closeBgnAudit(){
+    document.getElementById("bgnAuditOverlay").hidden=true;
+    document.body.style.overflow="";
+  }
+  document.addEventListener("keydown",function(e){ if(e.key==="Escape") closeBgnAudit(); });
+  document.getElementById("bgnAuditOverlay").addEventListener("click",function(e){ if(e.target.id==="bgnAuditOverlay") closeBgnAudit(); });
+  </script>
 </footer>
 
 <style>
@@ -851,7 +930,7 @@ loadRooms();
 .bgn-mode-name{ font-weight:800; font-size:1.05rem; display:block; }
 .bgn-mode-sub{ font-size:.8rem; opacity:.7; display:block; margin-top:4px; }
 
-.cya-table{ grid-template-columns:minmax(0,1fr) 330px; max-width:1060px; margin:0 auto; }
+.cya-table{ position:relative; grid-template-columns:minmax(0,1fr) 330px; max-width:1060px; margin:0 auto; }
 @media (max-width:900px){ .cya-table{ grid-template-columns:minmax(0,1fr); justify-content:stretch; } }
 .cya-boardpanel{ text-align:center; padding:20px 18px 24px; }
 
@@ -938,7 +1017,7 @@ loadRooms();
 .cya-card.face-down:hover{ transform:none; }
 
 /* card type tints: generated at runtime for the deck's card types
-   (a <style id="bgn-tints"> element is injected by the client script) */
+   (a "bgn-tints" style element is injected by the client script) */
 
 /* side */
 .cya-actions{ display:flex; gap:8px; margin-top:14px; flex-wrap:wrap; }
@@ -1448,6 +1527,7 @@ function updateBanner(){
     else msg="";
   }
   bannerEl.textContent=msg;
+  if(!fsOverlay.hidden)fsStatusEl.textContent=bannerEl.textContent;
 }
 function renderAll(){
   if(!game.g)return;
@@ -2065,7 +2145,11 @@ function sendPass(){
   });
 }
 let bannerTimer=null;
-function flashBanner(msg){ bannerEl.textContent=msg; if(bannerTimer)clearTimeout(bannerTimer); bannerTimer=setTimeout(updateBanner,2600); }
+function flashBanner(msg){
+  bannerEl.textContent=msg;
+  if(!fsOverlay.hidden)fsStatusEl.textContent=bannerEl.textContent;
+  if(bannerTimer)clearTimeout(bannerTimer); bannerTimer=setTimeout(updateBanner,2600);
+}
 
 /* ══════════ wire up UI ══════════ */
 document.querySelectorAll(".bgn-mode").forEach(function(btn){
@@ -2134,6 +2218,8 @@ lbBtn.addEventListener("click",openLb);
 overLbBtn.addEventListener("click",openLb);
 lbDoneBtn.addEventListener("click",closeLb);
 lbNameInput.addEventListener("keydown",function(e){ if(e.key==="Enter")closeLb(); });
+helpBtn.addEventListener("click",function(){ helpModal.hidden=false; });
+helpCloseBtn.addEventListener("click",function(){ helpModal.hidden=true; });
 
 /* debug/testing handle for browser_eval */
 window.__bgn={ game, CFG, newRoom, deal, turnPlayer, legalKinds, applyPlay, finishTurn, vaultVal, stackVal, cardType, cardVal, startMode, startGame, endPlayerTurn, doPlay, aiChoosePlay, buildDeck, renderAll, showGameOver, onSlotClick, saveGame, continueGame, deleteSave, lbSubmitScore, openLb };
@@ -2183,6 +2269,62 @@ renderAll();
   });
   shareBtn.addEventListener("click",function(){ panel.open(); });
 })();
+})();
+</script>
+
+<!-- ═══ FULLSCREEN BOARD CONTROLLER (window.bgnFullscreen) ═══ -->
+<script>
+(function(){
+  var fsOverlay=document.getElementById("fsOverlay"), fsOpenBtn=document.getElementById("fsOpenBtn"), fsExitBtn=document.getElementById("fsExitBtn");
+  if(!fsOverlay||!fsOpenBtn||!fsExitBtn)return;
+  var canvasEl=null, tileEl=null, meepleEl=null, resizeFn=null, _fsOrig=[];
+  function stashMove(el,to){ _fsOrig.push({el:el,parent:el.parentNode,next:el.nextSibling}); to.appendChild(el); }
+  function fsRefit(){ if(typeof resizeFn==="function"){ try{ resizeFn(); }catch(e){} } }
+  function openFullscreen(){
+    if(!fsOverlay.hidden)return;
+    _fsOrig.length=0;
+    var canvasCtn=document.getElementById("fsCanvasCtn"), tileCtn=document.getElementById("fsTileCtn"), meepleCtn=document.getElementById("fsMeepleCtn");
+    if(canvasEl&&canvasCtn)stashMove(canvasEl,canvasCtn);
+    if(tileEl&&tileCtn)stashMove(tileEl,tileCtn);
+    if(meepleEl&&meepleCtn)stashMove(meepleEl,meepleCtn);
+    document.body.style.overflow="hidden";
+    fsOverlay.hidden=false;
+    var banner=document.getElementById("bannerEl"), fsSt=document.getElementById("fsStatusEl");
+    if(fsSt&&banner)fsSt.textContent=banner.textContent;
+    fsRefit();
+    try{ var fp=fsOverlay.requestFullscreen&&fsOverlay.requestFullscreen(); if(fp&&typeof fp.catch==="function")fp.catch(function(){}); }catch(e){}
+  }
+  function closeFullscreen(){
+    if(fsOverlay.hidden)return;
+    fsOverlay.hidden=true;
+    document.body.style.overflow="";
+    for(var i=_fsOrig.length-1;i>=0;i--){
+      var m=_fsOrig[i];
+      try{ m.parent.insertBefore(m.el,m.next); }catch(e){ m.parent.appendChild(m.el); }
+    }
+    _fsOrig.length=0;
+    fsRefit();
+    try{ if(document.fullscreenElement)document.exitFullscreen(); }catch(e){}
+  }
+  fsOpenBtn.addEventListener("click",openFullscreen);
+  fsExitBtn.addEventListener("click",closeFullscreen);
+  window.addEventListener("resize",function(){ if(!fsOverlay.hidden)fsRefit(); });
+  document.addEventListener("keydown",function(e){
+    if(e.key==="Escape"&&!fsOverlay.hidden){ e.stopImmediatePropagation(); closeFullscreen(); return; }
+  });
+  window.bgnFullscreen={
+    register:function(o){
+      o=o||{};
+      canvasEl=o.canvas||null;
+      tileEl=o.tile||null;
+      meepleEl=o.meeple||null;
+      resizeFn=typeof o.resize==="function"?o.resize:null;
+      if(canvasEl&&fsOpenBtn)fsOpenBtn.hidden=false;
+    },
+    open:openFullscreen,
+    close:closeFullscreen,
+    isOpen:function(){ return !fsOverlay.hidden; }
+  };
 })();
 </script>
 

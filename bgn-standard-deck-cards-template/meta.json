@@ -1,7 +1,8 @@
 {
   "name": "bgn-standard-deck-cards-template",
   "imports": [
-    "server-plugin"
+    "server-plugin",
+    "card-deck-plugin"
   ],
   "isPrivate": false,
   "srcManifest": {

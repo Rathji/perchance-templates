@@ -195,12 +195,22 @@ self.rpc={
     const slot=findSlot();
     if(slot<0)return JSON.stringify({ok:false,err:"server_full"});
     const code=genCode();
-    const room={slot,code,status:1,first:0,hostId:conn.id,guestId:-1,turn:0,snapshot:null,winner:null,reason:null,lastAct:nowSec()};
+    const first=(String(data||"").indexOf("guestFirst")!==-1)?1:0;   // who-goes-first roll from the lobby
+    const room={slot,code,status:1,first,hostId:conn.id,guestId:-1,turn:0,snapshot:null,winner:null,reason:null,lastAct:nowSec()};
     rooms.set(code,room);
     saveRoom(room);
     conn.subscribe(topic(code));
     conns.set(conn.id,{code,role:"host"});
     return JSON.stringify({ok:true,code,role:"host",snap:snap(room)});
+  },
+  setFirst({conn},data){
+    const room=roomOf(conn);
+    if(!room)return JSON.stringify({ok:false,err:"not_in_room"});
+    if(room.status!==1)return JSON.stringify({ok:false,err:"not_waiting"});
+    if(roleOf(conn)!=="host")return JSON.stringify({ok:false,err:"host_only"});
+    room.first=String(data||"")==="guest"?1:0;
+    room.lastAct=nowSec(); saveRoom(room); broadcast(room);
+    return JSON.stringify({ok:true,first:room.first});
   },
   joinRoom({conn},data){
     const code=String(data||"").trim().toUpperCase();
@@ -432,6 +442,7 @@ lbInit();
       <button class="btn btn-ghost" id="helpBtn">❓ How it works</button>
       <button class="btn btn-ghost" id="guideBtn">🧩 Template guide</button>
       <button class="btn btn-ghost" id="lbBtn">🏆 Leaderboard</button>
+      <button class="btn btn-ghost" id="toBtn" title="Who goes first, teams & seats">🎲 Turn order &amp; teams</button>
       <button class="btn btn-ghost" id="shareBtn" title="Download this table as JSON or a PNG">📤 Share</button>
     </div>
 
@@ -469,7 +480,7 @@ lbInit();
             <span class="bgn-avatar host"></span>
             <div>
               <div class="bgn-pname" id="hostNameEl">Host</div>
-              <div class="bgn-psub">sitting at the table</div>
+              <div class="bgn-psub" id="hostSubEl">sitting at the table</div>
             </div>
           </div>
           <div class="bgn-turn" id="turnEl">Host to move</div>
@@ -478,7 +489,7 @@ lbInit();
             <span class="bgn-avatar guest"></span>
             <div>
               <div class="bgn-pname" id="guestNameEl">Guest</div>
-              <div class="bgn-psub">sitting at the table</div>
+              <div class="bgn-psub" id="guestSubEl">sitting at the table</div>
             </div>
           </div>
         </div>
@@ -517,6 +528,7 @@ lbInit();
         <div class="bgn-log" id="logEl"></div>
         <div class="bgn-actions">
           <button class="btn btn-gold" id="newGameBtn">Restart</button>
+          <button class="btn btn-ghost" id="tableToBtn" title="Who goes first, teams & seats">🎲 Turn order</button>
           <button class="btn btn-ghost" id="claimBtn" hidden>Claim win</button>
           <button class="btn btn-ghost" id="menuBtn">Back to lobby</button>
           <button class="btn btn-ghost" id="overLbBtn" hidden>🏆 Leaderboard</button>
@@ -571,10 +583,63 @@ lbInit();
   </div>
 </div>
 
+<!-- ═══ TURN ORDER & TEAMS MODAL ═══ -->
+<div class="to-overlay" id="toModal" hidden>
+  <div class="to-modal">
+    <button class="to-close" id="toCloseBtn" title="Close">✕</button>
+    <div class="to-title">🎲 Turn Order &amp; Teams</div>
+    <p class="muted small" style="margin:2px 0 14px">Randomize the table — who starts, team sides, and seats.</p>
+    <div class="to-grid">
+      <div class="to-card">
+        <div class="to-label">Who goes first?</div>
+        <div class="to-draw" id="toFirstDraw">—</div>
+        <button class="btn btn-gold" id="toFirstBtn">🎲 Roll</button>
+        <div class="to-note" id="toFirstNote"></div>
+      </div>
+      <div class="to-card">
+        <div class="to-label">Team splitter</div>
+        <div class="to-draw" id="toTeamDraw">—</div>
+        <button class="btn btn-ghost" id="toTeamBtn">🎭 Split</button>
+        <div class="to-note" id="toTeamNote"></div>
+      </div>
+      <div class="to-card">
+        <div class="to-label">Seat draw</div>
+        <div class="to-draw" id="toSeatDraw">—</div>
+        <button class="btn btn-ghost" id="toSeatBtn">🪑 Draw</button>
+        <div class="to-note" id="toSeatNote"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- ═══ FOOTER ═══ -->
 <footer class="bgn-footer">
   <div class="ornament">✦</div>
   <p>Part of <b style="color:var(--bgn-gold2,var(--bgn-accent2))">The Boardgame Network</b> · <a href="[hubUrl]">Browse the shelf</a></p>
+<!-- BGN self-check: paste next to "Browse the shelf" in your footer -->
+<a href="#" onclick="openBgnAudit();return false;" style="margin-left:12px;color:var(--bgn-accent2,#f2dc8b);font-weight:600;text-decoration:none" title="Check this generator against the BGN standards">Audit</a>
+<div id="bgnAuditOverlay" hidden><div class="bgn-audit-box"><div class="bgn-audit-head"><span>🛡️ BGN standards check</span><button onclick="closeBgnAudit()">✕</button></div><iframe id="bgnAuditFrame"></iframe></div></div>
+<style>
+#bgnAuditOverlay{position:fixed;inset:0;z-index:9800;background:rgba(5,7,12,.88);display:flex;align-items:center;justify-content:center;padding:18px}
+#bgnAuditOverlay[hidden]{display:none}
+.bgn-audit-box{width:min(920px,94vw);height:min(82vh,780px);background:#0a0912;border:1px solid rgba(212,175,55,.35);border-radius:14px;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.6)}
+.bgn-audit-head{display:flex;justify-content:space-between;align-items:center;padding:9px 14px;color:#f2dc8b;font:600 14px Cinzel,serif;border-bottom:1px solid rgba(212,175,55,.16)}
+.bgn-audit-head button{background:none;border:1px solid rgba(212,175,55,.3);color:#f2dc8b;border-radius:6px;cursor:pointer}
+</style>
+<script>
+function openBgnAudit(){
+  var f=document.getElementById("bgnAuditFrame");
+  f.src="https://a8d7e032445565364ff28d0e6ddda014.perchance.org/bgn-standards-checker?g="+encodeURIComponent(window.generatorName)+"&embed=1&v="+Date.now();
+  document.getElementById("bgnAuditOverlay").hidden=false;
+  document.body.style.overflow="hidden";
+}
+function closeBgnAudit(){
+  document.getElementById("bgnAuditOverlay").hidden=true;
+  document.body.style.overflow="";
+}
+document.addEventListener("keydown",function(e){ if(e.key==="Escape") closeBgnAudit(); });
+document.getElementById("bgnAuditOverlay").addEventListener("click",function(e){ if(e.target.id==="bgnAuditOverlay") closeBgnAudit(); });
+</script>
   <p>Made with the BGN template on <a href="https://perchance.org" target="_blank" rel="noopener">Perchance</a></p>
 </footer>
 
@@ -717,6 +782,18 @@ lbInit();
 .lb-row.top{ background:rgba(212,175,55,.12); border:1px solid rgba(212,175,55,.35); }
 .lb-empty{ color:var(--bgn-muted,#c8c3c9); font-size:.85rem; padding:8px 0; }
 
+/* ══════ turn order & teams modal ══════ */
+.to-overlay{ position:fixed; inset:0; z-index:9600; background:rgba(5,8,16,.66); display:flex; align-items:center; justify-content:center; padding:18px; }
+.to-modal{ position:relative; width:min(780px,100%); max-height:min(86vh,720px); overflow:auto; background:#17131f; border:1px solid rgba(212,175,55,.45); border-radius:14px; box-shadow:0 18px 60px rgba(0,0,0,.7); padding:24px 22px 20px; text-align:center; }
+.to-close{ position:absolute; top:10px; right:10px; width:32px; height:32px; border-radius:999px; border:0; background:rgba(0,0,0,.4); color:#fff; cursor:pointer; font-size:14px; line-height:1; }
+.to-close:hover{ background:rgba(0,0,0,.65); }
+.to-title{ font-family:var(--bgn-serif,serif); font-size:1.3rem; color:var(--bgn-accent2,#f2dc8b); }
+.to-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:12px; margin-top:8px; }
+.to-card{ background:rgba(0,0,0,.22); border:1px solid rgba(255,255,255,.1); border-radius:12px; padding:14px 12px; display:flex; flex-direction:column; gap:10px; align-items:center; }
+.to-label{ font-size:.62rem; letter-spacing:.18em; text-transform:uppercase; color:var(--bgn-muted,#c8c3c9); }
+.to-draw{ min-height:44px; display:flex; align-items:center; justify-content:center; font-size:1.02rem; font-weight:700; color:#f6e6a4; }
+.to-note{ font-size:.72rem; color:var(--bgn-muted,#c8c3c9); min-height:30px; }
+
 /* ═══ LIGHT THEME ═══
    data-theme is set on <html> before first paint by the theme-init
    script near the top of this file (saved → prefers-color-scheme → dark). */
@@ -756,7 +833,7 @@ lbInit();
 :root[data-theme="light"] .bgn-nav-projects{ background:rgba(255,255,255,.75); border-color:rgba(140,106,36,.35); color:#3d2f14; box-shadow:0 6px 18px rgba(90,70,25,.18); }
 :root[data-theme="light"] .bgn-nav-projects:hover{ color:#3d2f14; }
 :root[data-theme="light"] .theme-btn{ background:rgba(255,255,255,.7); color:#7c5f10; }
-:root[data-theme="light"] .bgn-help-close, :root[data-theme="light"] .lb-close, :root[data-theme="light"] .bgn-lounge-close{ color:#fff; }
+:root[data-theme="light"] .bgn-help-close, :root[data-theme="light"] .lb-close, :root[data-theme="light"] .bgn-lounge-close, :root[data-theme="light"] .to-close{ color:#fff; }
 :root[data-theme="light"] .bgn-avatar{ box-shadow:0 0 0 2px rgba(140,106,36,.3); }
 :root[data-theme="light"] .btn-gold{
   background:linear-gradient(180deg,#f7e7ab,#d4af37 55%,#a07e18);
@@ -798,12 +875,13 @@ lbInit();
 :root[data-theme="light"] .bgn-room{ border-color:rgba(140,106,36,.5); }
 :root[data-theme="light"] .bgn-room-code b{ color:var(--bgn-accent3); }
 :root[data-theme="light"] .bgn-help,
-:root[data-theme="light"] .lb-modal{
+:root[data-theme="light"] .lb-modal,
+:root[data-theme="light"] .to-modal{
   background:linear-gradient(180deg,#fffdf6,#f6efdd);
   border-color:rgba(140,106,36,.4);
   box-shadow:0 26px 80px rgba(60,45,10,.35), 0 0 0 1px rgba(140,106,36,.15);
 }
-:root[data-theme="light"] .bgn-help h3, :root[data-theme="light"] .lb-title{ color:var(--bgn-accent2); }
+:root[data-theme="light"] .bgn-help h3, :root[data-theme="light"] .lb-title, :root[data-theme="light"] .to-title{ color:var(--bgn-accent2); }
 :root[data-theme="light"] .bgn-help code{ background:rgba(176,125,19,.12); border-color:rgba(140,106,36,.3); color:#7c5f10; }
 :root[data-theme="light"] .lb-row{ background:rgba(255,255,255,.6); }
 :root[data-theme="light"] .lb-row.top{ background:rgba(176,125,19,.16); border-color:rgba(176,125,19,.4); }
@@ -877,7 +955,7 @@ if(heroImg && hero){ hero.classList.add("has-img"); hero.style.setProperty("--bg
    payloads mean and when to call `endGame`. */
 const game={ mode:null, myRole:null, roomCode:null, socket:null, sockOpen:false, wantReconnect:false, retryDelay:800,
   openResolvers:[], serverTurn:0, first:0, status:"idle", oppPresent:true, over:false, winner:null, reason:"",
-  locked:false, log:[], lastLoggedTurn:0 };
+  locked:false, log:[], lastLoggedTurn:0, teams:null, localNames:null };
 
 const lobbyCtn=document.getElementById("lobbyCtn");
 const gameCtn=document.getElementById("gameCtn");
@@ -943,6 +1021,11 @@ function sendChat(){
 
 /* ══════════ status UI ══════════ */
 function updateNames(){
+  if(game.mode==="local"&&game.localNames){
+    hostNameEl.textContent=game.localNames.host;
+    guestNameEl.textContent=game.localNames.guest;
+    return;
+  }
   if(game.mode==="ai"){
     hostNameEl.textContent="You";
     guestNameEl.textContent="Bot 🤖";
@@ -1008,7 +1091,7 @@ function updateBanner(){
   if(!fsOverlay.hidden)fsStatusEl.textContent=msg;
 }
 let bannerTimer=null;
-function flashBanner(msg){ bannerEl.textContent=msg; if(bannerTimer)clearTimeout(bannerTimer); bannerTimer=setTimeout(updateBanner,2600); }
+function flashBanner(msg){ bannerEl.textContent=msg; if(!fsOverlay.hidden)fsStatusEl.textContent=msg; if(bannerTimer)clearTimeout(bannerTimer); bannerTimer=setTimeout(updateBanner,2600); }
 
 /* ══════════ turn timer (local & online; 0 to disable) ══════════ */
 const TIMER_SECS=60;
@@ -1063,6 +1146,7 @@ function updateButtons(){
 }
 function renderAll(){
   updateNames();
+  renderSeats();
   refreshTurn();
   updateBanner();
   updateButtons();
@@ -1094,6 +1178,7 @@ function startMode(mode){
   gameCtn.hidden=false;
   sfx("deal");
   renderAll();
+  if(mode==="ai"&&turnRoleFor(game.log.length)==="guest")aiPassTurn();
 }
 function exitOnline(showLobby){
   if(game.socket){ game.wantReconnect=false; try{ game.socket.close(1000,"bye"); }catch(e){} game.socket=null; }
@@ -1244,6 +1329,7 @@ const HELP_HTML='<h2 class="goldtext">How the Blank table works</h2>'
   +'<p><b>🌐 Online table</b> — create a room, share the 5-letter code, and play against a friend. Turn order and match state live authoritatively on the server.</p>'
   +'<h3>Playing</h3>'
   +'<p>The turn pill and banner say whose move it is; <b>Pass the turn</b> ends your go. Each turn gets <b>⏱ 60 seconds</b> (edit <code>TIMER_SECS</code> to tune or disable it) — run out and your pass is sent for you. Every move lands in the turn log.</p>'
+  +'<p><b>🎲 Turn order &amp; teams</b> — open the panel from the lobby or the table to roll who goes first (this sets the real turn order, even online before a match starts), split random team sides, and draw seats for a shared screen.</p>'
   +'<p><b>💾 Save</b> captures a local or AI table — even mid-AI-turn — and the lobby lets you continue it later.</p>'
   +'<h3>Online extras</h3>'
   +'<p><b>Room code</b> — share it and your opponent joins instantly. If they disconnect they can rejoin with the same code, or you can <b>Claim win</b> if they abandon. When a match ends, <b>Rematch</b> flips who goes first.</p>'
@@ -1283,7 +1369,7 @@ const SAVE_KEY="bgn_save_blank";
 function saveGame(){
   if(game.mode!=="local"&&game.mode!=="ai")return;
   if(game.over){ deleteSave(); return; }
-  try{ localStorage.setItem(SAVE_KEY, JSON.stringify({v:1,mode:game.mode,log:game.log,winner:game.winner,reason:game.reason,lastLoggedTurn:game.lastLoggedTurn,savedAt:Date.now()})); }catch(e){}
+  try{ localStorage.setItem(SAVE_KEY, JSON.stringify({v:1,mode:game.mode,log:game.log,winner:game.winner,reason:game.reason,lastLoggedTurn:game.lastLoggedTurn,first:game.first,teams:game.teams,localNames:game.localNames,savedAt:Date.now()})); }catch(e){}
 }
 function hasSave(){ try{ return !!localStorage.getItem(SAVE_KEY); }catch(e){ return false; } }
 function deleteSave(){ try{ localStorage.removeItem(SAVE_KEY); }catch(e){} }
@@ -1304,6 +1390,9 @@ function continueGame(){
   game.log=o.log.slice();
   game.lastLoggedTurn=o.lastLoggedTurn||0;
   game.winner=o.winner||null; game.reason=o.reason||"";
+  game.first=o.first===1?1:0;
+  game.teams=o.teams||null;
+  game.localNames=o.localNames||null;
   updateNames();
   roomBox.hidden=true; chatBox.hidden=true; claimBtn.hidden=true;
   lobbyCtn.hidden=true; gameCtn.hidden=false;
@@ -1438,7 +1527,7 @@ async function doCreateRoom(){
   const ok=await openedP();
   if(!ok){ setOnlineMsg("Couldn't reach the server."); return; }
   try{
-    const r=await rpc("createRoom","");
+    const r=await rpc("createRoom", game.first===1?"guestFirst":"");
     if(!r.ok){ setOnlineMsg("Couldn't create a room ("+r.err+")."); return; }
     resetTable();
     game.mode="online"; game.roomCode=r.code; game.myRole=r.role;
@@ -1563,6 +1652,116 @@ fsOpenBtn.addEventListener("click",openFullscreen);
 fsExitBtn.addEventListener("click",closeFullscreen);
 window.addEventListener("resize",function(){ if(!fsOverlay.hidden)fsRefit(); });
 
+/* ══════════ turn order & teams (who goes first / team splitter / seat draw) ══════════
+   Three randomizers for the table. "Who goes first" drives the REAL
+   turn order: local/AI set game.first directly (the turn pill and
+   banner follow it); online, the host sets it server-side before the
+   match starts — a lobby roll is honored by createRoom, and setFirst
+   covers a waiting room. Teams and seats are table-side labels shown
+   on the player cards. */
+const toModal=document.getElementById("toModal");
+const toFirstDraw=document.getElementById("toFirstDraw");
+const toTeamDraw=document.getElementById("toTeamDraw");
+const toSeatDraw=document.getElementById("toSeatDraw");
+const toFirstNote=document.getElementById("toFirstNote");
+const toTeamNote=document.getElementById("toTeamNote");
+const toSeatNote=document.getElementById("toSeatNote");
+const hostSubEl=document.getElementById("hostSubEl");
+const guestSubEl=document.getElementById("guestSubEl");
+const toBtn=document.getElementById("toBtn");
+const tableToBtn=document.getElementById("tableToBtn");
+const TEAM_PAIRS=[["🦁 Lions","🐉 Dragons"],["☀️ Sun","🌙 Moon"],["🥇 Gold","🥈 Silver"],["🔴 Red","🔵 Blue"],["🌹 Rose","🌿 Vine"]];
+function spinRoll(opts, el, done){
+  const target=opts[Math.floor(Math.random()*opts.length)];
+  let i=0;
+  const iv=setInterval(function(){
+    if(i<opts.length*5){ el.textContent=opts[i%opts.length]; i++; }
+    else{ clearInterval(iv); el.textContent=target; done(target); }
+  },70);
+}
+function renderSeats(){
+  function one(subEl, role){
+    let t="sitting at the table";
+    if(game.teams&&game.teams[role])t="Team "+game.teams[role];
+    if(game.mode&&game.mode!=="idle"&&!game.over){
+      const starts=game.first?role==="guest":role==="host";
+      if(starts)t+=" · 🎯 starts";
+    }
+    subEl.textContent=t;
+  }
+  one(hostSubEl,"host");
+  one(guestSubEl,"guest");
+}
+function toSyncState(){
+  toFirstDraw.textContent=game.first?"Guest":"Host";
+  toTeamDraw.textContent=game.teams?game.teams.host+" vs "+game.teams.guest:"—";
+  toSeatDraw.textContent=game.localNames?game.localNames.host+" · "+game.localNames.guest:"—";
+  toFirstNote.textContent=(game.mode==="online"&&game.myRole!=="host")?"Turn order is set by the host."
+    :((game.first?"Guest":"Host")+" is set to go first"+(game.mode==="online"?".":" for this table."));
+  toTeamNote.textContent=game.teams?"Team "+game.teams.host+" (left) · Team "+game.teams.guest+" (right)":"Draw two team sides for the seats.";
+  if(game.mode==="local")toSeatNote.textContent=game.localNames?("Sit: "+game.localNames.host+" (left) · "+game.localNames.guest+" (right)"):"Draw who sits on each side of a shared screen.";
+  else if(!game.mode)toSeatNote.textContent=game.localNames?"Drawn — applies when you start a Local table.":"Draw who sits on each side of a Local table.";
+  else toSeatNote.textContent=(game.mode==="ai"?"Seats are fixed vs the bot — you are Host.":"Seats are fixed online — the host is the room creator.")+" Seat draws apply to Local tables.";
+}
+function applyFirst(role){
+  const who=role==="guest"?"Guest":"Host";
+  if(game.mode==="online"&&game.sockOpen){
+    if(game.myRole==="host"&&game.status===1&&!game.over){
+      rpc("setFirst",role==="guest"?"guest":"").then(function(r){
+        if(r&&r.ok){ game.first=r.first; renderAll(); flashBanner("🎲 "+who+" goes first!"); }
+        else flashBanner("Couldn't set turn order ("+(r&&r.err?r.err:"error")+").");
+        toSyncState();
+      }).catch(function(){ flashBanner("Couldn't reach the server."); });
+    }else{
+      flashBanner("🎲 "+who+" would go first — it applies to the next match.");
+      toSyncState();
+    }
+  }else{
+    game.first=role==="guest"?1:0;
+    renderAll();
+    flashBanner("🎲 "+who+" goes first!");
+    toSyncState();
+  }
+}
+function rollFirst(){ spinRoll(["Host","Guest"], toFirstDraw, function(w){ applyFirst(w==="Guest"?"guest":"host"); }); }
+function splitTeams(){
+  const pair=TEAM_PAIRS[Math.floor(Math.random()*TEAM_PAIRS.length)];
+  const flip=Math.random()<0.5;
+  game.teams={host:flip?pair[1]:pair[0], guest:flip?pair[0]:pair[1]};
+  spinRoll([pair[0]+" · "+pair[1], pair[1]+" · "+pair[0]], toTeamDraw, function(){
+    toTeamDraw.textContent=game.teams.host+" vs "+game.teams.guest;
+    renderAll();
+    flashBanner("🎭 Teams: Team "+game.teams.host+" vs Team "+game.teams.guest);
+    toSyncState();
+  });
+}
+function drawSeats(){
+  const names=["Player 1","Player 2"];
+  const flip=Math.random()<0.5;
+  game.localNames={host:flip?names[0]:names[1], guest:flip?names[1]:names[0]};
+  spinRoll(names, toSeatDraw, function(){
+    toSeatDraw.textContent=game.localNames.host+" · "+game.localNames.guest;
+    if(game.mode==="local"){
+      toSeatNote.textContent="Sit: "+game.localNames.host+" (left) · "+game.localNames.guest+" (right)";
+      flashBanner("🪑 Seats drawn — "+game.localNames.host+" left, "+game.localNames.guest+" right");
+    }else if(!game.mode){
+      toSeatNote.textContent="Drawn — applies when you start a Local table.";
+    }else{
+      toSeatNote.textContent=(game.mode==="ai"?"Seats are fixed vs the bot — you are Host.":"Seats are fixed online — the host is the room creator.")+" This draw applies to Local tables.";
+    }
+    renderAll();
+  });
+}
+function openToModal(){ toSyncState(); toModal.hidden=false; }
+function closeToModal(){ toModal.hidden=true; }
+toBtn.addEventListener("click",openToModal);
+tableToBtn.addEventListener("click",openToModal);
+document.getElementById("toCloseBtn").addEventListener("click",closeToModal);
+document.getElementById("toFirstBtn").addEventListener("click",rollFirst);
+document.getElementById("toTeamBtn").addEventListener("click",splitTeams);
+document.getElementById("toSeatBtn").addEventListener("click",drawSeats);
+toModal.addEventListener("click",function(e){ if(e.target===toModal)closeToModal(); });
+
 /* ══════════ wire up UI ══════════ */
 document.querySelectorAll(".bgn-mode").forEach(function(btn){
   btn.addEventListener("click",function(){
@@ -1625,6 +1824,7 @@ helpOverlay.addEventListener("click",function(e){ if(e.target===helpOverlay)clos
 document.addEventListener("keydown",function(e){
   if(e.key==="Escape"){
     if(!fsOverlay.hidden){ closeFullscreen(); return; }
+    if(!toModal.hidden)closeToModal();
     if(!helpOverlay.hidden)closeHelp();
     if(!lbModal.hidden)closeLb();
   }
@@ -1634,7 +1834,7 @@ refreshContinuePanel();
 renderAll();
 
 /* debug/testing handle for browser_eval */
-window.__t = { game, turnRoleFor, applyServerSnap, passTurn, startMode, exitToLobby, doCreateRoom, doJoinRoom, refreshFromServer, saveGame, continueGame, deleteSave, aiPassTurn, AI_DO_TURN, AI_DIFF, setDiff, openHelp, closeHelp, openTemplateGuide, openLb, closeLb, lbName, setLbName, lbSubmitScore, maybeSubmitScore, resetTable, renderAll, fullscreen: window.bgnFullscreen, fsOpen: openFullscreen, fsClose: closeFullscreen };
+window.__t = { game, turnRoleFor, applyServerSnap, passTurn, startMode, exitToLobby, doCreateRoom, doJoinRoom, refreshFromServer, saveGame, continueGame, deleteSave, aiPassTurn, AI_DO_TURN, AI_DIFF, setDiff, openHelp, closeHelp, openTemplateGuide, openLb, closeLb, lbName, setLbName, lbSubmitScore, maybeSubmitScore, resetTable, renderAll, fullscreen: window.bgnFullscreen, fsOpen: openFullscreen, fsClose: closeFullscreen, rollFirst, splitTeams, drawSeats, openToModal, closeToModal, toSyncState, renderSeats };
 
 /* ══════════ share / export (bgn-share.js) ══════════ */
 (function(){
@@ -1649,6 +1849,9 @@ window.__t = { game, turnRoleFor, applyServerSnap, passTurn, startMode, exitToLo
     game.log=o.log.slice();
     game.lastLoggedTurn=o.lastLoggedTurn||0;
     game.winner=o.winner||null; game.reason=o.reason||"";
+    game.first=o.first===1?1:0;
+    game.teams=o.teams||null;
+    game.localNames=o.localNames||null;
     updateNames();
     roomBox.hidden=true; chatBox.hidden=true; claimBtn.hidden=true;
     lobbyCtn.hidden=true; gameCtn.hidden=false;
@@ -1662,7 +1865,7 @@ window.__t = { game, turnRoleFor, applyServerSnap, passTurn, startMode, exitToLo
     gameName:tplName,
     exportData:function(){
       if(game.mode!=="local"&&game.mode!=="ai")return null;
-      return {mode:game.mode, log:game.log, winner:game.winner, reason:game.reason, lastLoggedTurn:game.lastLoggedTurn};
+      return {mode:game.mode, log:game.log, winner:game.winner, reason:game.reason, lastLoggedTurn:game.lastLoggedTurn, first:game.first, teams:game.teams, localNames:game.localNames};
     },
     applySave:importTable,
     source:function(){
