@@ -1,0 +1,838 @@
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root {
+    --bg: #0a0e17; --card: #141b2d; --card-soft: #0b0f1a; --code-bg: #0b0f1a; --border: rgba(148,163,184,.14);
+    --text: #e2e8f0; --muted: #94a3b8; --accent: #7c6cff; --accent2: #22d3ee;
+    --grad: linear-gradient(92deg, #8b7cff, #22d3ee);
+  }
+  html.light {
+    color-scheme: light;
+    --bg: #f5f6fa; --card: #ffffff; --card-soft: #eef1f7; --code-bg: #eef1f7; --border: rgba(15,23,42,.12);
+    --text: #1e293b; --muted: #64748b;
+    --grad: linear-gradient(92deg, #7c5cff, #0ea5e9);
+  }
+  html.light pre code { color: #334155; }
+  html.reduce-motion * { animation: none !important; transition: none !important; }
+  * { box-sizing: border-box; }
+  html { color-scheme: dark; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text); text-align: left;
+    font-family: "Segoe UI", system-ui, -apple-system, Roboto, Arial, sans-serif;
+    line-height: 1.6; -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 780px; margin: 0 auto; padding: 92px 22px 80px; }
+
+  /* ── TITLE BAR ─────────────────────────────────────────── */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+    background: rgba(10, 9, 18, .55); border-bottom: 1px solid var(--border);
+  }
+  nav .nav-inner { max-width: 780px; margin: 0 auto; padding: 0 22px; display: flex; align-items: center; justify-content: space-between; height: 62px; }
+  .nav-brand { display: flex; align-items: center; gap: 10px; font-weight: 700; letter-spacing: .1em; font-size: .8rem; color: var(--text); text-transform: uppercase; text-decoration: none; }
+  .nav-actions { display: flex; align-items: center; gap: 10px; flex: none; }
+  .bgn-nav-projects {
+    display: inline-flex; align-items: center; gap: 8px; flex: none;
+    padding: 6px 14px 6px 6px; border-radius: 999px;
+    background: rgba(13, 15, 21, .82); border: 1px solid rgba(255, 255, 255, .14);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, .3);
+    text-decoration: none; color: #fff; font-family: system-ui, sans-serif;
+    transition: transform .2s ease, border-color .2s ease, box-shadow .2s ease;
+  }
+  .bgn-nav-projects:hover { transform: translateY(-1px); border-color: rgba(167, 139, 250, .65); box-shadow: 0 8px 20px rgba(0, 0, 0, .4), 0 0 14px rgba(139, 92, 246, .35); }
+  .bgn-nav-projects .rb-badge {
+    width: 26px; height: 26px; flex: 0 0 26px; border-radius: 50%;
+    display: inline-flex; align-items: center; justify-content: center;
+    background: linear-gradient(135deg, #8b5cf6, #d946ef); color: #fff;
+    font-size: 14px; font-weight: 700; line-height: 1; user-select: none;
+  }
+  .bgn-nav-projects .rb-label { font-size: 13px; font-weight: 600; line-height: 1; white-space: nowrap; }
+  .nav-actions { position: relative; }
+  @media (max-width: 640px) {
+    nav .nav-inner { padding: 0 14px; }
+    .nav-brand { font-size: .7rem; }
+    .wrap { padding: 88px 16px 60px; }
+    h1 { font-size: 1.6rem; }
+    table { font-size: .85rem; }
+  }
+  @media (max-width: 560px) {
+    .nav-brand { display: none; }
+  }
+  @media (max-width: 420px) {
+    .bgn-nav-projects { padding: 6px 10px 6px 6px; }
+    .bgn-nav-projects .rb-label { font-size: 12px; }
+    .icon-btn { width: 34px; height: 34px; }
+  }
+
+  button { color: inherit !important; }
+  .icon-btn {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 36px; height: 36px; border-radius: 50%;
+    background: rgba(13, 15, 21, .82); border: 1px solid rgba(255, 255, 255, .14);
+    color: var(--text) !important; cursor: pointer; flex: none; padding: 0;
+    transition: transform .2s ease, border-color .2s ease, box-shadow .2s ease;
+  }
+  .icon-btn:hover { transform: translateY(-1px); border-color: rgba(167, 139, 250, .65); box-shadow: 0 0 12px rgba(139, 92, 246, .35); }
+  .icon-btn svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+  .settings-panel {
+    position: absolute; top: calc(100% + 10px); right: 0; z-index: 120;
+    width: 252px; background: var(--card); border: 1px solid var(--border); border-radius: 12px;
+    box-shadow: 0 18px 40px rgba(0, 0, 0, .45); padding: 6px; font-size: .85rem;
+  }
+  .sp-head { padding: 8px 10px 6px; font-weight: 700; font-size: .72rem; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+  .sp-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 8px 10px; }
+  .sp-row > label:first-child { color: var(--text); }
+  .seg { display: inline-flex; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+  .seg button { background: transparent; border: none; color: var(--muted) !important; padding: 5px 10px; font-size: .78rem; cursor: pointer; font-family: inherit; line-height: 1; }
+  .seg button.on { background: var(--accent2); color: #fff !important; }
+  .swatches { display: inline-flex; gap: 6px; }
+  .swatches button { width: 18px; height: 18px; border-radius: 50%; border: 2px solid transparent; cursor: pointer; background: var(--sw); padding: 0; }
+  .swatches button.on { border-color: #fff; box-shadow: 0 0 0 2px var(--sw); }
+  .sp-foot { padding: 6px 10px 8px; border-top: 1px solid var(--border); margin-top: 4px; }
+  .resetBtn { background: transparent; border: none; color: var(--muted) !important; font-size: .75rem; cursor: pointer; font-family: inherit; padding: 4px 0; }
+  .resetBtn:hover { color: var(--accent2) !important; }
+  .switch { position: relative; width: 34px; height: 19px; cursor: pointer; flex: none; }
+  .switch input { opacity: 0; width: 0; height: 0; }
+  .switch span { position: absolute; inset: 0; background: var(--code-bg); border: 1px solid var(--border); border-radius: 999px; transition: .2s; }
+  .switch span::after { content: ""; position: absolute; top: 2px; left: 2px; width: 13px; height: 13px; border-radius: 50%; background: var(--muted); transition: .2s; }
+  .switch input:checked + span { background: var(--accent2); border-color: transparent; }
+  .switch input:checked + span::after { background: #fff; transform: translateX(15px); }
+
+  .modal-backdrop {
+    position: fixed; inset: 0; z-index: 300; display: flex; align-items: center; justify-content: center;
+    background: rgba(4, 6, 12, .6); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+    padding: 20px;
+  }
+  .modal-card {
+    width: 100%; max-width: 360px; background: var(--card); border: 1px solid var(--border);
+    border-radius: 16px; padding: 24px; position: relative; box-shadow: 0 24px 60px rgba(0, 0, 0, .5);
+  }
+  .modal-card h3 { margin: 0 0 4px; font-size: 1.15rem; }
+  .modal-sub { color: var(--muted); font-size: .85rem; margin: 0 0 18px; }
+  .modal-card label { display: block; font-size: .78rem; color: var(--muted); margin-bottom: 12px; }
+  .modal-card input {
+    display: block; width: 100%; margin-top: 5px; background: var(--code-bg); border: 1px solid var(--border);
+    color: var(--text); border-radius: 8px; padding: 9px 12px; font-family: inherit; font-size: .9rem; box-sizing: border-box;
+  }
+  .modal-card input:focus { outline: none; border-color: var(--accent2); }
+  .modal-btn {
+    width: 100%; margin-top: 4px; background: linear-gradient(92deg, #8b7cff, #22d3ee); color: #fff !important;
+    border: none; border-radius: 8px; padding: 10px; font-size: .9rem; font-weight: 700; cursor: pointer; font-family: inherit;
+  }
+  .modal-btn:hover { filter: brightness(1.08); }
+  .modal-x { position: absolute; top: 10px; right: 12px; background: transparent; border: none; color: var(--muted) !important; font-size: 1.3rem; cursor: pointer; line-height: 1; }
+  .modal-x:hover { color: var(--text) !important; }
+  .modal-link { display: block; margin-top: 14px; font-size: .82rem; color: var(--accent2); cursor: pointer; text-align: center; background: none; border: none; font-family: inherit; }
+  .modal-link:hover { text-decoration: underline; }
+  .modal-note { margin: 12px 0 0; font-size: .78rem; color: var(--muted); text-align: center; border: 1px dashed var(--border); border-radius: 8px; padding: 8px; }
+  .card-demo { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; }
+  :focus-visible { outline: 2px solid var(--accent2); outline-offset: 2px; }
+
+  .footer { margin-top: 80px; border-top: 1px solid var(--border); padding: 30px 0 44px; display: flex; flex-wrap: wrap; gap: 20px 32px; align-items: center; justify-content: space-between; color: var(--muted); font-size: .85rem; }
+  .footer .fbrand { font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--text); margin-bottom: 4px; }
+  .footer p { margin: 4px 0; }
+  .footer a { color: var(--muted); text-decoration: none; }
+  .footer a:hover { color: var(--accent2); }
+  .footer .flinks { display: flex; gap: 20px; }
+  .footer .fnote { width: 100%; font-size: .75rem; opacity: .8; }
+
+  @media print {
+    @page { margin: 1.5cm; }
+    nav, .modal-backdrop, .settings-panel, #toasts,
+    .demo-btn, .copyBtn, .icon-btn, .modal-x, .switch { display: none !important; }
+    body { background: #fff !important; color: #111 !important; }
+    .wrap { padding: 20px 0; max-width: 100%; }
+    a { color: #333; text-decoration: underline; }
+    code { color: #444; background: #f2f2f2; border-color: #ddd; }
+    pre { white-space: pre-wrap; word-break: break-word; }
+    pre code, .codeblock, .codebar { background: #fff !important; color: #222 !important; border-color: #ddd; }
+    .codeblock { break-inside: avoid; }
+    #demoOut { background: #f7f7f7 !important; border-color: #ddd; }
+    .footer { border-color: #ddd; }
+  }
+
+  #toasts {
+    position: fixed; bottom: 26px; left: 50%; transform: translateX(-50%); z-index: 500;
+    display: flex; flex-direction: column; gap: 8px; align-items: center; pointer-events: none;
+  }
+  .toast {
+    background: var(--card); border: 1px solid var(--border); color: var(--text);
+    border-radius: 999px; padding: 9px 18px; font-size: .85rem; font-weight: 500;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, .45); animation: toastIn .22s ease;
+    max-width: 90vw; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .toast.out { opacity: 0; transform: translateY(8px); transition: opacity .3s, transform .3s; }
+  @keyframes toastIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+  h1 { font-size: 2rem; margin: 0 0 6px; letter-spacing: -0.02em; }
+  h1 .grad { background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .tagline { color: var(--muted); margin: 0 0 34px; font-size: 1.05rem; }
+  h2 { font-size: 1.3rem; margin: 40px 0 12px; }
+  p { margin: 8px 0; }
+  code { font-family: ui-monospace, "Cascadia Code", "SF Mono", Menlo, Consolas, monospace; font-size: .88em; background: var(--code-bg); border: 1px solid var(--border); border-radius: 6px; padding: 1px 6px; color: var(--accent2); }
+  .codeblock { border: 1px solid var(--border); border-radius: 10px; overflow: hidden; background: var(--card-soft); margin: 10px 0; }
+  .codebar { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 8px 14px; border-bottom: 1px solid var(--border); background: rgba(255,255,255,.03); }
+  .fname { font-family: ui-monospace, "Cascadia Code", "SF Mono", Menlo, Consolas, monospace; font-size: .75rem; color: var(--muted); letter-spacing: .04em; }
+  .copyBtn { background: transparent; border: 1px solid var(--border); color: var(--muted); border-radius: 7px; padding: 3px 10px; font-size: .72rem; font-weight: 700; cursor: pointer; transition: color .15s, border-color .15s; font-family: inherit; }
+  .copyBtn:hover { color: var(--accent2); border-color: var(--accent2); }
+  pre { margin: 0; padding: 13px 16px; overflow-x: auto; }
+  pre code { background: none; border: none; padding: 0; color: #cdd8ec; display: block; white-space: pre; font-size: 12.8px; line-height: 1.6; }
+  table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: .92rem; }
+  th, td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  th { color: var(--muted); font-size: .8rem; text-transform: uppercase; letter-spacing: .05em; }
+  td code { white-space: nowrap; }
+  .demo { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 18px; }
+  .demo-row { display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; margin-bottom: 12px; font-size: .88rem; color: var(--muted); }
+  .demo-row label { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; }
+  .demo-row input[type="text"] { background: var(--code-bg); border: 1px solid var(--border); color: var(--text); border-radius: 8px; padding: 7px 12px; font-family: inherit; font-size: .85rem; width: 220px; }
+  .demo-row input[type="text"]:focus { outline: none; border-color: var(--accent2); }
+  .demo-row input[type="color"] { width: 34px; height: 26px; padding: 0; border: 1px solid var(--border); border-radius: 6px; background: var(--code-bg); cursor: pointer; }
+  .demo-btn { background: transparent; border: 1px solid var(--border); color: var(--text); border-radius: 999px; padding: 8px 16px; font-size: .85rem; font-weight: 600; cursor: pointer; font-family: inherit; transition: all .15s; }
+  .demo-btn:hover { border-color: var(--accent2); transform: translateY(-1px); }
+  .spinner {
+    width: 24px; height: 24px; margin: 10px auto;
+    border: 3px solid var(--border); border-top-color: var(--accent2);
+    border-radius: 50%; animation: spin .7s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .busy { opacity: .55; pointer-events: none; }
+  #demoOut { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; background: var(--code-bg); border: 1px solid var(--border); border-radius: 10px; padding: 16px; min-height: 60px; }
+  .note { color: var(--muted); font-size: .88rem; }
+  a { color: var(--accent2); }
+  ul { margin: 8px 0; padding-left: 22px; }
+  li { margin: 5px 0; }
+</style>
+
+<nav>
+  <div class="nav-inner">
+    <a class="nav-brand" href="#top">🪄 rathji-template</a>
+    <div class="nav-actions">
+      <a class="bgn-nav-projects" href="https://perchance.org/rathjis-generators" target="_blank" rel="noopener" title="Rathji's Projects" aria-label="Rathji's Projects">
+        <span class="rb-badge">R</span>
+        <span class="rb-label">Rathji's Projects</span>
+      </a>
+      <button class="icon-btn" id="settingsBtn" title="Settings" aria-label="Settings" aria-expanded="false">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="12" cy="12" r="3"></circle>
+          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+        </svg>
+      </button>
+      <button class="icon-btn" id="loginBtn" title="Log In" aria-label="Log In">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+          <circle cx="12" cy="7" r="4"></circle>
+        </svg>
+      </button>
+      <div class="settings-panel" id="settingsPanel" hidden>
+        <div class="sp-head">Settings</div>
+        <div class="sp-row">
+          <label>Theme</label>
+          <div class="seg" id="themeSeg">
+            <button data-theme="dark" class="on">Dark</button>
+            <button data-theme="light">Light</button>
+          </div>
+        </div>
+        <div class="sp-row">
+          <label>Accent</label>
+          <div class="swatches" id="swatches">
+            <button data-accent="#7c6cff" style="--sw:#7c6cff" class="on" title="Violet"></button>
+            <button data-accent="#22d3ee" style="--sw:#22d3ee" title="Cyan"></button>
+            <button data-accent="#ec4899" style="--sw:#ec4899" title="Pink"></button>
+            <button data-accent="#22c55e" style="--sw:#22c55e" title="Green"></button>
+            <button data-accent="#f59e0b" style="--sw:#f59e0b" title="Amber"></button>
+          </div>
+        </div>
+        <div class="sp-row">
+          <label>Text size</label>
+          <div class="seg" id="sizeSeg">
+            <button data-size="15" style="font-size:11px">A</button>
+            <button data-size="16" class="on" style="font-size:12.5px">A</button>
+            <button data-size="18" style="font-size:14px">A</button>
+          </div>
+        </div>
+        <div class="sp-row">
+          <label>Reduce motion</label>
+          <label class="switch"><input type="checkbox" id="motionToggle"><span></span></label>
+        </div>
+        <div class="sp-foot"><button class="resetBtn" id="settingsReset">Reset to defaults</button></div>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<div class="modal-backdrop" id="loginModal" role="dialog" aria-modal="true" aria-labelledby="loginTitle" hidden>
+  <div class="modal-card">
+    <button class="modal-x" data-close title="Close">×</button>
+    <h3 id="loginTitle">Log In</h3>
+    <p class="modal-sub">Log in to save settings and sync across devices.</p>
+    <form id="loginForm">
+      <label>Username
+        <input type="text" id="loginUserInput" autocomplete="username" placeholder="username">
+      </label>
+      <label>Password
+        <input type="password" id="loginPassInput" autocomplete="current-password" placeholder="••••••••">
+      </label>
+      <button class="modal-btn" type="submit">Log In</button>
+    </form>
+    <p class="modal-note" id="loginNote" hidden>Login isn't wired up in this template — no account is created or checked.</p>
+    <button class="modal-link" id="forgotLink" type="button">Forgot password?</button>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="forgotModal" role="dialog" aria-modal="true" aria-labelledby="forgotTitle" hidden>
+  <div class="modal-card">
+    <button class="modal-x" data-close title="Close">×</button>
+    <h3 id="forgotTitle">Forgot password</h3>
+    <p class="modal-sub">Enter your email and we'll send you a reset link.</p>
+    <form id="forgotForm">
+      <label>Email
+        <input type="email" id="forgotEmailInput" placeholder="you@example.com">
+      </label>
+      <button class="modal-btn" type="submit">Send reset link</button>
+    </form>
+    <p class="modal-note" id="forgotNote" hidden>Nothing is actually sent — this is just a template demo.</p>
+    <button class="modal-link" id="backToLoginLink" type="button">← Back to log in</button>
+  </div>
+</div>
+
+<div id="toasts" aria-live="polite"></div>
+
+<div class="wrap" id="top">
+  <h1>🪄 <span class="grad">rathji-template</span></h1>
+  <p class="tagline">A self-contained template by Rathji: a pretty colored badge (text + emoji + accent color) you call straight from a list or script. No <code>$output</code>, no import machinery — just copy the code into any generator and it works.</p>
+
+  <h2>What this is</h2>
+  <p><code>rathjiTemplate()</code> is just a function in this generator's <code>main.pjs</code> that renders a badge on its own page, and every piece of code you need is yours to copy. Call it directly, tweak it freely, no import line required.</p>
+  <p>This page doubles as docs <em>and</em> a live test harness — every claim below is exercised by the demo at the bottom.</p>
+
+  <h2>How it's structured</h2>
+  <p><code>main.pjs</code> is organised into three sections:</p>
+  <table>
+    <tr><th>Section</th><th>What it's for</th></tr>
+    <tr><td><code>$meta</code></td><td>Title, description and tags — shown on your listing page</td></tr>
+    <tr><td>Lists — <code>rathjiTemplateOpts</code>, <code>rathjiTemplatePresets</code> (+ <code>rathjiCardOpts</code>, <code>rathjiCardPresets</code>)</td><td>Reusable options values; pass them straight to the component functions</td></tr>
+    <tr><td>Helpers — <code>rathjiTemplateResolve()</code>, <code>rathjiTemplateStamp()</code>, <code>rathjiCardStamp()</code></td><td>The real logic, kept out of the entry points so they stay thin and testable</td></tr>
+    <tr><td><code>rathjiTemplate()</code> / <code>rathjiCard()</code></td><td>The two entry points — call these from lists or scripts</td></tr>
+  </table>
+
+  <h2>Basic usage</h2>
+  <p>Call it from a list with square brackets:</p>
+  <div id="code-list"></div>
+  <p>Or from a <code>&lt;script&gt;</code> tag in index.html — since <code>rathjiTemplate</code> is a top-level name in main.pjs it's available directly as a global:</p>
+  <div id="code-script"></div>
+  <p>Pass options either as a second argument or as an options-object on its own:</p>
+  <div id="code-options"></div>
+  <p>Because list arguments are read with <code>.evaluateItem</code>, you can point <code>rathjiTemplate()</code> at a plain Perchance list:</p>
+  <div id="code-listarg"></div>
+
+  <h2>Options</h2>
+  <table>
+    <tr><th>Option</th><th>Type</th><th>Default</th><th>Purpose</th></tr>
+    <tr><td><code>text</code></td><td>string</td><td>—</td><td>The text to render (also accepted as the first argument)</td></tr>
+    <tr><td><code>emoji</code></td><td>string</td><td><code>✨</code></td><td>Small emoji shown next to the text</td></tr>
+    <tr><td><code>color</code></td><td>hex</td><td><code>#7c6cff</code></td><td>Accent colour of the rendered badge</td></tr>
+  </table>
+
+  <h2>Live demo</h2>
+  <div class="demo">
+    <div class="demo-row">
+      <label>text <input type="text" id="demoTextInput" value="hello from rathji-template"></label>
+      <label>emoji <input type="text" id="demoEmojiInput" value="✨" style="width:64px;"></label>
+      <label>color <input type="color" id="demoColorInput" value="#7c6cff"></label>
+    </div>
+    <div class="demo-row">
+      <button class="demo-btn" onclick="demoRender()">Render</button>
+      <button class="demo-btn" onclick="demoLoading()">⏳ Simulate loading</button>
+      <button class="demo-btn" onclick="demoPreset('cosmic')">🌌 Cosmic preset</button>
+      <button class="demo-btn" onclick="demoPreset('ocean')">🌊 Ocean preset</button>
+      <button class="demo-btn" onclick="demoPreset('ember')">🔥 Ember preset</button>
+      <button class="demo-btn" onclick="demoRandom()">Random preset</button>
+      <button class="demo-btn" onclick="shareBadge()">🔗 Share badge</button>
+    </div>
+    <div id="demoOut"></div>
+    <p class="note" style="margin-top:10px;">The <b>Random preset</b> button passes the <code>rathjiTemplatePresets</code> list straight to <code>rathjiTemplate()</code> — the same pattern you get for free in your own generators. Press <b>R</b> or <b>Space</b> to reroll a random preset badge.</p>
+    <p class="note">The badge follows the title bar's <b>Settings → accent</b> until you pick a color here manually.</p>
+  </div>
+
+  <h2>Loading states</h2>
+  <p>Async work (<code>generateText</code>, <code>generateImage</code>, <code>fetch</code>) is everywhere in real generators, so this template ships a tiny <code>spinner</code> + <code>setBusy()</code> helper. The <b>⏳ Simulate loading</b> button above demonstrates it — it dims the panel, shows a spinner for ~1.5s, then renders. Reusable pattern:</p>
+  <div id="code-loading"></div>
+
+  <h2>Shareable demo state</h2>
+  <p>The demo reads <code>?text=&amp;emoji=&amp;color=</code> from the URL, and the <b>🔗 Share badge</b> button writes the current values back into the URL and copies the link — so a configured badge is bookmarkable and shareable. Settings can be overridden per-link too: <code>?theme=light&amp;accent=%23ec4899&amp;size=18&amp;motion=true</code>. Pattern:</p>
+  <div id="code-share"></div>
+
+  <h2>Bonus component: cards</h2>
+  <p>A second copyable component that follows the exact same patterns as the badge — options list, preset list, random-from-list, and the same never-throw behaviour. Great for info blocks, NPC cards, loot drops, quest descriptions, and so on.</p>
+  <div class="demo">
+    <div class="demo-row">
+      <button class="demo-btn" onclick="renderCardRandom()">🎲 Random card</button>
+      <button class="demo-btn" onclick="renderCardCustom()">From demo inputs</button>
+    </div>
+    <div id="cardOut" class="card-demo"></div>
+  </div>
+  <div id="code-card"></div>
+
+  <h2>Copy into your own generator</h2>
+  <p>This is the whole component. Drop it into your <code>main.pjs</code> and you're done — nothing to import, nothing to configure:</p>
+  <div id="code-copy"></div>
+
+  <h2>Notes</h2>
+  <ul>
+    <li>The component <b>never throws</b> — bad input returns <code>(rathjiTemplate: expected some text — …)</code> instead of an exception.</li>
+    <li>Arguments support <b>plain values and Perchance lists</b> alike (every pjs value is a node, read through <code>evaluateItem</code>).</li>
+    <li>The <b>Random preset</b> case proves passing a whole list of option-nodes works — <code>rathjiTemplate()</code> picks one at random.</li>
+    <li>Press <b>R</b> or <b>Space</b> anywhere on the page to reroll a random preset badge (ignored while typing or with a modal open).</li>
+    <li>Settings accept URL overrides: <code>?theme=light&amp;accent=%23ec4899&amp;size=18&amp;motion=true</code>.</li>
+    <li>Two components ship with this template — <b>badges</b> and <b>cards</b> — with the same API shape, so learning one teaches you the other.</li>
+    <li>More generators by Rathji: <a href="https://perchance.org/rathjis-generators">perchance.org/rathjis-generators</a></li>
+  </ul>
+
+  <footer class="footer">
+    <div>
+      <div class="fbrand">🪄 rathji-template</div>
+      <p>A standalone template by Rathji — copy any component straight into your own generator.</p>
+    </div>
+    <div class="flinks">
+      <a href="https://perchance.org/rathjis-generators" target="_blank" rel="noopener">Rathji's Projects</a>
+      <a href="https://perchance.org" target="_blank" rel="noopener">Perchance</a>
+      <a href="https://perchance.org/plugins" target="_blank" rel="noopener">Plugins</a>
+    </div>
+    <div class="fnote">© <span id="yearEl"></span> rathji-template · Made on <a href="https://perchance.org" target="_blank" rel="noopener">Perchance</a></div>
+  </footer>
+</div>
+
+<script>
+  // The copyable main.pjs below mirrors the real main.pjs. Keep them in sync
+  // if you edit either.
+  var COPY_MAIN_PJS = [
+    "// RATHJI-TEMPLATE — a standalone badge component. Copy this whole file into",
+    "// your own generator's main.pjs and call rathjiTemplate() from lists or scripts.",
+    "// More generators by Rathji: https://perchance.org/rathjis-generators",
+    "",
+    "rathjiTemplateOpts",
+    "  text = hello",
+    "  emoji = 🌊",
+    "  color = #22d3ee",
+    "",
+    "rathjiTemplatePresets",
+    "  cosmic",
+    "    text = Cosmic",
+    "    emoji = 🌌",
+    "    color = #8b5cf6",
+    "  ocean",
+    "    text = Ocean",
+    "    emoji = 🌊",
+    "    color = #22d3ee",
+    "  ember",
+    "    text = Ember",
+    "    emoji = 🔥",
+    "    color = #f97316",
+    "",
+    "rathjiTemplateResolve(v) =>",
+    "  if(v == null) return v;",
+    "  try {",
+    "    if(v.evaluateItem !== undefined) return v.evaluateItem;",
+    "  } catch(e) {}",
+    "  return v;",
+    "",
+    "rathjiTemplateStamp(text, opts) =>",
+    "  let emoji = opts.emoji || '✨';",
+    "  let color = opts.color || '#7c6cff';",
+    "  return '<span style=\"display:inline-block;background:' + color + '1a;color:' + color + ';border:1px solid ' + color + '66;border-radius:999px;padding:4px 14px;font-weight:600;font-family:system-ui,sans-serif;\">' + emoji + ' ' + text + '</span>';",
+    "",
+    "rathjiTemplate(input, opts) =>",
+    "  if(input != null && input.text === undefined && input.selectOne != null) {",
+    "    let item = null;",
+    "    try { item = input.selectOne; } catch(e) {}",
+    "    if(item != null && item !== input && item.text !== undefined) input = item;",
+    "  }",
+    "  let o = {};",
+    "  if(opts != null) {",
+    "    o.text = rathjiTemplateResolve(input);",
+    "    o.emoji = rathjiTemplateResolve(opts.emoji);",
+    "    o.color = rathjiTemplateResolve(opts.color);",
+    "  } else if(input != null && input.text !== undefined) {",
+    "    o.text = rathjiTemplateResolve(input.text);",
+    "    o.emoji = rathjiTemplateResolve(input.emoji);",
+    "    o.color = rathjiTemplateResolve(input.color);",
+    "  } else {",
+    "    o.text = rathjiTemplateResolve(input);",
+    "  }",
+    "  if(typeof o.text !== 'string' || !o.text.trim()) {",
+    "    return '(rathjiTemplate: expected some text — got ' + JSON.stringify(rathjiTemplateResolve(input)) + ')';",
+    "  }",
+    "  return rathjiTemplateStamp(o.text.trim(), o);",
+    "",
+    "rathjiCardOpts",
+    "  title = Hello",
+    "  text = A generic card that holds a bit of description text.",
+    "  emoji = 🃏",
+    "  color = #7c6cff",
+    "",
+    "rathjiCardPresets",
+    "  hero",
+    "    title = Hero card",
+    "    text = A bold opening card for a section of your page.",
+    "    emoji = 🏆",
+    "    color = #8b5cf6",
+    "  story",
+    "    title = Story time",
+    "    text = A card to hold narrative text, quotes, or lore.",
+    "    emoji = 📖",
+    "    color = #22d3ee",
+    "  tip",
+    "    title = Pro tip",
+    "    text = Cards make generic content blocks easy to reuse.",
+    "    emoji = 💡",
+    "    color = #f59e0b",
+    "",
+    "rathjiCardStamp(o) =>",
+    "  let emoji = o.emoji || '🃏';",
+    "  let color = o.color || '#7c6cff';",
+    "  return '<div style=\"background:' + color + '14;border:1px solid ' + color + '44;border-left:4px solid ' + color + ';border-radius:14px;padding:16px 18px;text-align:left;\">' +",
+    "    '<div style=\"font-size:1.6rem;line-height:1;\">' + emoji + '</div>' +",
+    "    '<div style=\"font-weight:700;margin-top:8px;\">' + o.title + '</div>' +",
+    "    '<div style=\"margin-top:4px;font-size:.92rem;opacity:.75;\">' + o.text + '</div></div>';",
+    "",
+    "rathjiCard(input, opts) =>",
+    "  if(input != null && input.title === undefined && input.selectOne != null) {",
+    "    let item = null;",
+    "    try { item = input.selectOne; } catch(e) {}",
+    "    if(item != null && item !== input && item.title !== undefined) input = item;",
+    "  }",
+    "  let o = {};",
+    "  if(opts != null) {",
+    "    o.title = rathjiTemplateResolve(input);",
+    "    o.text = rathjiTemplateResolve(opts.text);",
+    "    o.emoji = rathjiTemplateResolve(opts.emoji);",
+    "    o.color = rathjiTemplateResolve(opts.color);",
+    "  } else if(input != null && input.title !== undefined) {",
+    "    o.title = rathjiTemplateResolve(input.title);",
+    "    o.text = rathjiTemplateResolve(input.text);",
+    "    o.emoji = rathjiTemplateResolve(input.emoji);",
+    "    o.color = rathjiTemplateResolve(input.color);",
+    "  } else {",
+    "    o.title = rathjiTemplateResolve(input);",
+    "    o.text = rathjiTemplateResolve(input);",
+    "  }",
+    "  if(typeof o.title !== 'string' || !o.title.trim()) o.title = o.text;",
+    "  if(typeof o.text !== 'string' || !o.text.trim()) o.text = o.title;",
+    "  if(typeof o.title !== 'string' || !o.title.trim()) {",
+    "    return '(rathjiCard: expected a title — got ' + JSON.stringify(rathjiTemplateResolve(input)) + ')';",
+    "  }",
+    "  return rathjiCardStamp(o);"
+  ].join("\n");
+
+  var DEMOS = [
+    { id: "code-list", fname: "main.pjs", code: "[rathjiTemplate(\"hello\")]        // renders a ✨ hello badge\n\n// options can also live in a list node — a `key = value` list:\noutput\n  [rathjiTemplate(rathjiTemplateOpts)]  // options read from the node" },
+    { id: "code-script", fname: "index.html", code: "badgeEl.innerHTML = rathjiTemplate(\"hello\");\nbadgeEl.innerHTML = rathjiTemplate(\"hello\", { emoji: \"🌊\", color: \"#22d3ee\" });" },
+    { id: "code-options", fname: "main.pjs", code: "[rathjiTemplate(\"hi\", {color:\"#f97316\"})]     // value + options\n[rathjiTemplate({text:\"hi\", emoji:\"🌌\"})]      // options object alone" },
+    { id: "code-listarg", fname: "main.pjs", code: "[rathjiTemplate(rathjiTemplatePresets)]  // a LIST of presets → picks a random one" },
+    { id: "code-loading", fname: "index.html", code: "// Show a spinner while async work runs (generateText / generateImage / fetch):\nsetBusy(outEl, true);\noutEl.innerHTML = '<div class=\"spinner\"></div>';\nlet html = await root.generateText(prompt);   // your async work\nsetBusy(outEl, false);\noutEl.innerHTML = html;" },
+    { id: "code-share", fname: "index.html", code: "// restore from URL on load:\nvar p = new URLSearchParams(location.search);\nif (p.get(\"text\") != null) textInput.value = p.get(\"text\");\n\n// write current values back + copy the link:\nvar u = new URL(location.href);\nu.searchParams.set(\"text\", textInput.value);\nhistory.replaceState(null, \"\", u);\nnavigator.clipboard.writeText(u.href);" },
+    { id: "code-card", fname: "main.pjs", code: "[rathjiCard(rathjiCardOpts)]        // options read from a list node\n[rathjiCard(rathjiCardPresets)]     // random preset card\n[rathjiCard({ title:\"Quest\", text:\"A goal for the player.\", emoji:\"🗺️\", color:\"#22c55e\" })]  // options object\n\n// the lists it reads:\nrathjiCardOpts\n  title = Hello\n  text = A generic card that holds a bit of description text.\n  emoji = 🃏\n  color = #7c6cff\n\nrathjiCardPresets\n  hero\n    title = Hero card\n    text = A bold opening card for a section of your page.\n    emoji = 🏆\n    color = #8b5cf6" },
+    { id: "code-copy", fname: "main.pjs", code: COPY_MAIN_PJS }
+  ];
+
+  function el(tag, cls, text) {
+    var n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (text !== undefined) n.textContent = text;
+    return n;
+  }
+  function codeblock(fname, code) {
+    var block = el("div", "codeblock");
+    var bar = el("div", "codebar");
+    var name = el("span", "fname", fname);
+    var btn = el("button", "copyBtn", "Copy");
+    bar.append(name, btn);
+    var pre = el("pre");
+    pre.append(el("code", null, code));
+    block.append(bar, pre);
+    return block;
+  }
+  DEMOS.forEach(function(d) {
+    document.getElementById(d.id).append(codeblock(d.fname, d.code));
+  });
+
+  // Copy buttons
+  document.addEventListener("click", function(e) {
+    var btn = e.target.closest(".copyBtn");
+    if (!btn) return;
+    var code = btn.closest(".codeblock").querySelector("code").textContent;
+    function done() { showToast("Copied to clipboard"); }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(code).then(done, function() { fallbackCopy(code); done(); });
+    } else { fallbackCopy(code); done(); }
+  });
+  function fallbackCopy(text) {
+    var ta = document.createElement("textarea");
+    ta.value = text; ta.style.position = "fixed"; ta.style.opacity = "0";
+    document.body.append(ta); ta.select();
+    try { document.execCommand("copy"); } catch (err) {}
+    ta.remove();
+  }
+
+  // ── Live demo ──
+  // rathjiTemplate() is a top-level main.pjs name, so it's available here as a global.
+  var demoTextEl = document.getElementById("demoTextInput");
+  var demoEmojiEl = document.getElementById("demoEmojiInput");
+  var demoColorEl = document.getElementById("demoColorInput");
+  var demoOut = document.getElementById("demoOut");
+  var demoPanel = document.querySelector(".demo");
+  var manualColor = false; // true once the user picks a badge color themselves
+
+  function setBusy(el, busy) {
+    if (busy) { el.classList.add("busy"); el.setAttribute("aria-busy", "true"); }
+    else { el.classList.remove("busy"); el.removeAttribute("aria-busy"); }
+  }
+  function demoLoading() {
+    setBusy(demoPanel, true);
+    demoOut.innerHTML = '<div class="spinner" aria-hidden="true"></div>';
+    setTimeout(function() {
+      setBusy(demoPanel, false);
+      demoRender();
+      showToast("Loaded — like an async generateText() call");
+    }, 1500);
+  }
+
+  function curOpts() {
+    return { emoji: demoEmojiEl.value || undefined, color: demoColorEl.value };
+  }
+  function rv(v) { return v && typeof v.evaluateItem === "function" ? v.evaluateItem : v; }
+  function demoRender() {
+    demoOut.innerHTML = rathjiTemplate(demoTextEl.value || "hello", curOpts());
+  }
+  function demoPreset(name) {
+    var all = rathjiTemplatePresets.selectAll;
+    for (var i = 0; i < all.length; i++) {
+      var t = rv(all[i].text);
+      if (t && String(t).toLowerCase() === name) {
+        var item = all[i];
+        demoOut.innerHTML = rathjiTemplate(item);
+        demoEmojiEl.value = rv(item.emoji);
+        demoColorEl.value = rv(item.color);
+        manualColor = true;
+        return;
+      }
+    }
+  }
+  function demoRandom() {
+    demoOut.innerHTML = rathjiTemplate(rathjiTemplatePresets); // whole list → random preset
+  }
+
+  // ── Card component demo ──
+  var cardOut = document.getElementById("cardOut");
+  function renderCardRandom() {
+    cardOut.innerHTML = rathjiCard(rathjiCardPresets); // whole preset list → random card
+  }
+  function renderCardCustom() {
+    cardOut.innerHTML = rathjiCard({ title: demoTextEl.value || "Card title", text: "Built from the demo inputs.", emoji: demoEmojiEl.value || "🃏", color: demoColorEl.value });
+  }
+  renderCardRandom();
+
+  demoTextEl.addEventListener("input", demoRender);
+  demoEmojiEl.addEventListener("input", demoRender);
+  demoColorEl.addEventListener("input", function() { manualColor = true; demoRender(); });
+
+  // Restore a shared badge from the URL (?text=&emoji=&color=).
+  var urlParams = new URLSearchParams(location.search);
+  if (urlParams.get("text") != null) demoTextEl.value = urlParams.get("text");
+  if (urlParams.get("emoji") != null) demoEmojiEl.value = urlParams.get("emoji");
+  if (urlParams.get("color") != null) { demoColorEl.value = urlParams.get("color"); manualColor = true; }
+
+  function shareBadge() {
+    var u = new URL(location.href);
+    u.searchParams.set("text", demoTextEl.value || "hello");
+    if (demoEmojiEl.value) u.searchParams.set("emoji", demoEmojiEl.value); else u.searchParams.delete("emoji");
+    u.searchParams.set("color", demoColorEl.value);
+    history.replaceState(null, "", u);
+    var link = u.href;
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(link).then(function() { showToast("Link copied to clipboard"); }, function() { showToast("URL updated in the address bar"); });
+    } else showToast("URL updated in the address bar");
+  }
+
+  demoRender();
+
+  // Keyboard shortcut: R / Space rerolls a random preset badge (unless typing or in a modal).
+  document.addEventListener("keydown", function(e) {
+    var ae = document.activeElement;
+    if (ae && ae !== document.body && ae.tagName !== "HTML") return;
+    var modalOpen = Array.prototype.some.call(document.querySelectorAll(".modal-backdrop"), function(m) { return !m.hidden; });
+    if (modalOpen) return;
+    if (e.key === "r" || e.key === "R" || e.key === " ") {
+      e.preventDefault();
+      demoRandom();
+    }
+  });
+</script>
+
+<script>
+  // ── Toasts ──
+  var toastCtn = document.getElementById("toasts");
+  function showToast(msg, ms) {
+    var t = document.createElement("div");
+    t.className = "toast";
+    t.textContent = msg;
+    toastCtn.appendChild(t);
+    setTimeout(function() { t.classList.add("out"); }, ms || 2000);
+    setTimeout(function() { t.remove(); }, (ms || 2000) + 320);
+  }
+
+  // ── Title bar: settings panel ──
+  var SETTINGS_KEY = "rathjiTemplateSettings";
+  var SETTINGS_DEFAULTS = { theme: "dark", accent: "#7c6cff", size: 16, motion: false };
+  var settings = Object.assign({}, SETTINGS_DEFAULTS);
+  try {
+    var saved = JSON.parse(localStorage.getItem(SETTINGS_KEY));
+    if (saved) settings = Object.assign({}, SETTINGS_DEFAULTS, saved);
+  } catch (e) {}
+
+  // ?theme=&accent=&size=&motion= overrides win over saved settings.
+  var qp = new URLSearchParams(location.search);
+  if (qp.get("theme") === "dark" || qp.get("theme") === "light") settings.theme = qp.get("theme");
+  if (qp.get("accent") && /^#[0-9a-fA-F]{6}$/.test(qp.get("accent"))) settings.accent = qp.get("accent");
+  var qSize = parseInt(qp.get("size"), 10);
+  if ([15, 16, 18].indexOf(qSize) !== -1) settings.size = qSize;
+  var qMotion = qp.get("motion");
+  if (qMotion !== null) settings.motion = (qMotion === "true" || qMotion === "1" || qMotion === "on");
+  saveSettings();
+
+  var settingsPanel = document.getElementById("settingsPanel");
+
+  function applySettings() {
+    var html = document.documentElement;
+    html.classList.toggle("light", settings.theme === "light");
+    html.classList.toggle("reduce-motion", settings.motion);
+    html.style.setProperty("--accent", settings.accent);
+    html.style.setProperty("--accent2", settings.accent);
+    html.style.fontSize = settings.size + "px";
+    var s1 = document.querySelector("#themeSeg button.on"); if (s1) s1.classList.remove("on");
+    document.querySelector('#themeSeg button[data-theme="' + settings.theme + '"]').classList.add("on");
+    var s2 = document.querySelector("#swatches button.on"); if (s2) s2.classList.remove("on");
+    document.querySelector('#swatches button[data-accent="' + settings.accent + '"]').classList.add("on");
+    var s3 = document.querySelector("#sizeSeg button.on"); if (s3) s3.classList.remove("on");
+    document.querySelector('#sizeSeg button[data-size="' + settings.size + '"]').classList.add("on");
+    document.getElementById("motionToggle").checked = settings.motion;
+    if (!manualColor) demoColorEl.value = settings.accent;
+    demoRender();
+  }
+  function saveSettings() {
+    try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings)); } catch (e) {}
+  }
+
+  document.getElementById("settingsBtn").addEventListener("click", function(e) {
+    e.stopPropagation();
+    settingsPanel.hidden = !settingsPanel.hidden;
+    this.setAttribute("aria-expanded", settingsPanel.hidden ? "false" : "true");
+  });
+  document.addEventListener("click", function(e) {
+    if (!settingsPanel.hidden && !e.target.closest("#settingsPanel") && !e.target.closest("#settingsBtn")) {
+      settingsPanel.hidden = true;
+    }
+  });
+
+  document.getElementById("themeSeg").addEventListener("click", function(e) {
+    var b = e.target.closest("button"); if (!b) return;
+    settings.theme = b.dataset.theme; saveSettings(); applySettings();
+    showToast(b.dataset.theme === "light" ? "Light theme enabled" : "Dark theme enabled");
+  });
+  document.getElementById("swatches").addEventListener("click", function(e) {
+    var b = e.target.closest("button"); if (!b) return;
+    settings.accent = b.dataset.accent; saveSettings(); applySettings();
+  });
+  document.getElementById("sizeSeg").addEventListener("click", function(e) {
+    var b = e.target.closest("button"); if (!b) return;
+    settings.size = parseInt(b.dataset.size, 10); saveSettings(); applySettings();
+  });
+  document.getElementById("motionToggle").addEventListener("change", function(e) {
+    settings.motion = e.target.checked; saveSettings(); applySettings();
+  });
+  document.getElementById("settingsReset").addEventListener("click", function() {
+    settings = Object.assign({}, SETTINGS_DEFAULTS);
+    manualColor = false;
+    saveSettings(); applySettings();
+    showToast("Settings reset to defaults");
+  });
+
+  document.getElementById("yearEl").textContent = new Date().getFullYear();
+
+  // ── Title bar: login / forgot-password modals (demo only, not functional) ──
+  var loginModal = document.getElementById("loginModal");
+  var forgotModal = document.getElementById("forgotModal");
+  var lastFocused = null;
+
+  function openModal(m) {
+    lastFocused = document.activeElement;
+    document.querySelectorAll(".modal-backdrop").forEach(function(x) { x.hidden = true; });
+    m.hidden = false;
+    m.querySelectorAll(".modal-note").forEach(function(n) { n.hidden = true; });
+    var first = m.querySelector("input, select, textarea") || m.querySelector("button, a[href]");
+    if (first) first.focus();
+  }
+  function closeModal(m) {
+    m.hidden = true;
+    if (lastFocused && lastFocused.focus) lastFocused.focus();
+  }
+
+  document.getElementById("loginBtn").addEventListener("click", function() {
+    openModal(loginModal);
+  });
+
+  document.querySelectorAll(".modal-backdrop").forEach(function(m) {
+    m.addEventListener("click", function(e) { if (e.target === m) closeModal(m); });
+    m.querySelectorAll("[data-close]").forEach(function(x) {
+      x.addEventListener("click", function() { closeModal(m); });
+    });
+  });
+
+  // Focus trap: Tab / Shift+Tab cycles within the open modal.
+  document.querySelectorAll(".modal-backdrop").forEach(function(m) {
+    m.addEventListener("keydown", function(e) {
+      if (e.key !== "Tab") return;
+      var els = m.querySelectorAll('a[href], button, input, select, textarea, [tabindex]:not([tabindex="-1"])');
+      var list = Array.prototype.filter.call(els, function(el) { return !el.hidden && el.getClientRects().length > 0; });
+      if (!list.length) return;
+      var first = list[0], last = list[list.length - 1];
+      if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+    });
+  });
+
+  document.addEventListener("keydown", function(e) {
+    if (e.key === "Escape") {
+      var open = Array.prototype.find.call(document.querySelectorAll(".modal-backdrop"), function(m) { return !m.hidden; });
+      if (open) closeModal(open);
+    }
+  });
+
+  document.getElementById("forgotLink").addEventListener("click", function() {
+    openModal(forgotModal);
+  });
+  document.getElementById("backToLoginLink").addEventListener("click", function() {
+    openModal(loginModal);
+  });
+
+  document.getElementById("loginForm").addEventListener("submit", function(e) {
+    e.preventDefault();
+    document.getElementById("loginNote").hidden = false;
+  });
+  document.getElementById("forgotForm").addEventListener("submit", function(e) {
+    e.preventDefault();
+    document.getElementById("forgotNote").hidden = false;
+  });
+  document.getElementById("forgotLink").addEventListener("click", function() {
+    loginModal.hidden = true;
+    document.getElementById("forgotNote").hidden = true;
+    forgotModal.hidden = false;
+  });
+  document.getElementById("backToLoginLink").addEventListener("click", function() {
+    forgotModal.hidden = true;
+    document.getElementById("loginNote").hidden = true;
+    loginModal.hidden = false;
+  });
+
+  applySettings();
+</script>

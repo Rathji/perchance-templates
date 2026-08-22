@@ -1,0 +1,17 @@
+{
+  "name": "business-template",
+  "imports": [
+    "super-fetch-plugin"
+  ],
+  "isPrivate": false,
+  "srcManifest": {
+    "template.css": {
+      "key": "04fc3389978dc72c078657ebb84a3f79.css",
+      "size": 27764
+    },
+    "template.js": {
+      "key": "ee75302c0b9b5e585affd436af0f8115.js",
+      "size": 71341
+    }
+  }
+}

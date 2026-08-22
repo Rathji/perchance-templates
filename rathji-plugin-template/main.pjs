@@ -7,9 +7,9 @@
 // when another generator imports this one, `$output` is exactly what it gets.
 // Everything else here — lists, data, helpers — exists to serve that function.
 //
-// This skeleton follows the structure of the card-deck-plugin
-// (perchance.org/card-deck-plugin) and the "make your own plugin" step of
-// Rathji's Plugin Tutorials (perchance.org/rathjis-plugin-tutorials).
+// This template is the authoritative structure for Rathji's plugins. It
+// follows the "make your own plugin" step of Rathji's Plugin Tutorials
+// (perchance.org/rathjis-plugin-tutorials).
 //
 // Other generators use it like this (NOTE: never type a bare import-block
 // inside a plugin's own source — the import scanner would try to import it):
@@ -43,9 +43,8 @@ simpleGenFooter = {import:simple-gen-footer}
 
 // ── 1. EMBEDDED DATA (optional) ─────────────────────────────────────────────
 // Big bundled payloads (svg templates, word lists, base64 assets, config...)
-// live in ONE lazy-initialised bundle, created exactly once on first use —
-// mirroring the initCardDeck()/window.CARD_DECK_PAYLOAD pattern in
-// card-deck-plugin. Small plugins can delete this section AND the
+// live in ONE lazy-initialised bundle, created exactly once on first use.
+// Small plugins can delete this section AND the
 // rathjiPluginTemplateDefaults() helper below.
 
 initRathjiPluginTemplateData() =>
@@ -91,9 +90,9 @@ rathjiPluginTemplatePresets
 
 
 // ── 3. HELPERS ──────────────────────────────────────────────────────────────
-// Keep $output thin. Put the real work in named helpers (one job each), like
-// cardDeckBuild()/cardDeckRecolor() do in card-deck-plugin. Helpers also stay
-// reachable from the page as root.<name>, which makes them easy to test.
+// Keep $output thin. Put the real work in named helpers (one job each).
+// Helpers also stay reachable from the page as root.<name>, which makes them
+// easy to test.
 
 rathjiPluginTemplateResolve(v) =>
   if(v == null) return v;
@@ -122,8 +121,7 @@ rathjiPluginTemplateStamp(text, opts) =>
 // not. Every value — string, number, item — is read through .evaluateItem so
 // Perchance lists work anywhere a plain value would.
 //
-// Never throw — return a readable "(...)" placeholder on bad input, just like
-// card-deck-plugin returns "(unknown card id: ...)".
+// Never throw — return a readable "(...)" placeholder on bad input.
 
 $output(input, opts) =>
   // A LIST of preset options (rathjiPluginTemplatePresets) has items but no `.text` key —

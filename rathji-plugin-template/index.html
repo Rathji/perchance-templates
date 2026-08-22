@@ -47,7 +47,7 @@
 
 <div class="wrap">
   <h1>🪄 <span class="grad">rathji-plugin-template</span></h1>
-  <p class="tagline">A blank-but-working skeleton for building your own Perchance plugin. Structure copied from the <b>card-deck-plugin</b>, conventions explained in <b>Rathji's Plugin Tutorials</b> — rename it, add your logic, publish.</p>
+  <p class="tagline">A blank-but-working skeleton for building your own Perchance plugin — the authoritative structure for <b>Rathji's plugins</b>. Conventions explained in <b>Rathji's Plugin Tutorials</b> — rename it, add your logic, publish.</p>
 
   <h2>What this is</h2>
   <p>A Perchance plugin is just a <b>normal generator written to be reused</b>. The one special thing is the <code>$output</code> function at the bottom of <code>main.pjs</code> — when another generator imports this one, the name on the left of the import line <b>becomes that function</b>. The lists, data and helpers below it are all ordinary Perchance code.</p>
@@ -58,14 +58,14 @@
   <div id="code-import"></div>
 
   <h2>How the template is structured</h2>
-  <p><code>main.pjs</code> is organised into four sections. Each one is a pattern lifted from a real plugin, with a <code>TODO</code> marking where your code goes:</p>
+  <p><code>main.pjs</code> is organised into four sections. Each one is an established plugin pattern, with a <code>TODO</code> marking where your code goes:</p>
   <table>
     <tr><th>Section</th><th>What it's for</th><th>Seen in</th></tr>
-    <tr><td><code>$meta</code></td><td>Title, description and tags — shown on your listing page</td><td>both plugins</td></tr>
+    <tr><td><code>$meta</code></td><td>Title, description and tags — shown on your listing page</td><td><code>rathji-plugin-template</code></td></tr>
     <tr><td>Imports — <code>simpleGenFooter</code></td><td>Bind other generators' <code>$output</code> to names; the standard Perchance footer</td><td>tutorial steps 1–3</td></tr>
-    <tr><td>Embedded data — <code>initRathjiPluginTemplateData()</code></td><td>One lazy-initialised bundle for big payloads (svg templates, word lists, base64 assets). Created once, on first use</td><td><code>card-deck-plugin</code></td></tr>
+    <tr><td>Embedded data — <code>initRathjiPluginTemplateData()</code></td><td>One lazy-initialised bundle for big payloads (svg templates, word lists, base64 assets). Created once, on first use</td><td><code>rathji-plugin-template</code></td></tr>
     <tr><td>Lists — <code>rathjiPluginTemplatePresets</code></td><td>Reusable preset values; users can pass these as arguments</td><td>tutorial step 4</td></tr>
-    <tr><td>Helpers — <code>rathjiPluginTemplateStamp()</code></td><td>The real logic, kept out of <code>$output</code> so it stays thin and testable</td><td><code>card-deck-plugin</code></td></tr>
+    <tr><td>Helpers — <code>rathjiPluginTemplateStamp()</code></td><td>The real logic, kept out of <code>$output</code> so it stays thin and testable</td><td><code>rathji-plugin-template</code></td></tr>
     <tr><td><code>$output(...)</code></td><td>The plugin entry point — this is what importers receive</td><td>tutorial step 6</td></tr>
   </table>
 
@@ -117,7 +117,7 @@
 
   <h2>References</h2>
   <ul>
-    <li><b>card-deck-plugin</b> — the production plugin this template's structure is based on: <a href="https://perchance.org/card-deck-plugin">perchance.org/card-deck-plugin</a></li>
+    <li><b>This template</b> — the authoritative reference for the structure of Rathji's plugins. Any plugin bearing the <code>rathji-</code> prefix follows this skeleton.</li>
     <li><b>Rathji's Plugin Tutorials</b> — the "Make your own plugin" guide (step 6) this template follows: <a href="https://perchance.org/rathjis-plugin-tutorials">perchance.org/rathjis-plugin-tutorials</a></li>
     <li><b>Official plugin directory</b> — more plugin patterns: <a href="https://perchance.org/plugins">perchance.org/plugins</a></li>
   </ul>
@@ -136,8 +136,7 @@
   // Build the import line at RUNTIME from the generator's real name, so the
   // source never contains an import block the engine would scan, and so the
   // docs always show the correct copyable line — even after the user renames
-  // this generator (card-deck-plugin's docs page shows its own import line
-  // exactly this way).
+  // this generator.
   var realName = (window.generatorName || "").trim();
   var importLine = realName
     ? "rathjiPluginTemplate = " + "{" + "import:" + realName + "}"
@@ -192,8 +191,7 @@
 
   // ── Live demo ──
   // On its own page the plugin is reachable as root.$output — the same
-  // function an importing generator binds. card-deck-plugin's demo page does
-  // exactly this (`var deck = root.$output;`).
+  // function an importing generator binds.
   var rathjiPluginTemplate = root.$output;
 
   var demoTextEl = document.getElementById("demoTextInput");
