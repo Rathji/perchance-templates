@@ -1,0 +1,473 @@
+{
+  "set": "prosperity",
+  "note": "Prosperity 2nd Edition (2022) — 25 kingdom cards transcribed from the official rulebook, plus the two base cards Citadel and Mithril. Citadel and Mithril join the Supply whenever a Prosperity kingdom card is used (Citadel 8 at 2p / 12 at 3+; Mithril always 12). The Citadel pile emptying also ends the game. Effects are implemented in later roadmap tasks; data is pinned here.",
+  "cards": [
+    {
+      "id": "colony",
+      "name": "Citadel",
+      "cost": {
+        "coins": 11,
+        "potion": 0
+      },
+      "types": [
+        "Victory"
+      ],
+      "treasure": null,
+      "vp": 10,
+      "text": "Worth 10 VP.",
+      "expansion": "prosperity",
+      "inSupply": true,
+      "pileSize": {
+        "2": 8,
+        "3": 12
+      }
+    },
+    {
+      "id": "platinum",
+      "name": "Mithril",
+      "cost": {
+        "coins": 9,
+        "potion": 0
+      },
+      "types": [
+        "Treasure"
+      ],
+      "treasure": 5,
+      "vp": null,
+      "text": "+5 Coins.",
+      "expansion": "prosperity",
+      "inSupply": true,
+      "pileSize": 12
+    },
+    {
+      "id": "anvil",
+      "name": "Furnace",
+      "cost": {
+        "coins": 3,
+        "potion": 0
+      },
+      "types": [
+        "Treasure"
+      ],
+      "treasure": 1,
+      "vp": null,
+      "text": "+$1. You may discard a Treasure to gain a card costing up to $4.",
+      "expansion": "prosperity",
+      "inSupply": true,
+      "pileSize": 10
+    },
+    {
+      "id": "bank",
+      "name": "Treasurer",
+      "cost": {
+        "coins": 7,
+        "potion": 0
+      },
+      "types": [
+        "Treasure"
+      ],
+      "treasure": 0,
+      "vp": null,
+      "text": "+$1 per Treasure card you have in play (counting this).",
+      "expansion": "prosperity",
+      "inSupply": true,
+      "pileSize": 10
+    },
+    {
+      "id": "bishop",
+      "name": "Cardinal",
+      "cost": {
+        "coins": 4,
+        "potion": 0
+      },
+      "types": [
+        "Action"
+      ],
+      "treasure": null,
+      "vp": null,
+      "text": "+$1; +1 VP token. Trash a card from your hand. +1 VP per $2 it costs (round down). Each other player may trash a card from their hand.",
+      "expansion": "prosperity",
+      "inSupply": true,
+      "pileSize": 10
+    },
+    {
+      "id": "charlatan",
+      "name": "Quack",
+      "cost": {
+        "coins": 5,
+        "potion": 0
+      },
+      "types": [
+        "Action",
+        "Attack"
+      ],
+      "treasure": null,
+      "vp": null,
+      "text": "+$2; each other player gains a Bane. In games using this, Bane is also a Treasure worth $1.",
+      "expansion": "prosperity",
+      "inSupply": true,
+      "pileSize": 10
+    },
+    {
+      "id": "city",
+      "name": "Metropolis",
+      "cost": {
+        "coins": 5,
+        "potion": 0
+      },
+      "types": [
+        "Action"
+      ],
+      "treasure": null,
+      "vp": null,
+      "text": "+1 Card; +2 Actions. If there are one or more empty Supply piles, +1 Card. If there are two or more, +1 Buy and +$1.",
+      "expansion": "prosperity",
+      "inSupply": true,
+      "pileSize": 10
+    },
+    {
+      "id": "clerk",
+      "name": "Scribe",
+      "cost": {
+        "coins": 4,
+        "potion": 0
+      },
+      "types": [
+        "Action",
+        "Attack"
+      ],
+      "treasure": null,
+      "vp": null,
+      "text": "+$2; each other player with 5 or more cards in hand puts one onto their deck. At the start of your turn, you may play this from your hand.",
+      "expansion": "prosperity",
+      "inSupply": true,
+      "pileSize": 10
+    },
+    {
+      "id": "collection",
+      "name": "Tithe",
+      "cost": {
+        "coins": 5,
+        "potion": 0
+      },
+      "types": [
+        "Action"
+      ],
+      "treasure": null,
+      "vp": null,
+      "text": "+1 Buy. This turn, when you gain an Action card, +$1.",
+      "expansion": "prosperity",
+      "inSupply": true,
+      "pileSize": 10
+    },
+    {
+      "id": "crystal_ball",
+      "name": "Crystal Orb",
+      "cost": {
+        "coins": 5,
+        "potion": 0
+      },
+      "types": [
+        "Action"
+      ],
+      "treasure": null,
+      "vp": null,
+      "text": "Look at the top card of your deck. You may trash it, discard it, or, if it's an Action or Treasure, play it.",
+      "expansion": "prosperity",
+      "inSupply": true,
+      "pileSize": 10
+    },
+    {
+      "id": "expand",
+      "name": "Refashion",
+      "cost": {
+        "coins": 7,
+        "potion": 0
+      },
+      "types": [
+        "Action"
+      ],
+      "treasure": null,
+      "vp": null,
+      "text": "Trash a card from your hand. Gain a card costing up to 3 more than it.",
+      "expansion": "prosperity",
+      "inSupply": true,
+      "pileSize": 10
+    },
+    {
+      "id": "forge",
+      "name": "Great Forge",
+      "cost": {
+        "coins": 7,
+        "potion": 0
+      },
+      "types": [
+        "Action"
+      ],
+      "treasure": null,
+      "vp": null,
+      "text": "Trash any number of cards from your hand. Gain a card with cost exactly equal to the total cost of the trashed cards.",
+      "expansion": "prosperity",
+      "inSupply": true,
+      "pileSize": 10
+    },
+    {
+      "id": "grand_market",
+      "name": "Market Hall",
+      "cost": {
+        "coins": 6,
+        "potion": 0
+      },
+      "types": [
+        "Action"
+      ],
+      "treasure": null,
+      "vp": null,
+      "text": "+1 Card; +1 Action; +1 Buy; +$2. You can't buy this if you have any Bronze Coins in play.",
+      "expansion": "prosperity",
+      "inSupply": true,
+      "pileSize": 10
+    },
+    {
+      "id": "hoard",
+      "name": "Plunder",
+      "cost": {
+        "coins": 6,
+        "potion": 0
+      },
+      "types": [
+        "Treasure"
+      ],
+      "treasure": 2,
+      "vp": null,
+      "text": "Worth $2. When you buy a Victory card, gain a Gold Coin.",
+      "expansion": "prosperity",
+      "inSupply": true,
+      "pileSize": 10
+    },
+    {
+      "id": "investment",
+      "name": "Venture",
+      "cost": {
+        "coins": 4,
+        "potion": 0
+      },
+      "types": [
+        "Action"
+      ],
+      "treasure": null,
+      "vp": null,
+      "text": "Trash a card from your hand. Choose one: +$2; or trash this to reveal your hand for +$1 per differently named Treasure there.",
+      "expansion": "prosperity",
+      "inSupply": true,
+      "pileSize": 10
+    },
+    {
+      "id": "kings_court",
+      "name": "Royal Court",
+      "cost": {
+        "coins": 7,
+        "potion": 0
+      },
+      "types": [
+        "Action"
+      ],
+      "treasure": null,
+      "vp": null,
+      "text": "You may play an Action card from your hand three times.",
+      "expansion": "prosperity",
+      "inSupply": true,
+      "pileSize": 10
+    },
+    {
+      "id": "magnate",
+      "name": "Lord",
+      "cost": {
+        "coins": 5,
+        "potion": 0
+      },
+      "types": [
+        "Action"
+      ],
+      "treasure": null,
+      "vp": null,
+      "text": "Reveal your hand. +1 Card per Treasure in it.",
+      "expansion": "prosperity",
+      "inSupply": true,
+      "pileSize": 10
+    },
+    {
+      "id": "mint",
+      "name": "Minter",
+      "cost": {
+        "coins": 5,
+        "potion": 0
+      },
+      "types": [
+        "Action"
+      ],
+      "treasure": null,
+      "vp": null,
+      "text": "You may reveal a Treasure card from your hand. Gain a copy of it. When you gain this, trash all non-Duration Treasures you have in play.",
+      "expansion": "prosperity",
+      "inSupply": true,
+      "pileSize": 10
+    },
+    {
+      "id": "monument",
+      "name": "Obelisk",
+      "cost": {
+        "coins": 4,
+        "potion": 0
+      },
+      "types": [
+        "Action"
+      ],
+      "treasure": null,
+      "vp": null,
+      "text": "+$2; +1 VP token.",
+      "expansion": "prosperity",
+      "inSupply": true,
+      "pileSize": 10
+    },
+    {
+      "id": "peddler",
+      "name": "Hawker",
+      "cost": {
+        "coins": 8,
+        "potion": 0
+      },
+      "types": [
+        "Action"
+      ],
+      "treasure": null,
+      "vp": null,
+      "text": "+1 Card; +1 Action; +$1. During a player's Buy phase, this costs $2 less per Action card they have in play.",
+      "expansion": "prosperity",
+      "inSupply": true,
+      "pileSize": 10
+    },
+    {
+      "id": "quarry",
+      "name": "Stoneworks",
+      "cost": {
+        "coins": 4,
+        "potion": 0
+      },
+      "types": [
+        "Treasure"
+      ],
+      "treasure": 1,
+      "vp": null,
+      "text": "This turn, Actions cost $1 less.",
+      "expansion": "prosperity",
+      "inSupply": true,
+      "pileSize": 10
+    },
+    {
+      "id": "rabble",
+      "name": "Horde",
+      "cost": {
+        "coins": 5,
+        "potion": 0
+      },
+      "types": [
+        "Action",
+        "Attack"
+      ],
+      "treasure": null,
+      "vp": null,
+      "text": "+3 Cards. Each other player reveals the top 3 cards of their deck, discards the Actions and Treasures, and puts the rest back in any order they choose.",
+      "expansion": "prosperity",
+      "inSupply": true,
+      "pileSize": 10
+    },
+    {
+      "id": "tiara",
+      "name": "Crown",
+      "cost": {
+        "coins": 4,
+        "potion": 0
+      },
+      "types": [
+        "Treasure",
+        "Action"
+      ],
+      "treasure": 0,
+      "vp": null,
+      "text": "+1 Buy. This turn, when you gain a card, you may put it onto your deck. You may play a Treasure from your hand twice.",
+      "expansion": "prosperity",
+      "inSupply": true,
+      "pileSize": 10
+    },
+    {
+      "id": "vault",
+      "name": "Strongroom",
+      "cost": {
+        "coins": 5,
+        "potion": 0
+      },
+      "types": [
+        "Action"
+      ],
+      "treasure": null,
+      "vp": null,
+      "text": "+2 Cards. Discard any number of cards for +$1 each. Each other player may discard 2 cards, to draw a card.",
+      "expansion": "prosperity",
+      "inSupply": true,
+      "pileSize": 10
+    },
+    {
+      "id": "war_chest",
+      "name": "Arsenal",
+      "cost": {
+        "coins": 5,
+        "potion": 0
+      },
+      "types": [
+        "Action"
+      ],
+      "treasure": null,
+      "vp": null,
+      "text": "The player to your left names a card. Gain a card costing up to $5 that hasn't been named for Arsenals this turn.",
+      "expansion": "prosperity",
+      "inSupply": true,
+      "pileSize": 10
+    },
+    {
+      "id": "watchtower",
+      "name": "Garrison",
+      "cost": {
+        "coins": 3,
+        "potion": 0
+      },
+      "types": [
+        "Action",
+        "Reaction"
+      ],
+      "treasure": null,
+      "vp": null,
+      "text": "Draw until you have 6 cards in hand. When you gain a card, you may reveal this from your hand, to either trash that card or put it onto your deck.",
+      "expansion": "prosperity",
+      "inSupply": true,
+      "pileSize": 10
+    },
+    {
+      "id": "workers_village",
+      "name": "Work Camp",
+      "cost": {
+        "coins": 4,
+        "potion": 0
+      },
+      "types": [
+        "Action"
+      ],
+      "treasure": null,
+      "vp": null,
+      "text": "+1 Card; +2 Actions; +1 Buy.",
+      "expansion": "prosperity",
+      "inSupply": true,
+      "pileSize": 10
+    }
+  ]
+}

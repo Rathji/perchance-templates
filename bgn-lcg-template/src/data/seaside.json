@@ -1,0 +1,491 @@
+{
+  "set": "seaside",
+  "note": "Seaside 2nd Edition (2022) — 27 kingdom cards transcribed from the official rulebook. Secluded Isle is a separate 12-card pile at 3+ players (8 at 2). Durations stay in play after Clean-up and resolve at the start of your next turn.",
+  "cards": [
+    {
+      "id": "astrolabe",
+      "name": "Hourglass",
+      "cost": {
+        "coins": 3,
+        "potion": 0
+      },
+      "types": [
+        "Treasure",
+        "Duration"
+      ],
+      "treasure": 0,
+      "vp": null,
+      "text": "Now and at the start of your next turn: +1 Buy, +$1.",
+      "expansion": "seaside",
+      "inSupply": true,
+      "pileSize": 10
+    },
+    {
+      "id": "bazaar",
+      "name": "Souk",
+      "cost": {
+        "coins": 5,
+        "potion": 0
+      },
+      "types": [
+        "Action"
+      ],
+      "treasure": null,
+      "vp": null,
+      "text": "+1 Card; +2 Actions; +$1.",
+      "expansion": "seaside",
+      "inSupply": true,
+      "pileSize": 10
+    },
+    {
+      "id": "blockade",
+      "name": "Stockpile",
+      "cost": {
+        "coins": 4,
+        "potion": 0
+      },
+      "types": [
+        "Action",
+        "Duration",
+        "Attack"
+      ],
+      "treasure": null,
+      "vp": null,
+      "text": "Gain a card costing up to $4, setting it aside. At the start of your next turn, put it into your hand. While it's set aside, when another player gains a copy of it on their turn, they gain a Bane.",
+      "expansion": "seaside",
+      "inSupply": true,
+      "pileSize": 10
+    },
+    {
+      "id": "caravan",
+      "name": "Wagon Train",
+      "cost": {
+        "coins": 4,
+        "potion": 0
+      },
+      "types": [
+        "Action",
+        "Duration"
+      ],
+      "treasure": null,
+      "vp": null,
+      "text": "+1 Card; +1 Action. At the start of your next turn, +1 Card.",
+      "expansion": "seaside",
+      "inSupply": true,
+      "pileSize": 10
+    },
+    {
+      "id": "corsair",
+      "name": "Buccaneer",
+      "cost": {
+        "coins": 5,
+        "potion": 0
+      },
+      "types": [
+        "Action",
+        "Duration",
+        "Attack"
+      ],
+      "treasure": null,
+      "vp": null,
+      "text": "+$2. At the start of your next turn: +1 Card. Until then, each other player trashes the first Silver Coin or Gold Coin they play each turn.",
+      "expansion": "seaside",
+      "inSupply": true,
+      "pileSize": 10
+    },
+    {
+      "id": "cutpurse",
+      "name": "Pickpocket",
+      "cost": {
+        "coins": 4,
+        "potion": 0
+      },
+      "types": [
+        "Action",
+        "Attack"
+      ],
+      "treasure": null,
+      "vp": null,
+      "text": "+$2; each other player discards a Bronze Coin (or reveals a hand with no Bronze Coin).",
+      "expansion": "seaside",
+      "inSupply": true,
+      "pileSize": 10
+    },
+    {
+      "id": "fishing_village",
+      "name": "Fishing Dock",
+      "cost": {
+        "coins": 3,
+        "potion": 0
+      },
+      "types": [
+        "Action",
+        "Duration"
+      ],
+      "treasure": null,
+      "vp": null,
+      "text": "+2 Actions; +$1. At the start of your next turn: +1 Action and +$1.",
+      "expansion": "seaside",
+      "inSupply": true,
+      "pileSize": 10
+    },
+    {
+      "id": "haven",
+      "name": "Refuge",
+      "cost": {
+        "coins": 2,
+        "potion": 0
+      },
+      "types": [
+        "Action",
+        "Duration"
+      ],
+      "treasure": null,
+      "vp": null,
+      "text": "+1 Card; +1 Action. Set aside a card from your hand face down (under this). At the start of your next turn, put it into your hand.",
+      "expansion": "seaside",
+      "inSupply": true,
+      "pileSize": 10
+    },
+    {
+      "id": "island",
+      "name": "Secluded Isle",
+      "cost": {
+        "coins": 4,
+        "potion": 0
+      },
+      "types": [
+        "Action",
+        "Victory"
+      ],
+      "treasure": null,
+      "vp": 2,
+      "text": "Put this and a card from your hand onto your Secluded Isle mat.",
+      "expansion": "seaside",
+      "inSupply": true,
+      "pileSize": {
+        "2": 8,
+        "3": 12
+      }
+    },
+    {
+      "id": "lighthouse",
+      "name": "Beacon",
+      "cost": {
+        "coins": 2,
+        "potion": 0
+      },
+      "types": [
+        "Action",
+        "Duration"
+      ],
+      "treasure": null,
+      "vp": null,
+      "text": "+1 Action; +$1. At the start of your next turn: +$1. Until then, when another player plays an Attack card, it doesn't affect you.",
+      "expansion": "seaside",
+      "inSupply": true,
+      "pileSize": 10
+    },
+    {
+      "id": "lookout",
+      "name": "Ranger",
+      "cost": {
+        "coins": 3,
+        "potion": 0
+      },
+      "types": [
+        "Action"
+      ],
+      "treasure": null,
+      "vp": null,
+      "text": "+1 Action. Look at the top 3 cards of your deck. Trash one of them. Discard one of them. Put the other one back on top of your deck.",
+      "expansion": "seaside",
+      "inSupply": true,
+      "pileSize": 10
+    },
+    {
+      "id": "merchant_ship",
+      "name": "Galleon",
+      "cost": {
+        "coins": 5,
+        "potion": 0
+      },
+      "types": [
+        "Action",
+        "Duration"
+      ],
+      "treasure": null,
+      "vp": null,
+      "text": "Now and at the start of your next turn: +$2.",
+      "expansion": "seaside",
+      "inSupply": true,
+      "pileSize": 10
+    },
+    {
+      "id": "monkey",
+      "name": "Parrot",
+      "cost": {
+        "coins": 3,
+        "potion": 0
+      },
+      "types": [
+        "Action",
+        "Duration"
+      ],
+      "treasure": null,
+      "vp": null,
+      "text": "Until your next turn, when the player to your right gains a card, +1 Card. At the start of your next turn: +1 Card.",
+      "expansion": "seaside",
+      "inSupply": true,
+      "pileSize": 10
+    },
+    {
+      "id": "native_village",
+      "name": "Frontier Camp",
+      "cost": {
+        "coins": 2,
+        "potion": 0
+      },
+      "types": [
+        "Action"
+      ],
+      "treasure": null,
+      "vp": null,
+      "text": "+2 Actions. Choose one: Put the top card of your deck face down on your Frontier Camp mat (you may look at those cards at any time); or put all the cards from your mat into your hand.",
+      "expansion": "seaside",
+      "inSupply": true,
+      "pileSize": 10
+    },
+    {
+      "id": "outpost",
+      "name": "Fort",
+      "cost": {
+        "coins": 5,
+        "potion": 0
+      },
+      "types": [
+        "Action",
+        "Duration"
+      ],
+      "treasure": null,
+      "vp": null,
+      "text": "If this is the first time you played a Fort this turn, and the previous turn wasn't yours, then take an extra turn after this one, and you only draw 3 cards for your next hand.",
+      "expansion": "seaside",
+      "inSupply": true,
+      "pileSize": 10
+    },
+    {
+      "id": "pirate",
+      "name": "Sea Rover",
+      "cost": {
+        "coins": 5,
+        "potion": 0
+      },
+      "types": [
+        "Action",
+        "Duration",
+        "Reaction"
+      ],
+      "treasure": null,
+      "vp": null,
+      "text": "At the start of your next turn, gain a Treasure costing up to $5 to your hand. When any player gains a Treasure, you may play this from your hand.",
+      "expansion": "seaside",
+      "inSupply": true,
+      "pileSize": 10
+    },
+    {
+      "id": "sailor",
+      "name": "First Mate",
+      "cost": {
+        "coins": 4,
+        "potion": 0
+      },
+      "types": [
+        "Action",
+        "Duration"
+      ],
+      "treasure": null,
+      "vp": null,
+      "text": "+1 Action. Once this turn, when you gain a Duration card, you may play it. At the start of your next turn: +$1 and you may trash a card from your hand.",
+      "expansion": "seaside",
+      "inSupply": true,
+      "pileSize": 10
+    },
+    {
+      "id": "salvager",
+      "name": "Scavenger",
+      "cost": {
+        "coins": 4,
+        "potion": 0
+      },
+      "types": [
+        "Action"
+      ],
+      "treasure": null,
+      "vp": null,
+      "text": "+1 Buy. Trash a card from your hand. +$1 per $1 it costs.",
+      "expansion": "seaside",
+      "inSupply": true,
+      "pileSize": 10
+    },
+    {
+      "id": "sea_chart",
+      "name": "Compass",
+      "cost": {
+        "coins": 3,
+        "potion": 0
+      },
+      "types": [
+        "Action"
+      ],
+      "treasure": null,
+      "vp": null,
+      "text": "+1 Card; +1 Action. Reveal the top card of your deck. If you have a copy of it in play, put it into your hand.",
+      "expansion": "seaside",
+      "inSupply": true,
+      "pileSize": 10
+    },
+    {
+      "id": "sea_witch",
+      "name": "Siren",
+      "cost": {
+        "coins": 5,
+        "potion": 0
+      },
+      "types": [
+        "Action",
+        "Duration",
+        "Attack"
+      ],
+      "treasure": null,
+      "vp": null,
+      "text": "+2 Cards. Each other player gains a Bane. At the start of your next turn: +2 Cards, then discard 2 cards.",
+      "expansion": "seaside",
+      "inSupply": true,
+      "pileSize": 10
+    },
+    {
+      "id": "smugglers",
+      "name": "Bootleggers",
+      "cost": {
+        "coins": 3,
+        "potion": 0
+      },
+      "types": [
+        "Action"
+      ],
+      "treasure": null,
+      "vp": null,
+      "text": "Gain a copy of a card costing up to $6 that the player to your right gained on their last turn.",
+      "expansion": "seaside",
+      "inSupply": true,
+      "pileSize": 10
+    },
+    {
+      "id": "tactician",
+      "name": "Strategist",
+      "cost": {
+        "coins": 5,
+        "potion": 0
+      },
+      "types": [
+        "Action",
+        "Duration"
+      ],
+      "treasure": null,
+      "vp": null,
+      "text": "If you have at least one card in hand: Discard your hand, and at the start of your next turn: +5 Cards, +1 Action, and +1 Buy.",
+      "expansion": "seaside",
+      "inSupply": true,
+      "pileSize": 10
+    },
+    {
+      "id": "tide_pools",
+      "name": "Whirlpool",
+      "cost": {
+        "coins": 4,
+        "potion": 0
+      },
+      "types": [
+        "Action",
+        "Duration"
+      ],
+      "treasure": null,
+      "vp": null,
+      "text": "+3 Cards; +1 Action. At the start of your next turn, discard 2 cards.",
+      "expansion": "seaside",
+      "inSupply": true,
+      "pileSize": 10
+    },
+    {
+      "id": "treasure_map",
+      "name": "Treasure Chart",
+      "cost": {
+        "coins": 4,
+        "potion": 0
+      },
+      "types": [
+        "Action"
+      ],
+      "treasure": null,
+      "vp": null,
+      "text": "Trash this and a Treasure Chart from your hand. If you trashed two Treasure Charts, gain 4 Gold Coins onto your deck.",
+      "expansion": "seaside",
+      "inSupply": true,
+      "pileSize": 10
+    },
+    {
+      "id": "treasury",
+      "name": "Coffer",
+      "cost": {
+        "coins": 5,
+        "potion": 0
+      },
+      "types": [
+        "Action"
+      ],
+      "treasure": null,
+      "vp": null,
+      "text": "+1 Card; +1 Action; +$1. At the end of your Buy phase this turn, if you didn't gain a Victory card in it, you may put this onto your deck.",
+      "expansion": "seaside",
+      "inSupply": true,
+      "pileSize": 10
+    },
+    {
+      "id": "warehouse",
+      "name": "Granary",
+      "cost": {
+        "coins": 3,
+        "potion": 0
+      },
+      "types": [
+        "Action"
+      ],
+      "treasure": null,
+      "vp": null,
+      "text": "+3 Cards; +1 Action. Discard 3 cards.",
+      "expansion": "seaside",
+      "inSupply": true,
+      "pileSize": 10
+    },
+    {
+      "id": "wharf",
+      "name": "Dock",
+      "cost": {
+        "coins": 5,
+        "potion": 0
+      },
+      "types": [
+        "Action",
+        "Duration"
+      ],
+      "treasure": null,
+      "vp": null,
+      "text": "Now and at the start of your next turn: +2 Cards and +1 Buy.",
+      "expansion": "seaside",
+      "inSupply": true,
+      "pileSize": 10
+    }
+  ],
+  "$lastTouch": 1
+}

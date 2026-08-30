@@ -1,0 +1,8 @@
+{
+  "name": "ai-art-template",
+  "imports": [
+    "text-to-image-plugin"
+  ],
+  "isPrivate": true,
+  "srcManifest": {}
+}

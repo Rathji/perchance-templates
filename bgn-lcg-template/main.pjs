@@ -1,0 +1,29 @@
+// ─────────────────────────────────────────────────────────────
+//  LCG TEMPLATE — main.pjs
+//  Generic config for a card game (LCG-style: deck/hand/discard,
+//  supply piles, phases, AI, autosave). All game logic lives in
+//  src/ (engine, cards, ai, ui, tests). Fork this and rename
+//  everything below to your own game.
+// ─────────────────────────────────────────────────────────────
+
+$meta
+  title = LCG Template
+  description = A generic, forkable card-game template: turn engine, supply, AI opponents, autosave, and a full UI — with example cards ready to replace.
+  tags = template, card game, lcg, deck builder, strategy, ai, online
+  header
+    mode = minimal
+
+// ── Branding / config (editable) ──────────────────────────────
+gameTitle = LCG Template
+gameTagline = A generic card-game table — bring your own cards.
+gameKicker = Card game
+gameGenre = Card game
+gamePlayers = 2–6 players
+accentColor = #c9a227      // gold — primary accent
+accentColor2 = #2fae8c     // emerald — secondary accent
+
+// ── Online play (rooms/sync) ──────────────────────────────────
+createServerSocket = {import:server-plugin}
+
+// ── Persistent saves & stats (kv-plugin: autosave/resume, settings) ──
+kv = {import:kv-plugin}

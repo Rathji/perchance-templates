@@ -1,0 +1,74 @@
+{
+  "name": "bgn-lcg-template",
+  "imports": [
+    "server-plugin",
+    "kv-plugin"
+  ],
+  "isPrivate": false,
+  "srcManifest": {
+    "cards.js": {
+      "key": "c27edccadf5876749171e845e9b4b1be.js",
+      "size": 6831
+    },
+    "net.js": {
+      "key": "8053c1d9aca336d7644977a032e7546c.js",
+      "size": 1218
+    },
+    "data/base.json": {
+      "key": "23911fbe328436164c13b01f352d091f.json",
+      "size": 2759
+    },
+    "data/base-kingdom.json": {
+      "key": "d3f340585da0d943531eec6dbdab9309.json",
+      "size": 8458
+    },
+    "data/alchemy.json": {
+      "key": "ebe39f205ab6aed41bd577e626954f71.json",
+      "size": 5414
+    },
+    "data/cornucopia.json": {
+      "key": "8c7bea276ba607e5bf3cfba6514134f7.json",
+      "size": 410
+    },
+    "ai.js": {
+      "key": "a6350aa8bdb2ad3a92617a6a88819245.js",
+      "size": 20326
+    },
+    "data/intrigue.json": {
+      "key": "e9301ceb0944cf8493bb4fba286936a5.json",
+      "size": 11064
+    },
+    "data/hinterlands.json": {
+      "key": "590c49ab2388b1c0cf82b4e64e2b6469.json",
+      "size": 757
+    },
+    "roadmap.pjs": {
+      "key": "e16b00a7f76d4bbb280571dd48083433.txt",
+      "size": 73542
+    },
+    "engine.js": {
+      "key": "600d6a8ca94f88af54aa2369a9557787.js",
+      "size": 138408
+    },
+    "data/prosperity.json": {
+      "key": "ed6d45fa85cfb1604d8238f201c4f682.json",
+      "size": 11169
+    },
+    "data/seaside.json": {
+      "key": "09db317730742db5e655f6c084d10d88.json",
+      "size": 11865
+    },
+    "ui.js": {
+      "key": "66f5b7a4c4644e2ae5d30e460be73abf.js",
+      "size": 104646
+    },
+    "tests.js": {
+      "key": "28d48aab0874190b2397562f57502f3b.js",
+      "size": 283854
+    },
+    "README.md": {
+      "key": "ffddd72a732820a6592c489690385652.txt",
+      "size": 2919
+    }
+  }
+}

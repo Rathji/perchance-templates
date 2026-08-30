@@ -1,0 +1,213 @@
+{
+  "set": "alchemy",
+  "note": "Alchemy (2009) — 12 kingdom cards. Cards with Elixir in their cost require an Elixir to buy. Vintner is a separate 12-card pile; everything else is 10.",
+  "cards": [
+    {
+      "id": "alchemist",
+      "name": "Brewmaster",
+      "cost": {
+        "coins": 3,
+        "potion": 1
+      },
+      "types": [
+        "Action"
+      ],
+      "treasure": null,
+      "vp": null,
+      "text": "+2 Cards; +1 Action. At the start of Clean-up, if you have an Elixir in play, you may put this on top of your deck.",
+      "expansion": "alchemy",
+      "inSupply": true,
+      "pileSize": 10
+    },
+    {
+      "id": "apothecary",
+      "name": "Botanist",
+      "cost": {
+        "coins": 2,
+        "potion": 1
+      },
+      "types": [
+        "Action"
+      ],
+      "treasure": null,
+      "vp": null,
+      "text": "+1 Card; +1 Action. Reveal the top 4 cards of your deck. Put the Bronze Coins and Elixirs into your hand, and put the rest back on top in any order.",
+      "expansion": "alchemy",
+      "inSupply": true,
+      "pileSize": 10
+    },
+    {
+      "id": "apprentice",
+      "name": "Journeyman",
+      "cost": {
+        "coins": 5,
+        "potion": 1
+      },
+      "types": [
+        "Action"
+      ],
+      "treasure": null,
+      "vp": null,
+      "text": "+1 Action. Trash a card from your hand. +1 Card per $1 it costs. +2 Cards if it has Elixir in its cost.",
+      "expansion": "alchemy",
+      "inSupply": true,
+      "pileSize": 10
+    },
+    {
+      "id": "familiar",
+      "name": "Imp",
+      "cost": {
+        "coins": 3,
+        "potion": 1
+      },
+      "types": [
+        "Action",
+        "Attack"
+      ],
+      "treasure": null,
+      "vp": null,
+      "text": "+1 Card; +1 Action. Each other player gains a Bane.",
+      "expansion": "alchemy",
+      "inSupply": true,
+      "pileSize": 10
+    },
+    {
+      "id": "golem",
+      "name": "Gargoyle",
+      "cost": {
+        "coins": 4,
+        "potion": 1
+      },
+      "types": [
+        "Action"
+      ],
+      "treasure": null,
+      "vp": null,
+      "text": "Reveal cards from your deck until you reveal two Action cards that aren't Gargoyle. Play them in either order (they don't count as Action plays). Discard the other revealed cards.",
+      "expansion": "alchemy",
+      "inSupply": true,
+      "pileSize": 10
+    },
+    {
+      "id": "herbalist",
+      "name": "Forager",
+      "cost": {
+        "coins": 2,
+        "potion": 0
+      },
+      "types": [
+        "Action"
+      ],
+      "treasure": null,
+      "vp": null,
+      "text": "+1 Buy; +$1. At the start of Clean-up, you may put a Treasure from play on top of your deck.",
+      "expansion": "alchemy",
+      "inSupply": true,
+      "pileSize": 10
+    },
+    {
+      "id": "philosophers_stone",
+      "name": "Scholar's Scroll",
+      "cost": {
+        "coins": 3,
+        "potion": 1
+      },
+      "types": [
+        "Treasure"
+      ],
+      "treasure": 0,
+      "vp": null,
+      "text": "When you play this, +$1 per 5 cards in your deck and discard pile, rounded down.",
+      "expansion": "alchemy",
+      "inSupply": true,
+      "pileSize": 10
+    },
+    {
+      "id": "possession",
+      "name": "Puppeteer",
+      "cost": {
+        "coins": 6,
+        "potion": 1
+      },
+      "types": [
+        "Action"
+      ],
+      "treasure": null,
+      "vp": null,
+      "text": "You may look at the player to your right's hand, deck, and discard. They take their next turn after you. That turn, you make their decisions for them.",
+      "expansion": "alchemy",
+      "inSupply": true,
+      "pileSize": 10
+    },
+    {
+      "id": "scrying_pool",
+      "name": "Crystal Well",
+      "cost": {
+        "coins": 2,
+        "potion": 1
+      },
+      "types": [
+        "Action",
+        "Attack"
+      ],
+      "treasure": null,
+      "vp": null,
+      "text": "+1 Action. Each player (including you) reveals the top card of their deck, and you choose whether they discard it or put it back. Then reveal cards from your deck until you reveal an Action card. Put all revealed non-Action cards into your hand and discard the Action.",
+      "expansion": "alchemy",
+      "inSupply": true,
+      "pileSize": 10
+    },
+    {
+      "id": "transmute",
+      "name": "Alchemy",
+      "cost": {
+        "coins": 0,
+        "potion": 1
+      },
+      "types": [
+        "Action"
+      ],
+      "treasure": null,
+      "vp": null,
+      "text": "Trash a card from your hand. If it's an Action card, gain a Manor. If it's a Treasure card, gain an Alchemy. If it's a Victory card, gain a Gold Coin.",
+      "expansion": "alchemy",
+      "inSupply": true,
+      "pileSize": 10
+    },
+    {
+      "id": "university",
+      "name": "Academy",
+      "cost": {
+        "coins": 3,
+        "potion": 1
+      },
+      "types": [
+        "Action"
+      ],
+      "treasure": null,
+      "vp": null,
+      "text": "+2 Actions. You may gain an Action card costing up to $5.",
+      "expansion": "alchemy",
+      "inSupply": true,
+      "pileSize": 10
+    },
+    {
+      "id": "vineyard",
+      "name": "Vintner",
+      "cost": {
+        "coins": 2,
+        "potion": 0
+      },
+      "types": [
+        "Action",
+        "Victory"
+      ],
+      "treasure": null,
+      "vp": null,
+      "text": "Worth 1 VP per 3 Action cards in your deck (rounded down).",
+      "expansion": "alchemy",
+      "inSupply": true,
+      "pileSize": 12
+    }
+  ]
+}

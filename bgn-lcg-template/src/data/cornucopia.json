@@ -1,0 +1,21 @@
+{
+  "set": "cornucopia",
+  "name": "Set 4 — Kingdom Cards",
+  "cards": [
+    {
+      "id": "fairgrounds",
+      "name": "Faire",
+      "cost": {
+        "coins": 5,
+        "potion": 0
+      },
+      "types": [
+        "Victory"
+      ],
+      "text": "Worth 2 VP per 10 different cards in your deck (rounded down).",
+      "expansion": "cornucopia",
+      "inSupply": true,
+      "pileSize": 10
+    }
+  ]
+}
