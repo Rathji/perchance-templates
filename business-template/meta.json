@@ -1,17 +1,19 @@
 {
   "name": "business-template",
   "imports": [
-    "super-fetch-plugin"
+    "super-fetch-plugin",
+    "data-visualization-plugin",
+    "upload-plugin"
   ],
   "isPrivate": false,
   "srcManifest": {
-    "template.css": {
-      "key": "04fc3389978dc72c078657ebb84a3f79.css",
-      "size": 27764
-    },
     "template.js": {
-      "key": "ee75302c0b9b5e585affd436af0f8115.js",
-      "size": 71341
+      "key": "b9d7aa5864d6d501dce2bf725bf8ece0.js",
+      "size": 94134
+    },
+    "template.css": {
+      "key": "850061911b369d3e562bf7146874897a.css",
+      "size": 32712
     }
   }
 }

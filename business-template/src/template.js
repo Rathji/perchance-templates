@@ -131,7 +131,7 @@
      the format guide, the example, and the downloadable JSON Schema.
      ================================================================ */
 
-  const HEX = "hex", STR = "string", BOOL = "boolean", NUM = "number", OBJ = "object", ARR = "array", ENUM = "enum";
+  const HEX = "hex", STR = "string", BOOL = "boolean", NUM = "number", OBJ = "object", ARR = "array", ENUM = "enum", FREE = "free";
 
   const SCHEMA = {
     type: OBJ, doc: "Root — the whole configuration. Imports may be partial; anything missing falls back to the template defaults.",
@@ -144,6 +144,7 @@
           companyShortName: { type: STR, doc: "Compact variant (optional).", example: "Acme" },
           companyUrl: { type: STR, doc: "Your website URL — links the logo, header CTA and footer.", example: "https://example.com" },
           logoGlyph: { type: STR, doc: "Single letter/monogram drawn inside the logo mark.", example: "A" },
+          logoUrl: { type: STR, doc: "Square logo image URL — upload one in settings → Branding → Logo image. Shown in the header/footer logo mark instead of the letter.", example: "" },
           tagline: { type: STR, doc: "Short pitch shown in the footer.", example: "Technology that moves your business forward" },
           contactEmail: { type: STR, doc: "Shown in the footer as a mailto: link.", example: "hello@example.com" },
           contactPhone: { type: STR, doc: "Shown in the footer as a tel: link.", example: "+1 (555) 010-0000" },
@@ -156,19 +157,22 @@
         fields: {
           mode: { type: ENUM, values: ["light", "dark"], doc: "Light or dark interface.", example: "light" },
           accentStyle: { type: ENUM, values: ["gradient", "solid"], doc: "How CTAs and highlights are filled.", example: "gradient" },
-          radius: { type: NUM, doc: "Corner radius in px (0–32).", example: 16 }
+          radius: { type: NUM, doc: "Corner radius in px (0–32).", example: 16 },
+          fontSize: { type: NUM, doc: "Base text size in px (15–18).", example: 16 },
+          fontFamily: { type: ENUM, values: ["lato", "inter", "roboto", "open-sans", "source-sans", "ibm-plex", "dm-sans", "manrope", "montserrat-lato", "playfair-lato", "merriweather-inter"], doc: "Font pairing — Lato, Inter, Roboto, IBM Plex Sans, or a headline/body combo like Playfair Display + Lato.", example: "lato" },
+          reduceMotion: { type: BOOL, doc: "Disable animations and transitions.", example: false }
         }
       },
       colors: {
         type: OBJ, doc: "Brand palette. All values are #rrggbb hex colors.",
         fields: {
-          primary: { type: HEX, doc: "Main brand color — buttons, links, highlights.", example: "#2563eb" },
-          secondary: { type: HEX, doc: "Secondary brand color — gradients, charts.", example: "#7c3aed" },
-          accent: { type: HEX, doc: "Accent — stars, badges, small details.", example: "#f59e0b" },
-          background: { type: HEX, doc: "Page background.", example: "#ffffff" },
-          surface: { type: HEX, doc: "Card and section backgrounds.", example: "#f7f8fc" },
-          text: { type: HEX, doc: "Main text color.", example: "#0f172a" },
-          textMuted: { type: HEX, doc: "Secondary / muted text color.", example: "#5b6478" }
+          primary: { type: HEX, doc: "Main brand color — buttons, links, highlights.", example: "#0a58ca" },
+          secondary: { type: HEX, doc: "Secondary brand color — gradients, charts.", example: "#6ea8fe" },
+          accent: { type: HEX, doc: "Accent — stars, badges, small details.", example: "#084298" },
+          background: { type: HEX, doc: "Page background.", example: "#f8f9fa" },
+          surface: { type: HEX, doc: "Card and section backgrounds.", example: "#ffffff" },
+          text: { type: HEX, doc: "Main text color.", example: "#212529" },
+          textMuted: { type: HEX, doc: "Secondary / muted text color.", example: "#6c757d" }
         }
       },
       product: {
@@ -204,6 +208,37 @@
             value: { type: STR, doc: "The number, e.g. '99.99'.", example: "99.99" },
             suffix: { type: STR, doc: "Shown right after the number, e.g. '%', 'k+'.", example: "%" },
             label: { type: STR, doc: "Caption under the number.", example: "Uptime SLA" }
+          }
+        }
+      },
+      charts: {
+        type: OBJ, doc: "Analytics charts section — three business graphs rendered with the data-visualization-plugin (line, bars, donut).",
+        fields: {
+          enabled: { type: BOOL, doc: "Show the analytics section on the page.", example: true },
+          heading: { type: STR, doc: "Section heading.", example: "Performance at a glance" },
+          description: { type: STR, doc: "Section subheading.", example: "Revenue, pipeline and traffic — the metrics your team cares about most." },
+          revenue: {
+            type: OBJ, doc: "Monthly revenue line chart.",
+            fields: {
+              title: { type: STR, doc: "Chart title.", example: "Monthly revenue" },
+              labels: { type: FREE, doc: "X-axis labels, e.g. [\"Jan\", \"Feb\", …].", example: ["Jan","Feb","Mar"] },
+              series: { type: FREE, doc: "Series as [name, [values…]] pairs, e.g. [[\"This year\",[42,48,45]],…].", example: [["This year",[42,48,45]],["Last year",[30,34,38]]] }
+            }
+          },
+          leads: {
+            type: OBJ, doc: "New-leads bar chart.",
+            fields: {
+              title: { type: STR, doc: "Chart title.", example: "New leads per month" },
+              labels: { type: FREE, doc: "X-axis labels.", example: ["Jan","Feb","Mar"] },
+              values: { type: FREE, doc: "Bar values, one per label.", example: [120,135,128] }
+            }
+          },
+          channels: {
+            type: OBJ, doc: "Traffic-sources donut chart.",
+            fields: {
+              title: { type: STR, doc: "Chart title.", example: "Traffic sources" },
+              values: { type: FREE, doc: "Donut slices as [label, value] pairs.", example: [["Organic search",38],["Paid ads",24]] }
+            }
           }
         }
       },
@@ -301,7 +336,7 @@
     } else if (schema.type === ARR) {
       out.push(p.slice(0, -1) + "  —  array of objects  —  " + (schema.doc || ""));
     } else {
-      let typeName = schema.type;
+      let typeName = schema.type === FREE ? "any" : schema.type;
       if (schema.type === HEX) typeName = "hex";
       if (schema.type === ENUM) typeName = schema.values.map((v) => '"' + v + '"').join(" | ");
       out.push(p.slice(0, -1) + "  —  " + typeName + "  —  " + (schema.doc || ""));
@@ -337,6 +372,7 @@
         if (s.item && s.item.example != null) a.example = s.item.example;
         return a;
       }
+      if (s.type === FREE) return {};
       return { type: s.type };
     };
     const root = map(SCHEMA);
@@ -355,6 +391,7 @@
     const normalized = {};
     const walk = (schema, value, path, target) => {
       if (value == null) return; // missing → keep default
+      if (schema.type === FREE) { target[path] = value; return; }
       if (schema.type === OBJ) {
         if (typeof value !== "object" || Array.isArray(value)) { errors.push(path + " must be an object"); return; }
         for (const key of Object.keys(value)) {
@@ -438,6 +475,26 @@
       }
       return arr;
     };
+    const flat = (v, d) => {
+      if (v === undefined || v === null) return d;
+      return Array.isArray(v) && v.length === 1 && Array.isArray(v[0]) ? v[0] : v;
+    };
+    const chartSeries = (parent) => {
+      const arr = [];
+      for (let i = 1; i <= 20; i++) {
+        const child = parent && parent["s" + i];
+        if (child === undefined) break;
+        arr.push({
+          name: str(child.name, "Series " + i),
+          data: flat(child.data, []).map((n) => Number(n))
+        });
+      }
+      return arr.filter((s) => s.data.length);
+    };
+    const chartPairs = (v) => (Array.isArray(v) ? v : []).map((p) => ({
+      label: String(p && p[0]),
+      value: Number(p && p[1])
+    })).filter((p) => p.label !== "" && isFinite(p.value));
 
     const B = node.branding || {};
     const T = node.theme || {};
@@ -460,6 +517,7 @@
         companyShortName: str(B.companyShortName),
         companyUrl: str(B.companyUrl),
         logoGlyph: str(B.logoGlyph),
+        logoUrl: str(B.logoUrl),
         tagline: str(B.tagline),
         contactEmail: str(B.contactEmail),
         contactPhone: str(B.contactPhone),
@@ -469,16 +527,19 @@
       theme: {
         mode: ["light", "dark"].includes(str(T.mode, "light")) ? str(T.mode, "light") : "light",
         accentStyle: ["gradient", "solid"].includes(str(T.accentStyle, "gradient")) ? str(T.accentStyle, "gradient") : "gradient",
-        radius: num(T.radius, 16)
+        radius: num(T.radius, 16),
+        fontSize: clamp(num(T.fontSize, 16), 14, 20),
+        fontFamily: str(T.fontFamily, "lato"),
+        reduceMotion: bool(T.reduceMotion, false)
       },
       colors: {
-        primary: str(C.primary, "#2563eb"),
-        secondary: str(C.secondary, "#7c3aed"),
-        accent: str(C.accent, "#f59e0b"),
-        background: str(C.background, "#ffffff"),
-        surface: str(C.surface, "#f7f8fc"),
-        text: str(C.text, "#0f172a"),
-        textMuted: str(C.textMuted, "#5b6478")
+        primary: str(C.primary, "#0a58ca"),
+        secondary: str(C.secondary, "#6ea8fe"),
+        accent: str(C.accent, "#084298"),
+        background: str(C.background, "#f8f9fa"),
+        surface: str(C.surface, "#ffffff"),
+        text: str(C.text, "#212529"),
+        textMuted: str(C.textMuted, "#6c757d")
       },
       product: {
         name: str(P.name),
@@ -495,6 +556,29 @@
       trustedBy: Array.isArray(node.trustedBy) ? node.trustedBy.map((s) => String(s)) : [],
       features: seq(node.features || {}, "f", ["icon", "title", "description"]),
       stats: seq(node.stats || {}, "s", ["value", "suffix", "label"]).map((s) => ({ ...s, value: String(s.value) })),
+      charts: (() => {
+        const CH = node.charts || {};
+        const R = CH.revenue || {}, L = CH.leads || {}, K = CH.channels || {};
+        return {
+          enabled: bool(CH.enabled, true),
+          heading: str(CH.heading, "Performance at a glance"),
+          description: str(CH.description, "Revenue, pipeline and traffic — the metrics your team cares about most."),
+          revenue: {
+            title: str(R.title, "Monthly revenue"),
+            labels: flat(R.labels, []).map((s) => String(s)),
+            series: chartSeries(R.series)
+          },
+          leads: {
+            title: str(L.title, "New leads per month"),
+            labels: flat(L.labels, []).map((s) => String(s)),
+            values: flat(L.values, []).map((n) => Number(n))
+          },
+          channels: {
+            title: str(K.title, "Traffic sources"),
+            values: chartPairs(K.values)
+          }
+        };
+      })(),
       how: seq(node.how || {}, "h", ["title", "description"]),
       showcase: {
         heading: str(SC.heading),
@@ -512,6 +596,19 @@
       footer: { columns: footerColumns },
       admin: { showSettingsButton: bool(node.admin && node.admin.showSettingsButton, true) }
     };
+  }
+
+  function detectPreset() {
+    lastPresetName = null;
+    for (const p of PRESETS) {
+      if (p.colors.primary === cfg.colors.primary &&
+          p.colors.secondary === cfg.colors.secondary &&
+          p.colors.accent === cfg.colors.accent &&
+          p.colors.background === cfg.colors.background &&
+          p.colors.surface === cfg.colors.surface &&
+          p.colors.text === cfg.colors.text &&
+          p.colors.textMuted === cfg.colors.textMuted) { lastPresetName = p.name; break; }
+    }
   }
 
   function loadConfig() {
@@ -533,6 +630,7 @@
       }
     }
     cfg = base;
+    detectPreset();
   }
 
   function persist() {
@@ -546,6 +644,7 @@
     localStorage.removeItem(LS_KEY);
     persistedJson = null;
     cfg = defaultConfig();
+    detectPreset();
     applyAll();
     rebuildSettingsForms();
     markDirty();
@@ -556,7 +655,9 @@
     const d = defaultConfig();
     cfg.colors = d.colors;
     cfg.theme = d.theme;
+    detectPreset();
     applyThemeColors();
+    loadFontPair();
     buildColorForms();
     buildThemeForm();
     buildPresets();
@@ -579,10 +680,11 @@
   function applyThemeColors() {
     const c = cfg.colors, t = cfg.theme;
     const isDark = t.mode === "dark";
-    const bg = isDark ? "#0b1220" : c.background;
-    const surface = isDark ? "#121b2f" : c.surface;
-    const text = isDark ? "#f1f5f9" : c.text;
-    const muted = isDark ? "#94a3b8" : c.textMuted;
+    const hasPreset = PRESETS.some((pr) => pr.name === lastPresetName);
+    const bg = isDark ? (hasPreset ? c.background : "#141414") : c.background;
+    const surface = isDark ? (hasPreset ? c.surface : "#1d1d22") : c.surface;
+    const text = isDark ? (hasPreset ? c.text : "#f1f5f9") : c.text;
+    const muted = isDark ? (hasPreset ? c.textMuted : "#94a3b8") : c.textMuted;
     const r = document.documentElement.style;
     r.setProperty("--primary", c.primary);
     r.setProperty("--secondary", c.secondary);
@@ -590,10 +692,12 @@
     r.setProperty("--radius", clamp(Number(t.radius) || 16, 0, 32) + "px");
     r.setProperty("--bg", bg);
     r.setProperty("--surface", surface);
-    r.setProperty("--surface-2", isDark ? "#1b2740" : mix(c.surface, c.background, 0.55));
+    r.setProperty("--surface-2", isDark ? (hasPreset ? mix(c.surface, c.background, 0.5) : "#232329") : mix(c.surface, c.background, 0.55));
     r.setProperty("--border", isDark ? "rgba(148,163,184,.2)" : "rgba(15,23,42,.09)");
     r.setProperty("--text", text);
     r.setProperty("--text-muted", muted);
+    r.setProperty("--muted", muted);
+    r.setProperty("--terminal-bg", isDark ? mix(c.background, "#000000", 0.4) : "#0d1117");
     r.setProperty("--primary-strong", isDark ? lighten(c.primary, 0.14) : darken(c.primary, 0.12));
     r.setProperty("--primary-soft", mix(c.primary, bg, isDark ? 0.8 : 0.9));
     r.setProperty("--grad", t.accentStyle === "solid" ? "linear-gradient(135deg," + c.primary + "," + c.primary + ")" : "linear-gradient(135deg," + c.primary + "," + c.secondary + ")");
@@ -606,9 +710,16 @@
     r.setProperty("--primary-border-open", hexToRgba(c.primary, 0.35));
     r.setProperty("--ring", hexToRgba(c.primary, 0.45));
     r.setProperty("--ring-soft", hexToRgba(c.primary, 0.18));
+    const scale = clamp(Number(t.fontSize) || 16, 14, 20) / 16;
+    r.setProperty("--text-scale", scale.toFixed(4));
+    const F = fontInfo(String(t.fontFamily));
+    r.setProperty("--font-display", fontStack(F.display, F.serif));
+    r.setProperty("--font-body", fontStack(F.body, false));
+    document.documentElement.classList.toggle("reduce-motion", !!t.reduceMotion);
     document.documentElement.dataset.theme = isDark ? "dark" : "light";
     document.documentElement.style.colorScheme = isDark ? "dark" : "light";
-  }
+  
+    if (cfg && $("#chartsGrid") && $("#chartsGrid").innerHTML !== "") renderCharts();}
 
   function applyText() {
     $$("[data-field]").forEach((el) => {
@@ -651,7 +762,7 @@
   }
 
   function renderAll() {
-    renderTrusted(); renderFeatures(); renderStats(); renderSteps(); renderShowcase(); renderTestimonials(); renderFaq(); renderFooter();
+    renderTrusted(); renderFeatures(); renderStats(); renderCharts(); renderSteps(); renderShowcase(); renderTestimonials(); renderFaq(); renderFooter();
   }
 
   function renderTrusted() {
@@ -675,6 +786,63 @@
       '<div class="stat"><div class="stat-value"><span data-count="' + esc(String(s.value)) + '">' + esc(s.value) + "</span>" + esc(s.suffix || "") + '</div><div class="stat-label">' + esc(s.label) + "</div></div>"
     ).join("");
     observeCountUps();
+  }
+
+  function renderCharts() {
+    const sec = $("#analytics");
+    const grid = $("#chartsGrid");
+    const hasPlugin = !!(window.root && root.charts && typeof root.charts.line === "function");
+    const ch = cfg.charts || {};
+    const enabled = ch.enabled !== false;
+    if (sec) sec.style.display = enabled && hasPlugin ? "" : "none";
+    if (!grid) return;
+    grid.innerHTML = "";
+    if (!enabled) return;
+    if (!hasPlugin) {
+      grid.innerHTML = '<p class="hint">The data-visualization-plugin did not load — add <code>charts = {import:data-visualization-plugin}</code> to main.pjs.</p>';
+      return;
+    }
+    const c = cfg.colors || {};
+    const brand = [c.primary, c.secondary, c.accent, mix(c.primary, c.secondary, 0.5), mix(c.accent, c.secondary, 0.5)].filter((x) => x);
+    const chartOpts = { theme: null, height: 300, colors: brand };
+    const safe = (f) => {
+      try {
+        const s = f();
+        return s && String(s).indexOf("<svg") >= 0 ? s : '<p class="chart-err">' + esc(String(s)) + "</p>";
+      } catch (e) {
+        return '<p class="chart-err">' + esc(String((e && e.message) || e)) + "</p>";
+      }
+    };
+    const card = (title, svg, wide) => {
+      const el = document.createElement("div");
+      el.className = "chart-card" + (wide ? " chart-wide" : "");
+      el.innerHTML = '<div class="chart-title">' + esc(title) + "</div>";
+      const body = document.createElement("div");
+      body.className = "chart-body";
+      body.innerHTML = svg;
+      el.appendChild(body);
+      return el;
+    };
+
+    const rev = ch.revenue || {};
+    if (rev.series && rev.series.length && rev.series[0].data && rev.series[0].data.length) {
+      const svg = safe(() => root.charts.line({ labels: rev.labels, series: rev.series }, Object.assign({ title: rev.title }, chartOpts)));
+      grid.appendChild(card(rev.title || "Revenue", svg, true));
+    }
+    const leads = ch.leads || {};
+    if (leads.values && leads.values.length) {
+      const data = (leads.labels || []).map((l, i) => ({ label: l, value: leads.values[i] }));
+      const svg = safe(() => root.charts.bar(data, Object.assign({ title: leads.title, labels: false }, chartOpts)));
+      grid.appendChild(card(leads.title || "Leads", svg));
+    }
+    const chn = ch.channels || {};
+    if (chn.values && chn.values.length) {
+      const svg = safe(() => root.charts.donut(chn.values, Object.assign({ title: chn.title }, chartOpts)));
+      grid.appendChild(card(chn.title || "Channels", svg));
+    }
+    if (!grid.children.length) {
+      grid.innerHTML = '<p class="hint">No chart data configured — add a <code>charts</code> section to <code>config</code> in main.pjs.</p>';
+    }
   }
 
   function renderSteps() {
@@ -710,7 +878,8 @@
 
   function renderFooter() {
     const b = cfg.branding;
-    $("#footerLogoMark").textContent = (b.logoGlyph || (b.companyName || "?")[0]).slice(0, 1).toUpperCase();
+    const glyph = (b.logoGlyph || (b.companyName || "?")[0]).slice(0, 1).toUpperCase();
+    renderLogoMark($("#footerLogoMark"), b.logoUrl, glyph);
     $("#footerLogoText").textContent = b.companyName;
     $("#footerTagline").textContent = b.tagline || "";
     $("#footerEmail").textContent = b.contactEmail; $("#footerEmail").href = "mailto:" + b.contactEmail;
@@ -730,10 +899,24 @@
   }
 
   /* ---------- header logo ---------- */
+  function renderLogoMark(el, url, glyph) {
+    if (!el) return;
+    if (url) {
+      el.classList.add("has-img");
+      el.innerHTML = '<img class="logo-img" src="' + esc(url) + '" alt="">';
+    } else {
+      el.classList.remove("has-img");
+      el.textContent = glyph;
+    }
+  }
+
   function updateHeaderLogo() {
     const b = cfg.branding;
-    $("#logoMark").textContent = (b.logoGlyph || (b.companyName || "?")[0]).slice(0, 1).toUpperCase();
+    const glyph = (b.logoGlyph || (b.companyName || "?")[0]).slice(0, 1).toUpperCase();
+    renderLogoMark($("#logoMark"), b.logoUrl, glyph);
+    renderLogoMark($("#footerLogoMark"), b.logoUrl, glyph);
     $("#logoText").textContent = b.companyName;
+    $("#footerLogoText").textContent = b.companyName;
     $("#headerLogo").href = b.companyUrl || "#";
     $("#footerLogo").href = b.companyUrl || "#";
     const navBrand = $("#navBrand");
@@ -778,10 +961,7 @@
       $("#themeToggle").title = cfg.theme.mode === "dark" ? "Switch to light mode" : "Switch to dark mode";
     };
     $("#themeToggle").addEventListener("click", () => {
-      cfg.theme.mode = cfg.theme.mode === "dark" ? "light" : "dark";
-      applyThemeColors();
-      markDirty();
-      update();
+      setThemeMode(cfg.theme.mode === "dark" ? "light" : "dark");
     });
     update();
   }
@@ -811,6 +991,8 @@
     $$(".tab").forEach((tab) => tab.addEventListener("click", () => setTab(tab.dataset.tab)));
     $("#saveConfigBtn").addEventListener("click", persist);
     $("#resetStyleBtn").addEventListener("click", resetStyle);
+    const shareBtn = $("#shareBtn");
+    if (shareBtn) shareBtn.addEventListener("click", copyShareLink);
     document.addEventListener("keydown", (e) => { if (e.key === "Escape") { closeModal("#settingsModal"); closeModal("#scannerModal"); } });
   }
 
@@ -840,7 +1022,8 @@
     { key: "branding.companyName", label: "Company name", hint: "Shown in the header, footer and copyright." },
     { key: "branding.companyShortName", label: "Company short name", hint: "Optional compact variant for narrow screens." },
     { key: "branding.companyUrl", label: "Company website URL", type: "url", hint: "Links the logo and footer." },
-    { key: "branding.logoGlyph", label: "Logo letter / monogram", hint: "Single character drawn in the logo mark." },
+    { key: "branding.logoGlyph", label: "Logo letter / monogram", hint: "Single character drawn in the logo mark (used when no logo image is set)." },
+    { key: "branding.logoUrl", label: "Logo image", type: "logo" },
     { key: "branding.tagline", label: "Tagline", type: "text", cls: "full", hint: "Used in the footer." },
     { key: "branding.contactEmail", label: "Contact email", type: "email" },
     { key: "branding.contactPhone", label: "Contact phone", type: "tel" },
@@ -848,21 +1031,123 @@
     { key: "branding.footerText", label: "Footer bottom text", cls: "full", hint: "{year} and {companyName} are auto-filled." }
   ];
 
+  function renderLogoPreview(el) {
+    const url = cfg.branding.logoUrl;
+    if (url) {
+      el.classList.add("has-img");
+      el.innerHTML = '<img class="logo-img" src="' + esc(url) + '" alt="">';
+    } else {
+      el.classList.remove("has-img");
+      el.textContent = (cfg.branding.logoGlyph || (cfg.branding.companyName || "?")[0]).slice(0, 1).toUpperCase();
+    }
+  }
+
   function buildBrandForm() {
     const wrap = $("#brandFields");
     wrap.innerHTML = "";
     for (const f of BRAND_FIELDS) {
       const field = document.createElement("div");
       field.className = "field" + (f.cls ? " " + f.cls : "");
+      if (f.type === "logo") { field.classList.add("full"); }
       const label = document.createElement("label");
       label.htmlFor = "f_" + f.key.replace(/\./g, "_");
       label.textContent = f.label;
+      field.appendChild(label);
+      if (f.type === "logo") {
+        const row = document.createElement("div");
+        row.className = "logo-upload-row";
+        const preview = document.createElement("span");
+        preview.className = "logo-upload-preview";
+        renderLogoPreview(preview);
+        const controls = document.createElement("div");
+        controls.className = "logo-upload-controls";
+        const fileLab = document.createElement("label");
+        fileLab.className = "btn btn-ghost btn-sm";
+        fileLab.textContent = "Upload image…";
+        const file = document.createElement("input");
+        file.type = "file"; file.accept = "image/*"; file.style.display = "none";
+        fileLab.appendChild(file);
+        const status = document.createElement("span");
+        status.className = "logo-upload-status";
+        const urlInput = document.createElement("input");
+        urlInput.type = "url"; urlInput.id = "f_branding_logoUrl";
+        urlInput.placeholder = "…or paste an image URL";
+        urlInput.value = cfg.branding.logoUrl || "";
+        const removeBtn = document.createElement("button");
+        removeBtn.type = "button"; removeBtn.className = "btn btn-ghost btn-sm";
+        removeBtn.textContent = "Remove";
+        removeBtn.style.display = cfg.branding.logoUrl ? "" : "none";
+        let uploading = false;
+        file.addEventListener("change", async () => {
+          const f = file.files && file.files[0];
+          if (!f) return;
+          if (!/^image\//.test(f.type)) { toast("Please choose an image file", "error"); file.value = ""; return; }
+          if (f.size > 5 * 1024 * 1024) { toast("Logo is too large — 5 MB max", "error"); file.value = ""; return; }
+          if (!(window.root && root.uploadPlugin)) { toast("The upload plugin is not loaded — check {import:upload-plugin} in main.pjs", "error"); file.value = ""; return; }
+          if (uploading) return;
+          uploading = true;
+          status.textContent = "Uploading…";
+          try {
+            const res = await root.uploadPlugin(f);
+            if (res && res.error) {
+              toast("Upload failed: " + res.error, "error");
+              status.textContent = "";
+            } else {
+              cfg.branding.logoUrl = res.url;
+              renderLogoPreview(preview);
+              updateHeaderLogo();
+              markDirty();
+              status.textContent = "Uploaded — saved in your configuration";
+              urlInput.value = res.url;
+              removeBtn.style.display = "";
+              toast("Logo uploaded", "success");
+            }
+          } catch (e) {
+            toast("Upload failed", "error");
+            status.textContent = "";
+          }
+          uploading = false;
+          file.value = "";
+        });
+        urlInput.addEventListener("change", () => {
+          const v = urlInput.value.trim();
+          if (v && !/^https?:\/\//i.test(v)) { toast("Logo URL must start with http:// or https://", "error"); return; }
+          cfg.branding.logoUrl = v;
+          renderLogoPreview(preview);
+          updateHeaderLogo();
+          removeBtn.style.display = v ? "" : "none";
+          markDirty();
+        });
+        removeBtn.addEventListener("click", () => {
+          cfg.branding.logoUrl = "";
+          urlInput.value = "";
+          renderLogoPreview(preview);
+          updateHeaderLogo();
+          removeBtn.style.display = "none";
+          markDirty();
+        });
+        controls.appendChild(fileLab);
+        controls.appendChild(urlInput);
+        controls.appendChild(status);
+        const btnRow = document.createElement("div");
+        btnRow.className = "logo-upload-actions";
+        btnRow.appendChild(removeBtn);
+        controls.appendChild(btnRow);
+        row.appendChild(preview);
+        row.appendChild(controls);
+        field.appendChild(row);
+        const h = document.createElement("div");
+        h.className = "hint";
+        h.textContent = "Square PNG or JPG, up to 5 MB. Uploaded through the Perchance file host — the returned URL is stored in your configuration and exported with it.";
+        field.appendChild(h);
+        wrap.appendChild(field);
+        continue;
+      }
       const input = document.createElement("input");
       input.type = f.type || "text";
       input.id = "f_" + f.key.replace(/\./g, "_");
       input.value = getPath(cfg, f.key) || "";
       input.addEventListener("input", () => { setPath(cfg, f.key, input.value); applyText(); updateHeaderLogo(); markDirty(); });
-      field.appendChild(label);
       field.appendChild(input);
       if (f.hint) { const h = document.createElement("div"); h.className = "hint"; h.textContent = f.hint; field.appendChild(h); }
       wrap.appendChild(field);
@@ -890,7 +1175,7 @@
       const picker = document.createElement("input");
       picker.type = "color";
       picker.value = cfg.colors[c.key];
-      picker.addEventListener("input", () => { cfg.colors[c.key] = picker.value; hexIn.value = picker.value; applyThemeColors(); markDirty(); });
+      picker.addEventListener("input", () => { lastPresetName = null; cfg.colors[c.key] = picker.value; hexIn.value = picker.value; applyThemeColors(); markDirty(); });
       const name = document.createElement("span");
       name.className = "cname";
       name.textContent = c.name;
@@ -901,7 +1186,7 @@
       hexIn.addEventListener("input", () => {
         const h = normalizeHex(hexIn.value);
         hexIn.classList.toggle("invalid", !h);
-        if (h) { cfg.colors[c.key] = h; picker.value = h; applyThemeColors(); markDirty(); }
+        if (h) { lastPresetName = null; cfg.colors[c.key] = h; picker.value = h; applyThemeColors(); markDirty(); }
       });
       hexIn.addEventListener("blur", () => { hexIn.value = cfg.colors[c.key]; hexIn.classList.remove("invalid"); });
       const desc = document.createElement("span");
@@ -925,7 +1210,7 @@
       const radio = document.createElement("input");
       radio.type = "radio"; radio.name = "themeMode"; radio.value = m;
       radio.checked = cfg.theme.mode === m;
-      radio.addEventListener("change", () => { if (radio.checked) { cfg.theme.mode = m; applyThemeColors(); markDirty(); const ti = $("#themeToggleIcon"); if (ti) ti.innerHTML = icon(m === "dark" ? "spark" : "star", 18); const tb = $("#themeToggle"); if (tb) tb.title = m === "dark" ? "Switch to light mode" : "Switch to dark mode"; } });
+      radio.addEventListener("change", () => { if (radio.checked) { setThemeMode(m); } });
       lab.appendChild(radio); lab.appendChild(document.createTextNode(m === "light" ? "Light" : "Dark"));
       group.appendChild(lab);
     }
@@ -951,35 +1236,140 @@
     range.type = "range"; range.min = 0; range.max = 32; range.value = cfg.theme.radius;
     range.addEventListener("input", () => { cfg.theme.radius = Number(range.value); radL.textContent = "Corner radius: " + range.value + "px"; applyThemeColors(); markDirty(); });
     radRow.appendChild(range); radF.appendChild(radL); radF.appendChild(radRow); wrap.appendChild(radF);
+    // base text size
+    const sizeF = document.createElement("div");
+    sizeF.className = "field";
+    const sizeL = document.createElement("label"); sizeL.textContent = "Text size";
+    const sizeRow = document.createElement("div"); sizeRow.className = "radio-group";
+    for (const [label, px] of [["Small", 15], ["Medium", 16], ["Large", 18]]) {
+      const lab = document.createElement("label");
+      const radio = document.createElement("input");
+      radio.type = "radio"; radio.name = "themeSize"; radio.value = String(px);
+      radio.checked = Number(cfg.theme.fontSize) === px;
+      radio.addEventListener("change", () => { if (radio.checked) { cfg.theme.fontSize = px; applyThemeColors(); markDirty(); } });
+      lab.appendChild(radio); lab.appendChild(document.createTextNode(label));
+      sizeRow.appendChild(lab);
+    }
+    sizeF.appendChild(sizeL); sizeF.appendChild(sizeRow); wrap.appendChild(sizeF);
+    // font pairing
+    const fontF = document.createElement("div");
+    fontF.className = "field";
+    const fontL = document.createElement("label"); fontL.textContent = "Font pairing";
+    const fontSel = document.createElement("select");
+    for (const f of FONTS) {
+      const opt = document.createElement("option");
+      opt.value = f.id; opt.textContent = f.name + " — " + f.desc;
+      fontSel.appendChild(opt);
+    }
+    fontSel.value = fontInfo(String(cfg.theme.fontFamily)).id;
+    fontSel.addEventListener("change", () => { cfg.theme.fontFamily = fontSel.value; applyThemeColors(); loadFontPair(); markDirty(); });
+    fontF.appendChild(fontL); fontF.appendChild(fontSel); wrap.appendChild(fontF);
+    // reduce motion
+    const motF = document.createElement("div");
+    motF.className = "field";
+    const motL = document.createElement("label"); motL.textContent = "Reduce motion";
+    const motRow = document.createElement("div"); motRow.className = "radio-group";
+    const motLab = document.createElement("label");
+    const motBox = document.createElement("input");
+    motBox.type = "checkbox"; motBox.checked = !!cfg.theme.reduceMotion;
+    motBox.addEventListener("change", () => { cfg.theme.reduceMotion = motBox.checked; applyThemeColors(); markDirty(); });
+    motLab.appendChild(motBox); motLab.appendChild(document.createTextNode("Disable animations and transitions"));
+    motRow.appendChild(motLab); motF.appendChild(motL); motF.appendChild(motRow); wrap.appendChild(motF);
   }
 
+  // Business-focused themes, each with a light palette and a matching dark variant.
+  // The first entry is the generator's default brand look. Applying a theme sets
+  // the theme mode to the chosen variant; toggling mode afterwards keeps the
+  // matching dark/light palette.
+  let lastPresetName = null;
   const PRESETS = [
-    { name: "Ocean", colors: { primary: "#2563eb", secondary: "#06b6d4", accent: "#f59e0b", background: "#ffffff", surface: "#f2f6fd", text: "#0f172a", textMuted: "#5b6478" } },
-    { name: "Forest", colors: { primary: "#16a34a", secondary: "#0d9488", accent: "#eab308", background: "#ffffff", surface: "#f2faf6", text: "#0f172a", textMuted: "#5b6478" } },
-    { name: "Ember", colors: { primary: "#ea580c", secondary: "#db2777", accent: "#facc15", background: "#ffffff", surface: "#fdf6f0", text: "#1c1917", textMuted: "#5f5b56" } },
-    { name: "Violet", colors: { primary: "#7c3aed", secondary: "#2563eb", accent: "#f472b6", background: "#ffffff", surface: "#f6f3fd", text: "#0f172a", textMuted: "#5b6478" } },
-    { name: "Slate", colors: { primary: "#334155", secondary: "#64748b", accent: "#0ea5e9", background: "#ffffff", surface: "#f6f7f9", text: "#0f172a", textMuted: "#5b6478" } },
-    { name: "Midnight", colors: { primary: "#0f172a", secondary: "#2563eb", accent: "#38bdf8", background: "#ffffff", surface: "#f2f4f8", text: "#0f172a", textMuted: "#5b6478" } }
+    { name: "Trust Blue",
+      colors: { primary: "#0a58ca", secondary: "#6ea8fe", accent: "#084298", background: "#f8f9fa", surface: "#ffffff", text: "#212529", textMuted: "#6c757d" },
+      dark:   { primary: "#6ea8fe", secondary: "#4f8ef7", accent: "#8bb5fe", background: "#121212", surface: "#1d1d1f", text: "#e9ecef", textMuted: "#adb5bd" } },
+    { name: "Tech Indigo",
+      colors: { primary: "#4f46e5", secondary: "#818cf8", accent: "#4338ca", background: "#f9fafb", surface: "#ffffff", text: "#111827", textMuted: "#6b7280" },
+      dark:   { primary: "#818cf8", secondary: "#6366f1", accent: "#a5b4fc", background: "#0b0f19", surface: "#141a2a", text: "#f3f4f6", textMuted: "#94a3b8" } },
+    { name: "Executive Slate",
+      colors: { primary: "#0f172a", secondary: "#334155", accent: "#1e293b", background: "#ffffff", surface: "#f8fafc", text: "#334155", textMuted: "#64748b" },
+      dark:   { primary: "#94a3b8", secondary: "#64748b", accent: "#cbd5e1", background: "#0f172a", surface: "#1e293b", text: "#f8fafc", textMuted: "#94a3b8" } },
+    { name: "Growth Green",
+      colors: { primary: "#15803d", secondary: "#16a34a", accent: "#166534", background: "#fafafa", surface: "#ffffff", text: "#1c1917", textMuted: "#78716c" },
+      dark:   { primary: "#4ade80", secondary: "#22c55e", accent: "#86efac", background: "#141414", surface: "#1e1e1e", text: "#f5f5f4", textMuted: "#a8a29e" } },
+    { name: "Warm Agency",
+      colors: { primary: "#ea580c", secondary: "#f97316", accent: "#c2410c", background: "#fffdf7", surface: "#ffffff", text: "#27272a", textMuted: "#71717a" },
+      dark:   { primary: "#f97316", secondary: "#fb923c", accent: "#fdba74", background: "#18181b", surface: "#232327", text: "#fafafa", textMuted: "#a1a1aa" } },
+    { name: "Royal Burgundy",
+      colors: { primary: "#9f1239", secondary: "#7c2d12", accent: "#b45309", background: "#ffffff", surface: "#fdf2f6", text: "#1c1917", textMuted: "#6b5b5b" },
+      dark:   { primary: "#fb7185", secondary: "#d97706", accent: "#fbbf24", background: "#180a10", surface: "#241019", text: "#fff1f2", textMuted: "#c4a5ac" } }
   ];
+
+  // Business font pairings (Google Fonts). `url` is the css2 query that loads
+  // exactly the weights the template uses — weights a family does not provide
+  // are skipped so the request stays valid. `serif` swaps the display fallback.
+  const FONTS = [
+    { id: "lato", name: "Lato", desc: "Clean & friendly", display: "Lato", body: "Lato", serif: false, url: "Lato:wght@400;700;900" },
+    { id: "inter", name: "Inter", desc: "Modern SaaS standard", display: "Inter", body: "Inter", serif: false, url: "Inter:wght@400;600;700;900" },
+    { id: "roboto", name: "Roboto", desc: "Professional & classic", display: "Roboto", body: "Roboto", serif: false, url: "Roboto:wght@400;500;700;900" },
+    { id: "open-sans", name: "Open Sans", desc: "Warm & highly readable", display: "Open Sans", body: "Open Sans", serif: false, url: "Open+Sans:wght@400;600;700;800" },
+    { id: "source-sans", name: "Source Sans 3", desc: "Open & approachable", display: "Source Sans 3", body: "Source Sans 3", serif: false, url: "Source+Sans+3:wght@400;600;700;900" },
+    { id: "ibm-plex", name: "IBM Plex Sans", desc: "Enterprise & corporate", display: "IBM Plex Sans", body: "IBM Plex Sans", serif: false, url: "IBM+Plex+Sans:wght@400;600;700" },
+    { id: "dm-sans", name: "DM Sans", desc: "Contemporary geometric", display: "DM Sans", body: "DM Sans", serif: false, url: "DM+Sans:wght@400;600;700;900" },
+    { id: "manrope", name: "Manrope", desc: "Modern & techy", display: "Manrope", body: "Manrope", serif: false, url: "Manrope:wght@400;600;700;800" },
+    { id: "montserrat-lato", name: "Montserrat + Lato", desc: "Bold headlines, clean body", display: "Montserrat", body: "Lato", serif: false, url: "Montserrat:wght@400;600;700;900&family=Lato:wght@400;700;900" },
+    { id: "playfair-lato", name: "Playfair Display + Lato", desc: "Elegant, high-end", display: "Playfair Display", body: "Lato", serif: true, url: "Playfair+Display:wght@400;600;700;900&family=Lato:wght@400;700;900" },
+    { id: "merriweather-inter", name: "Merriweather + Inter", desc: "Editorial & trustworthy", display: "Merriweather", body: "Inter", serif: true, url: "Merriweather:wght@400;700;900&family=Inter:wght@400;600;700;900" }
+  ];
+  const fontInfo = (id) => FONTS.find((f) => f.id === id) || FONTS[0];
+  const fontStack = (name, serif) => '"' + name + '",' + (serif ? ' Georgia, "Times New Roman", serif' : " var(--font-fallback)");
+  let fontLinkEl = null;
+  function loadFontPair() {
+    const F = fontInfo(String(cfg && cfg.theme ? cfg.theme.fontFamily : "lato"));
+    if (fontLinkEl) { fontLinkEl.remove(); fontLinkEl = null; }
+    fontLinkEl = document.createElement("link");
+    fontLinkEl.rel = "stylesheet";
+    fontLinkEl.href = "https://fonts.googleapis.com/css2?family=" + F.url + "&display=swap";
+    document.head.appendChild(fontLinkEl);
+  }
 
   function buildPresets() {
     const wrap = $("#presetGrid");
     wrap.innerHTML = "";
     for (const p of PRESETS) {
-      const btn = document.createElement("button");
-      btn.type = "button";
-      btn.className = "preset";
-      btn.title = "Apply the " + p.name + " palette";
-      const strip = document.createElement("span");
-      strip.className = "swatch-strip";
-      strip.innerHTML = ["primary", "secondary", "accent", "background", "surface"].map((k) => '<span style="background:' + p.colors[k] + '"></span>').join("");
+      const card = document.createElement("div");
+      card.className = "preset";
       const name = document.createElement("span");
       name.className = "preset-name";
       name.textContent = p.name;
-      btn.appendChild(strip); btn.appendChild(name);
-      btn.addEventListener("click", () => { cfg.colors = deepClone(p.colors); applyThemeColors(); buildColorForms(); markDirty(); toast("Applied the " + p.name + " palette"); });
-      wrap.appendChild(btn);
+      card.appendChild(name);
+      const variants = [["Light", p.colors], ["Dark", p.dark]];
+      for (const [mode, variant] of variants) {
+        const row = document.createElement("span");
+        row.className = "preset-row";
+        row.title = "Apply the " + p.name + " " + mode.toLowerCase() + " theme";
+        const lab = document.createElement("span");
+        lab.className = "preset-row-label";
+        lab.textContent = mode;
+        const strip = document.createElement("span");
+        strip.className = "swatch-strip";
+        strip.innerHTML = ["primary", "secondary", "accent", "background", "surface"].map((k) => '<span style="background:' + variant[k] + '"></span>').join("");
+        row.appendChild(lab); row.appendChild(strip);
+        row.addEventListener("click", () => applyPreset(p, mode === "Dark"));
+        card.appendChild(row);
+      }
+      wrap.appendChild(card);
     }
+  }
+
+  function applyPreset(p, dark) {
+    lastPresetName = p.name;
+    cfg.colors = deepClone(dark ? p.dark : p.colors);
+    cfg.theme.mode = dark ? "dark" : "light";
+    applyThemeColors();
+    buildColorForms();
+    buildThemeForm();
+    refreshThemeToggleUI();
+    markDirty();
+    toast("Applied the " + p.name + " " + (dark ? "dark" : "light") + " theme");
   }
 
   /* ---------- Content tab ---------- */
@@ -1462,22 +1852,38 @@
         darkMode: true,
         colors: {
           primary: primary.hex, secondary: complement, accent,
-          background: "#0b1220", surface: "#121b2f", text: "#f1f5f9", textMuted: "#94a3b8"
+          background: "#141414", surface: "#1d1d22", text: "#f1f5f9", textMuted: "#94a3b8"
         }
       }
     ];
   }
 
+  function refreshThemeToggleUI() {
+    const t = $("#themeToggleIcon");
+    if (t) t.innerHTML = icon(cfg.theme.mode === "dark" ? "spark" : "star", 18);
+    const tb = $("#themeToggle");
+    if (tb) tb.title = cfg.theme.mode === "dark" ? "Switch to light mode" : "Switch to dark mode";
+  }
+
+  function setThemeMode(m) {
+    cfg.theme.mode = m;
+    const preset = PRESETS.find((pr) => pr.name === lastPresetName);
+    if (preset) cfg.colors = deepClone(m === "dark" ? preset.dark : preset.colors);
+    applyThemeColors();
+    buildColorForms();
+    buildThemeForm();
+    refreshThemeToggleUI();
+    markDirty();
+  }
+
   function applySchemeColors(s) {
+    lastPresetName = null;
     cfg.colors = deepClone(s.colors);
     if (s.darkMode !== undefined) cfg.theme.mode = s.darkMode ? "dark" : "light";
     applyThemeColors();
     buildColorForms();
     buildThemeForm();
-    const t = $("#themeToggleIcon");
-    if (t) t.innerHTML = icon(cfg.theme.mode === "dark" ? "spark" : "star", 18);
-    const tb = $("#themeToggle");
-    if (tb) tb.title = cfg.theme.mode === "dark" ? "Switch to light mode" : "Switch to dark mode";
+    refreshThemeToggleUI();
     markDirty();
   }
 
@@ -1571,9 +1977,43 @@
 
   /* ============================ init ============================ */
 
+  // ?theme=&primary=&secondary=&accent=&size=&motion= — settings shared via a
+  // link override whatever is saved in this browser (same convention as the
+  // badge template this port is based on).
+  function applyUrlOverrides() {
+    const qp = new URLSearchParams(location.search);
+    const q = (k) => qp.get(k);
+    if (q("theme") === "light" || q("theme") === "dark") cfg.theme.mode = q("theme");
+    for (const k of ["primary", "secondary", "accent"]) {
+      const h = normalizeHex(q(k));
+      if (h) cfg.colors[k] = h;
+    }
+    const sz = parseInt(q("size"), 10);
+    if ([15, 16, 18].includes(sz)) cfg.theme.fontSize = sz;
+    const m = q("motion");
+    if (m !== null) cfg.theme.reduceMotion = m === "true" || m === "1" || m === "on";
+    if (qp.toString()) toast("Applied settings from the link");
+  }
+
+  function copyShareLink() {
+    const u = new URL(location.href);
+    const set = (k, v) => { if (v != null && v !== "") u.searchParams.set(k, v); else u.searchParams.delete(k); };
+    set("theme", cfg.theme.mode);
+    set("primary", cfg.colors.primary);
+    set("secondary", cfg.colors.secondary);
+    set("accent", cfg.colors.accent);
+    set("size", cfg.theme.fontSize);
+    set("motion", cfg.theme.reduceMotion ? "true" : "false");
+    history.replaceState(null, "", u);
+    copyText(u.href);
+    toast("Share link copied to clipboard", "success");
+  }
+
   function init() {
     loadConfig();
+    applyUrlOverrides();
     applyAll();
+    loadFontPair();
     updateHeaderLogo();
     setupThemeToggle();
     setupSettingsModal();

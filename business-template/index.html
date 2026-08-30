@@ -8,7 +8,7 @@
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap" rel="stylesheet">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="stylesheet" href="src/template.css">
 
@@ -171,6 +171,18 @@
   <section class="section" id="stats" style="padding-top:0">
     <div class="container">
       <div class="stats-band" id="statsBand"></div>
+    </div>
+  </section>
+
+  <!-- ============================ analytics charts ============================ -->
+  <section class="section" id="analytics" style="padding-top:0">
+    <div class="container">
+      <div class="section-head">
+        <span class="eyebrow">Analytics</span>
+        <h2><span data-field="charts.heading">Performance at a glance</span></h2>
+        <p class="lede" data-field="charts.description">A live look at the metrics your team cares about most — revenue, pipeline and where traffic comes from.</p>
+      </div>
+      <div class="charts-grid" id="chartsGrid"></div>
     </div>
   </section>
 
@@ -340,6 +352,7 @@
 
     </div>
     <div class="modal-foot">
+      <button class="btn btn-ghost btn-sm" id="shareBtn" title="Copy a link that reproduces the current theme, colors, text size and motion settings">Copy share link</button>
       <button class="btn btn-primary" id="saveConfigBtn">Save configuration</button>
       <span class="unsaved" id="dirtyHint" style="visibility:hidden"><span class="dirty-dot"></span>You have unsaved changes</span>
     </div>

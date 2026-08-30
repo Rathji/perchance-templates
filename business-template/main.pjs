@@ -1,11 +1,14 @@
 $meta
   title = Business Template
   description = A professional, fully configurable project template. Brand it with your company details, scan any website to generate matching color schemes, and import/export the entire configuration as JSON.
+  image = https://user.uploads.dev/file/2ae7aade766d2ceb4effdd9f079186b5.jpg
   tags = template, business, product, landing page, configurable
   header 
     mode = minimal
 
 superFetch = {import:super-fetch-plugin}
+charts = {import:data-visualization-plugin}
+uploadPlugin = {import:upload-plugin}
 
 // ============================================================================
 //  BUSINESS TEMPLATE  —  CONFIGURATION
@@ -24,9 +27,10 @@ superFetch = {import:super-fetch-plugin}
 //
 //  {
 //    schemaVersion: "1.0.0",
-//    branding:  { companyName, companyShortName, companyUrl, logoGlyph,
+//    branding:  { companyName, companyShortName, companyUrl, logoGlyph, logoUrl,
 //                 tagline, contactEmail, contactPhone, address, footerText },
-//    theme:     { mode: "light"|"dark", accentStyle: "gradient"|"solid", radius },
+//    theme:     { mode: "light"|"dark", accentStyle: "gradient"|"solid", radius,
+//                 fontSize (15–18), fontFamily, reduceMotion (true|false) },
 //    colors:    { primary, secondary, accent, background, surface,
 //                 text, textMuted },                     // hex colors
 //    product:   { name, badge, headline, headlineAccent, subheadline,
@@ -62,6 +66,9 @@ config
     companyShortName = Your Co        // compact variant for narrow screens (optional)
     companyUrl = https://your-company.com   // ← your website (links the logo & footer)
     logoGlyph = Y                     // single letter/monogram in the logo mark
+    logoUrl =                         // optional square logo image — upload it in the
+                                      //   settings panel (Branding → Logo image) to get a
+                                      //   hosted URL; shown instead of the letter mark
     tagline = Technology solutions that move your business forward
     contactEmail = hello@your-company.com
     contactPhone = +1 (555) 010-0000
@@ -70,19 +77,24 @@ config
 
   // ── Visual theme ─────────────────────────────────────────────────────────
   theme
-    mode = dark                       // light | dark
+    mode = light                      // light | dark
     accentStyle = gradient            // gradient | solid (how CTAs & highlights are filled)
     radius = 16                       // corner radius in px
+    fontSize = 16                     // base text size in px (15 = small, 16 = normal, 18 = large)
+    fontFamily = lato                 // font pairing: lato | inter | roboto | open-sans | source-sans |
+                                      //   ibm-plex | dm-sans | manrope | montserrat-lato |
+                                      //   playfair-lato | merriweather-inter
+    reduceMotion = false              // true disables animations & transitions
 
   // ── Brand palette (hex colors) ───────────────────────────────────────────
   colors
-    primary = #2563eb                 // main brand color — buttons, links, highlights
-    secondary = #7c3aed               // secondary brand color — gradients, charts
-    accent = #f59e0b                  // accent — stars, badges, small details
-    background = #ffffff              // page background
-    surface = #f7f8fc                 // cards & section backgrounds
-    text = #0f172a                    // main text
-    textMuted = #5b6478               // secondary text
+    primary = #0a58ca                 // trust blue — main brand color, buttons, links, highlights
+    secondary = #6ea8fe               // soft blue — gradients, charts, avatars
+    accent = #084298                  // deep blue — stars, badges, small details
+    background = #f8f9fa              // page background
+    surface = #ffffff                 // cards & section backgrounds
+    text = #212529                    // main text
+    textMuted = #6c757d               // secondary text
 
   // ── Product / project — the hero section ──────────────────────────────────
   product
@@ -145,6 +157,32 @@ config
       value = 24
       suffix = /7
       label = Dedicated support
+
+  // ── Analytics charts (business graphs) ───────────────────────────────────
+  // Rendered with the data-visualization-plugin. Three charts: revenue (line),
+  // leads (bars) and channels (donut). In pjs list syntax, single arrays are
+  // wrapped in one extra [ ] — so labels = [["Jan","Feb",…]] etc.
+  charts
+    enabled = true
+    heading = Performance at a glance
+    description = A live look at the metrics your team cares about most — revenue, pipeline and where your traffic comes from.
+    revenue
+      title = Monthly revenue
+      labels = [["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"]]
+      series
+        s1
+          name = This year
+          data = [[42,48,45,52,58,63,70,74,82,90,95,112]]
+        s2
+          name = Last year
+          data = [[30,34,38,41,45,49,54,58,61,66,70,78]]
+    leads
+      title = New leads per month
+      labels = [["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"]]
+      values = [[120,135,128,150,168,182,205,198,226,248,270,305]]
+    channels
+      title = Traffic sources
+      values = [[["Organic search",38],["Paid ads",24],["Referrals",18],["Social media",12],["Direct",8]]]
 
   // ── "How it works" steps (3) ──────────────────────────────────────────────
   how
