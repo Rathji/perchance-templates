@@ -384,4 +384,221 @@
 
 <div class="toast-ctn" id="toastCtn"></div>
 
+<!-- ============================ ask-ai chat ============================ -->
+<button class="ask-ai-btn" id="askAiBtn" aria-label="Ask the AI" title="Ask the AI">
+  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/><path d="M19 15l.9 2.4L22 18.3l-2.1.9L19 21.6l-.9-2.4-2.1-.9z"/></svg>
+  <span>Ask AI</span>
+</button>
+
+<div class="ask-ai-shell" id="askAiShell" hidden>
+  <div class="ask-ai-panel" role="dialog" aria-modal="true" aria-label="AI assistant">
+    <header class="ask-ai-head">
+      <div class="ask-ai-title">
+        <span class="ask-ai-avatar" aria-hidden="true">✨</span>
+        <div><strong>Ask the AI</strong><span class="ask-ai-sub">Questions about this template</span></div>
+      </div>
+      <button class="ask-ai-close" id="askAiCloseBtn" aria-label="Close" title="Close">✕</button>
+    </header>
+    <div class="ask-ai-msgs" id="askAiMsgs"></div>
+    <div class="ask-ai-suggest" id="askAiSuggest"></div>
+    <div class="ask-ai-input-row">
+      <textarea id="askAiInput" rows="1" placeholder="Ask anything…" aria-label="Ask the AI"></textarea>
+      <button class="ask-ai-send" id="askAiSendBtn" aria-label="Send" title="Send"></button>
+    </div>
+  </div>
+</div>
+
 <script src="src/template.js"></script>
+
+<!-- ============================ ask-ai chat logic ============================ -->
+<script>
+  // ✏️ 1. The AI answers ONLY from this text — keep it accurate & specific.
+  const KNOWLEDGE = `
+This is a Perchance template called Business Template.
+What it does: A professional, fully configurable landing-page template. It renders a complete business/product website — header with nav and a dark-mode toggle, a hero with headline and CTAs, a "trusted by" strip, a feature grid, "how it works" steps, a stats band, analytics charts (monthly revenue, new leads, traffic sources), a showcase with a terminal mockup, testimonials, a final call-to-action band, an FAQ accordion, and a multi-column footer. Every piece of text and color on the page is driven by a single configuration object (the "config" list in main.pjs), so you can rebrand the whole site without touching the markup.
+How to use it:
+- Edit config in main.pjs: set your company name/contact/tagline, the product headline and CTAs, colors, font, features, stats, testimonials, FAQ, footer links, and more. Add or remove items in any list (features f1..f6, stats s1..s4, how h1..h3, testimonials t1..t3, faq q1..q5, footer columns and links).
+- Or use the settings panel: click the gear button (bottom-right) to preview and apply colors, switch between light and dark mode, choose an accent style (gradient or solid), corner radius, base font size, and one of 11 font pairings (lato, inter, roboto, open-sans, source-sans, ibm-plex, dm-sans, manrope, montserrat-lato, playfair-lato, merriweather-inter). You can also scan any website to auto-generate color schemes that match its branding, edit all content live, and import or export the entire configuration as JSON.
+- Import/Export: the exported JSON mirrors the config structure exactly; imports may be partial (missing fields fall back to the defaults in main.pjs). You can download a JSON schema, copy the config to the clipboard, or generate a share link that reproduces the theme, colors, text size and motion settings.
+- Footer text supports the placeholders {year} and {companyName}.
+What you can build with it: Anyone who needs a clean, branded business or product landing page fast — startups, agencies, SaaS products, freelancers, small businesses. Fill in the config (or the settings panel) with your company details and publish. It's also a great starting point to remix into other landing-page projects, since all copy and structure are data-driven.
+`;
+
+  // ✏️ 2. Suggested questions shown as clickable chips on first open.
+  const SUGGESTIONS = [
+    "How do I customize this template?",
+    "How do I change the colors to match my brand?",
+    "How do I import or export my configuration?",
+    "What can I build with this?",
+  ];
+
+  // ── no need to edit below here ──────────────────────────────
+  const aiBtn = document.getElementById("askAiBtn");
+  const aiShell = document.getElementById("askAiShell");
+  const aiMsgs = document.getElementById("askAiMsgs");
+  const aiInput = document.getElementById("askAiInput");
+  const aiSendBtn = document.getElementById("askAiSendBtn");
+  const aiCloseBtn = document.getElementById("askAiCloseBtn");
+  const aiSuggest = document.getElementById("askAiSuggest");
+
+  const SEND_ICON = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5"/><path d="m5 12 7-7 7 7"/></svg>';
+  const STOP_ICON = '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>';
+
+  const PERSONA = `You are a friendly, concise AI assistant for this template. Answer questions using ONLY the knowledge below. If the knowledge doesn't contain the answer, say so honestly and suggest the closest thing it does cover. Keep replies short (usually 2-6 sentences). Never invent features that aren't in the knowledge.`;
+
+  let chatLog = [];
+  let summary = "";
+  let busy = false;
+  let gen = null;
+  let meta = null;
+  try { meta = root.generateText({ getMetaObject: true }); } catch (e) {}
+  const KEEP = 8;
+  let compacting = false;
+
+  function buildPrompt(task) {
+    const log = [summary ? `[Summary of the earlier conversation:\n${summary}]` : "", ...chatLog].filter(Boolean).join("\n\n");
+    return `${PERSONA}
+
+<KNOWLEDGE>
+${KNOWLEDGE}
+</KNOWLEDGE>
+
+<CHAT>
+${log}
+</CHAT>
+
+TASK: ${task}`;
+  }
+
+  function escapeHTML(s) {
+    return String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  }
+
+  function renderLinks(el, text) {
+    let out = escapeHTML(text);
+    const links = [];
+    out = out.replace(/\[([^\]]*)\]\((https?:\/\/[^)\s]+)\)/g, (m, label, url) => {
+      const k = "%%L" + links.length + "%%";
+      links.push(`<a href="${url}" target="_blank" rel="noopener">${label}</a>`);
+      return k;
+    });
+    out = out.replace(/https?:\/\/[^\s<]+/g, m => {
+      const c = m.replace(/[),.;]+$/, "");
+      return `<a href="${c}" target="_blank" rel="noopener">${c}</a>`;
+    });
+    links.forEach((h, i) => { out = out.split("%%L" + i + "%%").join(h); });
+    el.innerHTML = out;
+  }
+
+  function scrollBottom() { aiMsgs.scrollTop = aiMsgs.scrollHeight; }
+
+  function addMsg(role, text) {
+    const div = document.createElement("div");
+    div.className = "ask-ai-msg " + role;
+    div.textContent = text;
+    aiMsgs.appendChild(div);
+    scrollBottom();
+    return div;
+  }
+
+  function showTyping() {
+    const div = document.createElement("div");
+    div.className = "ask-ai-msg ai";
+    div.innerHTML = '<span class="ask-ai-typing"><i></i><i></i><i></i></span>';
+    aiMsgs.appendChild(div);
+    scrollBottom();
+    return div;
+  }
+
+  function setInputState() {
+    aiSendBtn.disabled = busy;
+    aiInput.disabled = busy;
+    aiSendBtn.innerHTML = busy ? STOP_ICON : SEND_ICON;
+    aiSendBtn.setAttribute("aria-label", busy ? "Stop generating" : "Send");
+    aiSendBtn.title = busy ? "Stop generating" : "Send";
+  }
+
+  function autoGrow() {
+    aiInput.style.height = "auto";
+    aiInput.style.height = Math.min(aiInput.scrollHeight, 120) + "px";
+  }
+
+  async function maybeCompact() {
+    if (compacting || !meta || chatLog.length <= KEEP) return;
+    if (meta.countTokens(buildPrompt("")) < meta.idealMaxContextTokens * 0.9) return;
+    compacting = true;
+    try {
+      const n = chatLog.length - KEEP;
+      const boundary = chatLog[n - 1].slice(-30);
+      const res = await root.generateText(buildPrompt(`Summarize the first ${n} messages, stopping after the message ending with "${boundary}". Fold in the [Summary...] block if there is one. Terse bullets; preserve names, facts, and unresolved threads. Output ONLY the summary text.`));
+      summary = res.text.trim();
+      chatLog.splice(0, n);
+    } catch (e) {} finally { compacting = false; }
+  }
+
+  async function send(text) {
+    const msg = (text != null ? String(text) : aiInput.value).trim();
+    if (busy || !msg) return;
+    if (!root.generateText) {
+      addMsg("ai", "Sorry, the AI isn't available right now. Please refresh and try again.");
+      return;
+    }
+    aiInput.value = "";
+    autoGrow();
+    chatLog.push("User: " + msg);
+    addMsg("user", msg);
+    aiSuggest.innerHTML = "";
+    const typing = showTyping();
+    busy = true;
+    setInputState();
+    let streamed = false;
+    try {
+      gen = root.generateText({
+        instruction: buildPrompt("Reply to the user's latest message as the AI assistant. Output ONLY the reply text."),
+        onChunk: d => {
+          if (!d.fullTextSoFar) return;
+          if (!streamed) { typing.textContent = ""; streamed = true; }
+          typing.textContent = d.fullTextSoFar;
+          scrollBottom();
+        },
+      });
+      const res = await gen;
+      renderLinks(typing, (res && res.text ? res.text : "").trim());
+      chatLog.push("AI: " + typing.textContent);
+      maybeCompact();
+    } catch (e) {
+      typing.textContent = "Hmm, that request didn't go through. Mind trying again?";
+    } finally {
+      busy = false;
+      gen = null;
+      setInputState();
+      scrollBottom();
+    }
+  }
+
+  function welcome() {
+    addMsg("ai", "Hi! I'm the AI guide for this template. Ask me how to use it, what you can build with it, or for recommendations.");
+    for (const c of SUGGESTIONS) {
+      const b = document.createElement("button");
+      b.className = "ask-ai-suggest-chip";
+      b.textContent = c;
+      b.addEventListener("click", () => send(c));
+      aiSuggest.appendChild(b);
+    }
+  }
+
+  aiBtn.addEventListener("click", () => {
+    aiShell.hidden = !aiShell.hidden;
+    if (!aiShell.hidden) {
+      if (!aiMsgs.children.length) welcome();
+      aiInput.focus();
+    }
+  });
+  aiCloseBtn.addEventListener("click", () => { aiShell.hidden = true; });
+  aiSendBtn.addEventListener("click", () => { if (busy && gen) gen.stop(); else send(); });
+  aiInput.addEventListener("keydown", e => {
+    if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); if (busy && gen) gen.stop(); else send(); }
+  });
+  aiInput.addEventListener("input", autoGrow);
+  setInputState();
+</script>

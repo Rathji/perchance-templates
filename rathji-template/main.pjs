@@ -18,6 +18,8 @@
 //   All items complete — every checklist feature has been implemented.
 // ───────────────────────────────────────────────────────────────────────────
 
+generateText = {import:ai-text-plugin}
+
 $meta
   title = rathji-template
   description = A self-contained template from Rathji: a pretty colored badge (text + emoji + accent color) you call directly from a list or script. No import required — copy the code into any generator.

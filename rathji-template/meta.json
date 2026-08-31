@@ -1,6 +1,8 @@
 {
   "name": "rathji-template",
-  "imports": [],
+  "imports": [
+    "ai-text-plugin"
+  ],
   "isPrivate": false,
   "srcManifest": {}
 }

@@ -9,6 +9,7 @@ $meta
 superFetch = {import:super-fetch-plugin}
 charts = {import:data-visualization-plugin}
 uploadPlugin = {import:upload-plugin}
+generateText = {import:ai-text-plugin}
 
 // ============================================================================
 //  BUSINESS TEMPLATE  —  CONFIGURATION

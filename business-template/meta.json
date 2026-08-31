@@ -3,7 +3,8 @@
   "imports": [
     "super-fetch-plugin",
     "data-visualization-plugin",
-    "upload-plugin"
+    "upload-plugin",
+    "ai-text-plugin"
   ],
   "isPrivate": false,
   "srcManifest": {
@@ -12,8 +13,8 @@
       "size": 94134
     },
     "template.css": {
-      "key": "850061911b369d3e562bf7146874897a.css",
-      "size": 32712
+      "key": "a72d808b654f9e0f745a0067469ac75d.css",
+      "size": 37695
     }
   }
 }
