@@ -1,0 +1,21 @@
+{
+  "name": "template-jungle",
+  "imports": [
+    "ai-text-plugin"
+  ],
+  "isPrivate": false,
+  "srcManifest": {
+    "template.css": {
+      "key": "687636ddafd1a342af12ebce3c1f6130.css",
+      "size": 24921
+    },
+    "README.md": {
+      "key": "12c555df0413b3d5c22b621e5b4a47cd.txt",
+      "size": 2618
+    },
+    "template.js": {
+      "key": "fd28a5f9f540ae500607b1d1ffd83ee7.js",
+      "size": 16103
+    }
+  }
+}

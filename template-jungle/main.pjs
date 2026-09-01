@@ -1,0 +1,406 @@
+$meta
+  title = Template Jungle
+  description = A living collection of Perchance templates — board games, video games, apps, art tools, frameworks and plugins. Browse, fork, and build.
+  image = https://user.uploads.dev/file/8ddfd1ee7b823878eb39cd52b364cfe6.png
+  tags = templates, hub, directory, board games, video games, apps, perchance
+  header 
+    mode = minimal
+
+generateText = {import:ai-text-plugin}
+
+// ============================================================================
+//  TEMPLATE JUNGLE  —  CONFIGURATION
+// ============================================================================
+//
+//  Everything the page shows lives in the `config` list below. Add or remove
+//  templates, change descriptions, bump view counts, reorder categories —
+//  the page renders entirely from this data.
+//
+//  Structure (field-by-field):
+//    branding   — name, logo, tagline, footer text
+//    theme      — light|dark, accent style, radius, font size, font family
+//    colors     — brand palette (hex)
+//    hero       — badge, headline, subheadline, CTAs, status chip
+//    quickLinks — the strip of quick-jump chips under the hero
+//    categories — the 5 groups the templates are organized into (id + label
+//                 + icon + blurb). `id` matches each template's `category`.
+//    templates  — one item per template: name (perchance slug), title,
+//                 category (must match a category id), description, views,
+//                 and an optional tag ("Featured" | "Private" | "").
+//    how        — the 3 "how it works" steps
+//    faq        — accordion Q&A
+//    footer     — footer link columns
+//
+//  Editing tips:
+//  • Add a template: copy an existing t# item, give it a new number, set its
+//    fields. Stats (totals, most popular) are computed automatically.
+//  • Strings are written raw (no quotes). Numbers are kept as numbers.
+//  • In footerText, \{year\} and \{companyName\} are auto-filled.
+// ============================================================================
+
+config
+  schemaVersion = 1.0.0
+
+  // ── Brand identity ───────────────────────────────────────────────────────
+  branding
+    companyName = Template Jungle
+    companyShortName = Jungle
+    companyUrl = https://perchance.org/template-jungle
+    logoGlyph = J
+    logoUrl = 
+    tagline = A living collection of Perchance templates
+    footerText = © \{year\} \{companyName\}. Built with the business-template.
+
+  // ── Visual theme ─────────────────────────────────────────────────────────
+  theme
+    mode = dark                      // light | dark
+    accentStyle = gradient           // gradient | solid
+    radius = 16
+    fontSize = 16
+    fontFamily = lato
+    reduceMotion = false
+
+  // ── Brand palette (hex colors) ───────────────────────────────────────────
+  colors
+    primary = #10b981                 // jungle emerald — CTAs, links, highlights
+    secondary = #34d399               // soft mint — gradients, chips
+    accent = #047857                  // deep green — badges, small details
+    background = #f8fafc              // page background (light mode)
+    surface = #ffffff                 // cards & section backgrounds (light mode)
+    text = #0f172a                    // main text (light mode)
+    textMuted = #64748b               // secondary text (light mode)
+
+  // ── Hero ─────────────────────────────────────────────────────────────────
+  hero
+    badge = Your template hub
+    headline = Every template you need, in one jungle.
+    headlineAccent = one jungle.
+    subheadline = A living collection of production-ready Perchance templates — board games, video games, apps, art tools, frameworks and plugins. Browse the canopy, fork a template, and build something great.
+    primaryCta = Browse templates
+    primaryCtaUrl = #templates
+    secondaryCta = See how it works
+    secondaryCtaUrl = #how
+    status = Always growing · fork & build
+
+  // ── Quick-jump chips (under the hero) ────────────────────────────────────
+  quickLinks
+    q1
+      label = Apps & products
+      url = #cat-apps
+    q2
+      label = Board games
+      url = #cat-board-games
+    q3
+      label = Video games
+      url = #cat-video-games
+    q4
+      label = Art & content
+      url = #cat-art-content
+    q5
+      label = Frameworks & plugins
+      url = #cat-frameworks
+
+  // ── Template categories ──────────────────────────────────────────────────
+  categories
+    c1
+      id = apps
+      label = Apps & Products
+      icon = rocket
+      blurb = Full product templates — business sites, AI image and chat apps.
+    c2
+      id = board-games
+      label = Board Game Templates
+      icon = dice
+      blurb = Ready-to-fork multiplayer tables from the Boardgame Network.
+    c3
+      id = video-games
+      label = Video Game Templates
+      icon = gamepad
+      blurb = Ship a game on the Video Game Network — platformers to JRPGs.
+    c4
+      id = art-content
+      label = Art & Content
+      icon = palette
+      blurb = Art generators and content tools.
+    c5
+      id = frameworks
+      label = Frameworks & Plugins
+      icon = puzzle
+      blurb = Reusable frameworks and plugin templates.
+
+  // ── Templates ────────────────────────────────────────────────────────────
+  templates
+    t1
+      name = nucleus-app
+      icon = ⚛️
+      title = Nucleus
+      category = apps
+      description = A modern, full-featured image generation template. Describe a scene, enhance it with AI, pick a style lens and aspect ratio — with a vault, public gallery, seeds, re-rolls, sound and themes.
+      views = 110
+      tag = Most popular
+    t2
+      name = keystone-app
+      icon = 💬
+      title = Keystone Chat
+      category = apps
+      description = A full-featured AI chat template: editable history, personas & scenarios, one-click presets, themes and settings. Fork it and make it your own.
+      views = 51
+      tag = 
+    t3
+      name = business-template
+      icon = 💼
+      title = Business Template
+      category = apps
+      description = A professional, fully configurable project template. Brand it with your company details, scan a website for matching color schemes, and import/export the configuration as JSON.
+      views = 20
+      tag = Featured
+    t4
+      name = bgn-strategy-template
+      icon = ♟️
+      title = BGN Strategy Template
+      category = board-games
+      description = A remixable strategy-game template. Ships with the full Supremacy 1984 cold-war game as a working demo: territories, resources, armies, nukes, 1-6 players, hot-seat and online multiplayer.
+      views = 35
+      tag = 
+    t5
+      name = bgn-blank-template
+      icon = 🎲
+      title = BGN Blank Template
+      category = board-games
+      description = A ready-to-fork multiplayer table for the Boardgame Network — online rooms, turn order and presence out of the box. No game yet: bring your own.
+      views = 38
+      tag = 
+    t6
+      name = bgn-standard-deck-cards-template
+      icon = 🃏
+      title = BGN Standard Deck Cards
+      category = board-games
+      description = A ready-to-use playing deck template. High-quality SVG card faces and backs, hover-to-enlarge, save & share, and a built-in 2-player online duel.
+      views = 30
+      tag = 
+    t7
+      name = bgn-pen-and-paper-template
+      icon = ✏️
+      title = Pen & Paper Game Template
+      category = board-games
+      description = A template for building pen-and-paper style games — word search, sudoku, boggle, crosswords and more. Ships with a working crossword reference game plus a generic shell.
+      views = 16
+      tag = 
+    t8
+      name = bgn-non-standard-deck-template
+      icon = 🎴
+      title = BGN Non-Standard Deck Template
+      category = board-games
+      description = A template for 2-player card games that use a custom deck. Ships as a complete game with hotseat, vs-AI and online multiplayer. Demos with Cover Your Assets.
+      views = 13
+      tag = 
+    t9
+      name = bgn-documentation-reference
+      icon = 📚
+      title = BGN Documentation Reference
+      category = board-games
+      description = A config-driven documentation reference for the Boardgame Network — supports tabletop RPGs, miniature games and classic & modern board games.
+      views = 8
+      tag = 
+    t10
+      name = bgn-hex-template
+      icon = 🔷
+      title = BGN Hex Template
+      category = board-games
+      description = A hex-grid framework for the Boardgame Network: movement points, terrain costs, elevation, line of sight, range, capture — plus the online multiplayer table.
+      views = 4
+      tag = 
+    t11
+      name = vgn-platform-template
+      icon = 🏃
+      title = VGN Platform Game Template
+      category = video-games
+      description = A ready-to-fork platformer template. Full engine — physics, camera, tile rendering, enemies, power-ups, procedural pixel art and chiptune audio — plus a complete example level.
+      views = 49
+      tag = 
+    t12
+      name = vgn-text-template
+      icon = 📝
+      title = VGN Text Template
+      category = video-games
+      description = A text-based game template. Ships with a short sample adventure — edit the vgn list to write your own scenes, choices, inventory and endings.
+      views = 35
+      tag = 
+    t13
+      name = vgn-text-rpg-template
+      icon = 📜
+      title = VGN Text RPG Template
+      category = video-games
+      description = A text-based dungeon crawler in the spirit of Bard's Tale and Wizardry. Create a party, delve a procedurally generated dungeon, fight, cast spells, loot and level up.
+      views = 32
+      tag = 
+    t14
+      name = vgn-turn-based-jrpg-template
+      icon = ⚔️
+      title = VGN Turn Based JRPG Template
+      category = video-games
+      description = A retro turn-based JRPG in the style of Dragon Warrior, Final Fantasy and Ultima. Grid exploration, battles, four classes, equipment, magic, shops and save/load.
+      views = 23
+      tag = 
+    t15
+      name = vgn-2d-physics-template
+      icon = 🧲
+      title = VGN 2D Physics
+      category = video-games
+      description = A 2D physics engine template: AABB + circle bodies, restitution, friction, collision layers, contact events and raycasts — with two full playable demos.
+      views = 14
+      tag = 
+    t16
+      name = vgn-shooter-template
+      icon = 🎯
+      title = NOVA STRIKE — Arena Shooter
+      category = video-games
+      description = A fast top-down arena shooter built from the vgn-shooter-template. Dodge, aim, and survive the endless swarm.
+      views = 7
+      tag = 
+    t17
+      name = vgn-generic-template
+      icon = 🎮
+      title = VGN Generic Template
+      category = video-games
+      description = The official generic starter framework for the Video Game Network. A polished CRT/arcade shell with a tiny grab-the-coins example game you can replace with any genre.
+      views = 6
+      tag = 
+    t18
+      name = vgn-turn-based-strategy-template
+      icon = 🗺️
+      title = Turn-Based Strategy Template
+      category = video-games
+      description = A reusable heroes-style turn-based strategy template: hex adventure map, towns, heroes, resources, tactical combat, and AI.
+      views = 0
+      tag = 
+    t19
+      name = vgn-ai-chat-rpg-template
+      icon = 🤖
+      title = VGN AI Chat RPG Template
+      category = video-games
+      description = The official AI chat RPG template. Choose or import a scenario, shape your character, and let an AI narrator run a fully illustrated visual-novel adventure.
+      views = 0
+      tag = New
+    t20
+      name = ai-art-template
+      icon = 🎨
+      title = AI Art Template
+      category = art-content
+      description = Simple AI art generator with no style presets.
+      views = 56
+      tag = Private
+    t21
+      name = ratjhi-lorem-ipsum
+      icon = 📄
+      title = Generic Site
+      category = art-content
+      description = A basic generic placeholder site with Lorem Ipsum content, built on Rathji's template design system.
+      views = 2
+      tag = 
+    t22
+      name = might-and-magic-game-frameworks
+      icon = 🏰
+      title = Might & Magic Framework
+      category = frameworks
+      description = A playable framework for a Heroes-of-Might-&-Magic-style strategy game: hex adventure map, towns, heroes, resources, tactical combat.
+      views = 6
+      tag = 
+    t23
+      name = rathji-template
+      icon = 🧰
+      title = rathji-template
+      category = frameworks
+      description = A self-contained template from Rathji: a pretty colored badge (text + emoji + accent color) you call directly from a list or script.
+      views = 7
+      tag = 
+    t24
+      name = rathji-plugin-template
+      icon = 🧩
+      title = Rathji Plugin Template
+      category = frameworks
+      description = A blank-but-working template for building a Perchance plugin: import it, rename the names, add your logic, and publish.
+      views = 3
+      tag = 
+
+  // ── "How it works" steps ─────────────────────────────────────────────────
+  how
+    h1
+      title = Browse
+      description = Explore the categories and pick a template that matches your project — every one is a complete, working generator.
+    h2
+      title = Fork
+      description = Open it on Perchance, hit save to create your own copy, and start editing main.pjs and the src files — nothing to install.
+    h3
+      title = Build
+      description = Swap in your content, tune the gameplay and style, and publish. Templates ship with demos so there's always something working to start from.
+
+  // ── FAQ accordion ────────────────────────────────────────────────────────
+  faq
+    q1
+      question = What exactly is a template here?
+      answer = Each template is a complete, working Perchance generator you can fork and remix — a starting point that already runs, so you build on top of working code instead of a blank page.
+    q2
+      question = How do I use one?
+      answer = Open any template, click save in the Perchance editor to fork your own copy, then edit the main.pjs lists and src files. Most templates document exactly what to change in their code comments.
+    q3
+      question = Do the templates work offline or standalone?
+      answer = They're regular Perchance generators — they run in any browser and are free to use. Some, like the Boardgame Network and Video Game Network templates, also connect to their network hubs for online play.
+    q4
+      question = Are the view counts live?
+      answer = No — they're snapshots shown in the config for context. They refresh whenever I update the config, or you can edit them yourself.
+    q5
+      question = Can I submit or request a template?
+      answer = This hub is built and maintained by Rathji. Find a template that fits your project and fork it — if you'd like a new one added, get in touch.
+    q6
+      question = What does the private tag mean?
+      answer = A template marked private is shared selectively rather than listed publicly on Perchance — reach out if you need access.
+
+  // ── Footer link columns ───────────────────────────────────────────────────
+  footer
+    columns
+      col1
+        heading = Templates
+        links
+          l1
+            label = Apps & products
+            url = #cat-apps
+          l2
+            label = Board games
+            url = #cat-board-games
+          l3
+            label = Video games
+            url = #cat-video-games
+          l4
+            label = Art & content
+            url = #cat-art-content
+          l5
+            label = Frameworks & plugins
+            url = #cat-frameworks
+      col2
+        heading = Networks
+        links
+          l1
+            label = Perchance
+            url = https://perchance.org
+          l2
+            label = Boardgame Network
+            url = https://perchance.org/boardgame-network
+          l3
+            label = Video Game Network
+            url = https://perchance.org/video-game-network
+          l4
+            label = Perchance plugins
+            url = https://perchance.org/plugins
+      col3
+        heading = About
+        links
+          l1
+            label = Business Template
+            url = https://perchance.org/business-template
+          l2
+            label = GitHub
+            url = https://github.com
+          l3
+            label = Contact
+            url = mailto:rathji@example.com

@@ -1,0 +1,480 @@
+<!-- ====================================================================
+     TEMPLATE JUNGLE — page markup
+     Static structure only: every piece of text and data lives in `config`
+     in main.pjs and is rendered by src/template.js at load time.
+     ==================================================================== -->
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap" rel="stylesheet">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="src/template.css">
+
+<div class="progress-bar" id="progressBar"></div>
+
+<!-- ============================ header ============================ -->
+<header class="site-header" id="siteHeader">
+  <div class="container header-inner">
+    <a class="logo" id="headerLogo" href="#top">
+      <span class="logo-mark" id="logoMark">J</span>
+      <span class="logo-text" id="logoText">Template Jungle</span>
+    </a>
+    <nav class="nav" aria-label="Main">
+      <a href="#templates">Templates</a>
+      <a href="#how">How it works</a>
+      <a href="#popular">Popular</a>
+      <a href="#faq">FAQ</a>
+    </nav>
+    <div class="header-actions">
+      <button class="icon-btn" id="themeToggle" aria-label="Toggle dark mode">
+        <span id="themeToggleIcon"></span>
+      </button>
+      <a class="btn btn-primary btn-sm header-cta" href="#templates">Browse templates</a>
+      <button class="icon-btn hamburger" id="hamburgerBtn" aria-label="Open menu" aria-expanded="false">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 6h18"/><path d="M3 12h18"/><path d="M3 18h18"/></svg>
+      </button>
+    </div>
+  </div>
+  <nav class="mobile-menu" id="mobileMenu" aria-label="Mobile">
+    <a href="#templates">Templates</a>
+    <a href="#how">How it works</a>
+    <a href="#popular">Popular</a>
+    <a href="#faq">FAQ</a>
+    <a class="btn btn-primary btn-block" style="margin-top:10px" href="#templates">Browse templates</a>
+  </nav>
+</header>
+
+<main>
+  <!-- ============================ hero ============================ -->
+  <section class="hero" id="top">
+    <div class="container hero-grid">
+      <div>
+        <span class="hero-badge"><span class="badge-dot"></span><span data-field="hero.badge">Your template hub</span></span>
+        <h1 id="heroTitle"></h1>
+        <p class="hero-sub" id="heroSubhead"></p>
+        <div class="hero-cta">
+          <a class="btn btn-primary" href="#templates"><span data-field="hero.primaryCta">Browse templates</span></a>
+          <a class="btn btn-ghost" href="#how"><span data-field="hero.secondaryCta">See how it works</span></a>
+        </div>
+        <div class="hero-status" id="heroStatus">
+          <span class="status-chip">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+            <span data-field="hero.status"></span>
+          </span>
+        </div>
+      </div>
+
+      <div class="hero-visual">
+        <svg class="mockup" viewBox="0 0 560 400" role="img" aria-label="Template jungle preview">
+          <defs>
+            <linearGradient id="mGrad" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stop-color="var(--primary)"/>
+              <stop offset="1" stop-color="var(--secondary)"/>
+            </linearGradient>
+            <linearGradient id="canopyGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="var(--secondary)" stop-opacity="0.9"/>
+              <stop offset="1" stop-color="var(--primary)" stop-opacity="0.65"/>
+            </linearGradient>
+          </defs>
+          <rect class="m-window" x="0" y="0" width="560" height="400" rx="16"/>
+          <circle cx="24" cy="22" r="5" fill="#f87171"/>
+          <circle cx="42" cy="22" r="5" fill="#fbbf24"/>
+          <circle cx="60" cy="22" r="5" fill="#34d399"/>
+          <rect class="m-addr" x="150" y="14" width="260" height="16" rx="8"/>
+          <ellipse class="m-hill" cx="130" cy="330" rx="150" ry="95" fill="url(#canopyGrad)"/>
+          <ellipse class="m-hill" cx="300" cy="345" rx="180" ry="110" fill="url(#canopyGrad)"/>
+          <ellipse class="m-hill" cx="470" cy="322" rx="140" ry="90" fill="url(#canopyGrad)"/>
+          <rect class="m-trunk" x="296" y="250" width="16" height="110" rx="6"/>
+          <rect class="m-trunk" x="118" y="268" width="12" height="84" rx="5"/>
+          <rect class="m-trunk" x="440" y="258" width="12" height="84" rx="5"/>
+          <circle class="m-fruit" cx="296" cy="238" r="7" fill="var(--primary)"/>
+          <circle class="m-fruit" cx="470" cy="246" r="6" fill="var(--accent)"/>
+          <rect class="m-card" x="40" y="60" width="130" height="70" rx="10"/>
+          <rect class="m-kpi-line" x="54" y="76" width="80" height="7" rx="3.5"/>
+          <rect class="m-kpi-num" x="54" y="92" width="52" height="12" rx="4"/>
+          <rect class="m-kpi-line" x="54" y="112" width="56" height="7" rx="3.5"/>
+          <rect class="m-card" x="390" y="56" width="130" height="70" rx="10"/>
+          <rect class="m-kpi-line" x="404" y="72" width="80" height="7" rx="3.5"/>
+          <rect class="m-kpi-num" x="404" y="88" width="52" height="12" rx="4"/>
+          <rect class="m-kpi-line" x="404" y="108" width="56" height="7" rx="3.5"/>
+          <rect class="m-card" x="70" y="150" width="200" height="120" rx="12"/>
+          <rect class="m-line-strong" x="86" y="168" width="130" height="10" rx="5"/>
+          <rect class="m-line" x="86" y="190" width="168" height="7" rx="3.5"/>
+          <rect class="m-line" x="86" y="204" width="150" height="7" rx="3.5"/>
+          <rect class="m-cell" x="86" y="228" width="60" height="6" rx="3"/>
+          <rect class="m-cell" x="86" y="242" width="100" height="6" rx="3"/>
+          <rect class="m-cell" x="86" y="256" width="80" height="6" rx="3"/>
+          <rect class="m-card" x="290" y="140" width="200" height="120" rx="12"/>
+          <rect class="m-line-strong" x="306" y="158" width="130" height="10" rx="5"/>
+          <rect class="m-line" x="306" y="180" width="168" height="7" rx="3.5"/>
+          <rect class="m-line" x="306" y="194" width="150" height="7" rx="3.5"/>
+          <rect class="m-cell" x="306" y="218" width="100" height="6" rx="3"/>
+          <rect class="m-cell" x="306" y="232" width="80" height="6" rx="3"/>
+          <rect class="m-cell" x="306" y="246" width="60" height="6" rx="3"/>
+          <circle cx="490" cy="352" r="6" fill="#34d399"/>
+        </svg>
+        <div class="floating-chip fc-1">
+          <span class="fc-icon fc-ok"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
+          <span id="fcTemplates">24 templates<span class="fc-small" style="display:block">ready to fork</span></span>
+        </div>
+        <div class="floating-chip fc-2">
+          <span class="fc-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg></span>
+          <span>Fork & build<span class="fc-small" style="display:block">no install needed</span></span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================ quick links ============================ -->
+  <section class="trust" aria-label="Jump to a category">
+    <div class="container">
+      <p class="trust-label">Jump straight in</p>
+      <ul class="trust-list" id="quickLinks"></ul>
+    </div>
+  </section>
+
+  <!-- ============================ stats ============================ -->
+  <section class="section" id="stats" style="padding-top:0">
+    <div class="container">
+      <div class="stats-band" id="statsBand"></div>
+    </div>
+  </section>
+
+  <!-- ============================ templates ============================ -->
+  <section class="section" id="templates">
+    <div class="container">
+      <div class="section-head">
+        <span class="eyebrow">The collection</span>
+        <h2>Browse the canopy</h2>
+        <p class="lede">Every template is a complete, working generator. Open one, fork it, and make it yours.</p>
+      </div>
+      <div id="templateSections"></div>
+    </div>
+  </section>
+
+  <!-- ============================ most popular ============================ -->
+  <section class="section" id="popular" style="padding-top:0">
+    <div class="container">
+      <div class="section-head">
+        <span class="eyebrow">By the numbers</span>
+        <h2>Most forked in the jungle</h2>
+        <p class="lede">The templates getting the most traffic right now.</p>
+      </div>
+      <div class="popular-grid" id="popularGrid"></div>
+    </div>
+  </section>
+
+  <!-- ============================ how it works ============================ -->
+  <section class="section" id="how" style="padding-top:0">
+    <div class="container">
+      <div class="section-head">
+        <span class="eyebrow">How it works</span>
+        <h2>From template to creation</h2>
+        <p class="lede">No setup, no installs — just fork and build.</p>
+      </div>
+      <div class="steps" id="stepsWrap"></div>
+    </div>
+  </section>
+
+  <!-- ============================ FAQ ============================ -->
+  <section class="section" id="faq" style="padding-top:0">
+    <div class="container">
+      <div class="section-head">
+        <span class="eyebrow">FAQ</span>
+        <h2>Questions, answered</h2>
+        <p class="lede">Everything you might want to know before getting started.</p>
+      </div>
+      <div class="faq" id="faqList"></div>
+    </div>
+  </section>
+</main>
+
+<!-- ============================ footer ============================ -->
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <a class="logo" id="footerLogo" href="#top">
+          <span class="logo-mark" id="footerLogoMark">J</span>
+          <span class="logo-text" id="footerLogoText">Template Jungle</span>
+        </a>
+        <p id="footerTagline"></p>
+      </div>
+      <div id="footerCols"></div>
+    </div>
+    <div class="footer-bottom">
+      <span id="yearEl"></span>
+    </div>
+  </div>
+</footer>
+
+<script src="src/template.js"></script>
+
+<!-- ====================================================================
+     ASK AI — floating chat button (drop-in widget)
+     Knowledge + suggestions are edited in the script at the bottom of
+     this file. Accent colors live at the top of the .ask-ai-* CSS rules
+     in src/template.css. Lift the three blocks (markup, CSS, script)
+     into any template to reuse.
+     ==================================================================== -->
+
+<button class="ask-ai-btn" id="askAiBtn" aria-label="Ask the AI" title="Ask the AI">
+  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/><path d="M19 15l.9 2.4L22 18.3l-2.1.9L19 21.6l-.9-2.4-2.1-.9z"/></svg>
+  <span>Ask AI</span>
+</button>
+
+<div class="ask-ai-shell" id="askAiShell" hidden>
+  <div class="ask-ai-panel" role="dialog" aria-modal="true" aria-label="AI assistant">
+    <header class="ask-ai-head">
+      <div class="ask-ai-title">
+        <span class="ask-ai-avatar" aria-hidden="true">🌿</span>
+        <div><strong>Ask the AI</strong><span class="ask-ai-sub">Questions about this template hub</span></div>
+      </div>
+      <button class="ask-ai-close" id="askAiCloseBtn" aria-label="Close" title="Close">✕</button>
+    </header>
+    <div class="ask-ai-msgs" id="askAiMsgs"></div>
+    <div class="ask-ai-suggest" id="askAiSuggest"></div>
+    <div class="ask-ai-input-row">
+      <textarea id="askAiInput" rows="1" placeholder="Ask anything…" aria-label="Ask the AI"></textarea>
+      <button class="ask-ai-send" id="askAiSendBtn" aria-label="Send" title="Send"></button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ✏️ 1. What the AI knows. The AI answers ONLY from this text, so keep it
+  //        accurate. This version describes the Template Jungle hub + every
+  //        template it houses, so visitors get guided to the right template.
+  const KNOWLEDGE = `
+This is "Template Jungle", a hub on Perchance (perchance.org/template-jungle) that houses a collection of free, ready-to-fork Perchance templates. Every template listed is a complete, working Perchance generator: open it, click Save to fork your own copy, then edit its main.pjs and src files to make it yours. No installs or signups needed (a free Perchance account to save/own generators).
+
+How to use the hub:
+- Use the "Browse the canopy" section or the quick-jump chips to find templates by category: Apps & Products, Board Game Templates, Video Game Templates, Art & Content, Frameworks & Plugins.
+- Every template card shows the name, a short description and a view count. Click a card to open that template.
+- The "Most forked in the jungle" section lists the most-viewed templates.
+
+How to use any template:
+- Open the template on Perchance and click Save to fork it.
+- Edit the main.pjs config/lists and the src files (code comments in each template explain what to change).
+- Some templates (Boardgame Network bgn and Video Game Network vgn) also offer online multiplayer and network-hub features.
+
+Templates in the hub, by category (name - what it is):
+
+APPS & PRODUCTS:
+- nucleus-app (Nucleus): modern AI image-generation template with style lenses, aspect ratios, a vault, public gallery, seeds, re-rolls, sound and themes.
+- keystone-app (Keystone Chat): full-featured AI chat template with editable history, personas & scenarios, presets and themes.
+- business-template (Business Template): professional, fully configurable landing-page/product template with brand colors, website color scanning and JSON import/export.
+
+BOARD GAME TEMPLATES (Boardgame Network):
+- bgn-strategy-template: remixable strategy-game template; ships with the full Supremacy 1984 cold-war game (territories, resources, armies, nukes, 1-6 players, hot-seat + online multiplayer).
+- bgn-blank-template: blank multiplayer table with online rooms, turn order and presence - bring your own game.
+- bgn-standard-deck-cards-template: playing-deck template with SVG card faces and backs, save & share, and a 2-player online duel.
+- bgn-pen-and-paper-template: pen-and-paper games (word search, sudoku, boggle, crosswords); ships with a crossword game plus a generic shell.
+- bgn-non-standard-deck-template: 2-player card games with a custom deck; hotseat, vs-AI and online multiplayer; demos Cover Your Assets.
+- bgn-documentation-reference: config-driven documentation/reference page for the Boardgame Network.
+- bgn-hex-template: hex-grid framework with movement points, terrain costs, elevation, line of sight, range and capture.
+
+VIDEO GAME TEMPLATES (Video Game Network):
+- vgn-platform-template: ready-to-fork platformer engine (physics, camera, tile rendering, enemies, power-ups, chiptune audio) plus an example level.
+- vgn-text-template: text-based game template with a sample adventure - scenes, choices, inventory and endings.
+- vgn-text-rpg-template: text dungeon crawler in the spirit of Bard's Tale and Wizardry; party, procedural dungeons, spells, loot, leveling.
+- vgn-turn-based-jrpg-template: retro turn-based JRPG (Dragon Warrior / Final Fantasy style) with grid exploration, battles, classes, shops and save/load.
+- vgn-2d-physics-template: 2D physics engine template (AABB + circle bodies, restitution, friction, collision layers, raycasts) with Breakout and Pong demos.
+- vgn-shooter-template: fast top-down arena shooter; dodge, aim and survive endless swarms.
+- vgn-generic-template: official generic starter framework with a polished CRT/arcade shell and a tiny example game you can replace.
+- vgn-turn-based-strategy-template: heroes-style turn-based strategy template (hex map, towns, heroes, resources, tactical combat, AI).
+- vgn-ai-chat-rpg-template: AI chat RPG template; scenario and character creation, AI-narrated illustrated visual-novel adventure.
+
+ART & CONTENT:
+- ai-art-template: simple AI art generator with no style presets (private).
+- ratjhi-lorem-ipsum (Generic Site): basic generic placeholder site with Lorem Ipsum content.
+
+FRAMEWORKS & PLUGINS:
+- might-and-magic-game-frameworks: playable Heroes-of-Might-&-Magic-style strategy framework (hex map, towns, heroes, resources, tactical combat).
+- rathji-template: self-contained colored-badge template (text + emoji + accent color), no import needed.
+- rathji-plugin-template: blank-but-working template for building a Perchance plugin (import it, rename the names, add your logic, publish).
+
+Recommendation tips:
+- Image generator: recommend nucleus-app. AI chat: keystone-app. Landing/product page: business-template.
+- Board, card or strategy games: point at the bgn templates. Video games: the vgn templates.
+- If someone wants a game or app that is NOT in the hub, honestly say it isn't listed and suggest the closest matching category, or vgn-generic-template as a blank starting point.
+`;
+
+  // ✏️ 2. Suggested questions shown as clickable chips on first open.
+  const SUGGESTIONS = [
+    "What can I build with these templates?",
+    "I want to make a board game — where do I start?",
+    "Is there a template for an AI image generator?",
+    "How do I use one of these templates?",
+  ];
+
+  // ── no need to edit below here ──────────────────────────────
+  const aiBtn = document.getElementById("askAiBtn");
+  const aiShell = document.getElementById("askAiShell");
+  const aiMsgs = document.getElementById("askAiMsgs");
+  const aiInput = document.getElementById("askAiInput");
+  const aiSendBtn = document.getElementById("askAiSendBtn");
+  const aiCloseBtn = document.getElementById("askAiCloseBtn");
+  const aiSuggest = document.getElementById("askAiSuggest");
+
+  const SEND_ICON = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5"/><path d="m5 12 7-7 7 7"/></svg>';
+  const STOP_ICON = '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>';
+
+  const PERSONA = `You are a friendly, concise AI assistant for this template hub. Answer questions using ONLY the knowledge below. If the knowledge doesn't contain the answer, say so honestly and suggest the closest thing it does cover. Keep replies short (usually 2-6 sentences). Never invent features or templates that aren't in the knowledge.`;
+
+  let chatLog = [];
+  let summary = "";
+  let busy = false;
+  let gen = null;
+  let meta = null;
+  try { meta = root.generateText({ getMetaObject: true }); } catch (e) {}
+  const KEEP = 8;
+  let compacting = false;
+
+  function buildPrompt(task) {
+    const log = [summary ? `[Summary of the earlier conversation:\n${summary}]` : "", ...chatLog].filter(Boolean).join("\n\n");
+    return `${PERSONA}
+
+<KNOWLEDGE>
+${KNOWLEDGE}
+</KNOWLEDGE>
+
+<CHAT>
+${log}
+</CHAT>
+
+TASK: ${task}`;
+  }
+
+  function escapeHTML(s) {
+    return String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  }
+
+  function renderLinks(el, text) {
+    let out = escapeHTML(text);
+    const links = [];
+    out = out.replace(/\[([^\]]*)\]\((https?:\/\/[^)\s]+)\)/g, (m, label, url) => {
+      const k = "%%L" + links.length + "%%";
+      links.push(`<a href="${url}" target="_blank" rel="noopener">${label}</a>`);
+      return k;
+    });
+    out = out.replace(/https?:\/\/[^\s<]+/g, m => {
+      const c = m.replace(/[),.;]+$/, "");
+      return `<a href="${c}" target="_blank" rel="noopener">${c}</a>`;
+    });
+    links.forEach((h, i) => { out = out.split("%%L" + i + "%%").join(h); });
+    el.innerHTML = out;
+  }
+
+  function scrollBottom() { aiMsgs.scrollTop = aiMsgs.scrollHeight; }
+
+  function addMsg(role, text) {
+    const div = document.createElement("div");
+    div.className = "ask-ai-msg " + role;
+    div.textContent = text;
+    aiMsgs.appendChild(div);
+    scrollBottom();
+    return div;
+  }
+
+  function showTyping() {
+    const div = document.createElement("div");
+    div.className = "ask-ai-msg ai";
+    div.innerHTML = '<span class="ask-ai-typing"><i></i><i></i><i></i></span>';
+    aiMsgs.appendChild(div);
+    scrollBottom();
+    return div;
+  }
+
+  function setInputState() {
+    aiSendBtn.disabled = busy;
+    aiInput.disabled = busy;
+    aiSendBtn.innerHTML = busy ? STOP_ICON : SEND_ICON;
+    aiSendBtn.setAttribute("aria-label", busy ? "Stop generating" : "Send");
+    aiSendBtn.title = busy ? "Stop generating" : "Send";
+  }
+
+  function autoGrow() {
+    aiInput.style.height = "auto";
+    aiInput.style.height = Math.min(aiInput.scrollHeight, 120) + "px";
+  }
+
+  async function maybeCompact() {
+    if (compacting || !meta || chatLog.length <= KEEP) return;
+    if (meta.countTokens(buildPrompt("")) < meta.idealMaxContextTokens * 0.9) return;
+    compacting = true;
+    try {
+      const n = chatLog.length - KEEP;
+      const boundary = chatLog[n - 1].slice(-30);
+      const res = await root.generateText(buildPrompt(`Summarize the first ${n} messages, stopping after the message ending with "${boundary}". Fold in the [Summary...] block if there is one. Terse bullets; preserve names, facts, and unresolved threads. Output ONLY the summary text.`));
+      summary = res.text.trim();
+      chatLog.splice(0, n);
+    } catch (e) {} finally { compacting = false; }
+  }
+
+  async function send(text) {
+    const msg = (text != null ? String(text) : aiInput.value).trim();
+    if (busy || !msg) return;
+    if (!root.generateText) {
+      addMsg("ai", "Sorry, the AI isn't available right now. Please refresh and try again.");
+      return;
+    }
+    aiInput.value = "";
+    autoGrow();
+    chatLog.push("User: " + msg);
+    addMsg("user", msg);
+    aiSuggest.innerHTML = "";
+    const typing = showTyping();
+    busy = true;
+    setInputState();
+    let streamed = false;
+    try {
+      gen = root.generateText({
+        instruction: buildPrompt("Reply to the user's latest message as the AI assistant. Output ONLY the reply text."),
+        onChunk: d => {
+          if (!d.fullTextSoFar) return;
+          if (!streamed) { typing.textContent = ""; streamed = true; }
+          typing.textContent = d.fullTextSoFar;
+          scrollBottom();
+        },
+      });
+      const res = await gen;
+      renderLinks(typing, (res && res.text ? res.text : "").trim());
+      chatLog.push("AI: " + typing.textContent);
+      maybeCompact();
+    } catch (e) {
+      typing.textContent = "Hmm, that request didn't go through. Mind trying again?";
+    } finally {
+      busy = false;
+      gen = null;
+      setInputState();
+      scrollBottom();
+    }
+  }
+
+  function welcome() {
+    addMsg("ai", "Hi! I'm the AI guide for this template hub. Ask me how to use it, which template fits your project, or what you can build.");
+    for (const c of SUGGESTIONS) {
+      const b = document.createElement("button");
+      b.className = "ask-ai-suggest-chip";
+      b.textContent = c;
+      b.addEventListener("click", () => send(c));
+      aiSuggest.appendChild(b);
+    }
+  }
+
+  aiBtn.addEventListener("click", () => {
+    aiShell.hidden = !aiShell.hidden;
+    if (!aiShell.hidden) {
+      if (!aiMsgs.children.length) welcome();
+      aiInput.focus();
+    }
+  });
+  aiCloseBtn.addEventListener("click", () => { aiShell.hidden = true; });
+  aiSendBtn.addEventListener("click", () => { if (busy && gen) gen.stop(); else send(); });
+  aiInput.addEventListener("keydown", e => {
+    if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); if (busy && gen) gen.stop(); else send(); }
+  });
+  aiInput.addEventListener("input", autoGrow);
+  setInputState();
+</script>
