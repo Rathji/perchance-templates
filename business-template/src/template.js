@@ -279,6 +279,22 @@
           buttonUrl: { type: STR, example: "#" }
         }
       },
+      manual: {
+        type: OBJ, doc: "Product manual — documentation chapters with a contents sidebar.",
+        fields: {
+          heading: { type: STR, example: "Product manual" },
+          description: { type: STR, example: "A guided walkthrough of the product — from first log-in to everyday workflows." },
+          chapters: {
+            type: ARR, doc: "Manual chapters (listed in the sidebar and rendered as numbered cards).",
+            item: {
+              type: OBJ, fields: {
+                title: { type: STR, example: "Getting started" },
+                body: { type: STR, example: "Create your account and launch your first project in under an hour." }
+              }
+            }
+          }
+        }
+      },
       faq: {
         type: ARR, doc: "FAQ accordion items.",
         item: {
@@ -592,6 +608,11 @@
         buttonText: str(CT.buttonText),
         buttonUrl: str(CT.buttonUrl)
       },
+      manual: {
+        heading: str(node.manual && node.manual.heading, "Product manual"),
+        description: str(node.manual && node.manual.description, "A guided walkthrough of the product — from first log-in to everyday workflows, admin and support."),
+        chapters: seq((node.manual && node.manual.chapters) || {}, "m", ["title", "body"])
+      },
       faq: seq(node.faq || {}, "q", ["question", "answer"]),
       footer: { columns: footerColumns },
       admin: { showSettingsButton: bool(node.admin && node.admin.showSettingsButton, true) }
@@ -762,7 +783,7 @@
   }
 
   function renderAll() {
-    renderTrusted(); renderFeatures(); renderStats(); renderCharts(); renderSteps(); renderShowcase(); renderTestimonials(); renderFaq(); renderFooter();
+    renderTrusted(); renderFeatures(); renderStats(); renderCharts(); renderSteps(); renderShowcase(); renderTestimonials(); renderFaq(); renderManual(); renderFooter();
   }
 
   function renderTrusted() {
@@ -874,6 +895,27 @@
       '<details class="faq-item" id="faq-' + i + '"><summary class="faq-q">' + esc(f.question) + '<span class="faq-chev">' +
       icon("chevron", 18) + "</span></summary><div class=\"faq-a\">" + esc(f.answer) + "</div></details>"
     ).join("");
+  }
+
+  function renderManual() {
+    const wrap = $("#manualBody");
+    if (!wrap) return;
+    const chapters = Array.isArray(cfg.manual && cfg.manual.chapters) ? cfg.manual.chapters : [];
+    if (!chapters.length) {
+      wrap.innerHTML = '<p class="manual-empty">No chapters yet — add them under <code>config.manual.chapters</code> in main.pjs or in the settings panel → Content → Product manual.</p>';
+      return;
+    }
+    const title = (ch, i) => esc((ch.title || "").trim() || "Chapter " + (i + 1));
+    const toc = '<aside class="manual-toc"><p class="manual-toc-label">Contents</p>' +
+      chapters.map((ch, i) => '<a href="#manual-ch-' + i + '">' + title(ch, i) + "</a>").join("") +
+      "</aside>";
+    const body = '<div class="manual-chapters">' + chapters.map((ch, i) => {
+      const paras = String(ch.body || "").split(/\n+/).map((s) => s.trim()).filter(Boolean).map((p) => "<p>" + esc(p) + "</p>").join("");
+      return '<article class="manual-ch" id="manual-ch-' + i + '"><div class="manual-ch-num">' + (i + 1) +
+        '</div><div class="manual-ch-main"><h3>' + title(ch, i) + '</h3><div class="manual-ch-body">' +
+        (paras || '<p class="manual-muted">(No body text yet.)</p>') + "</div></div></article>";
+    }).join("") + "</div>";
+    wrap.innerHTML = '<div class="manual-layout">' + toc + body + "</div>";
   }
 
   function renderFooter() {
@@ -1487,6 +1529,23 @@
       field.appendChild(label); field.appendChild(input); wrap.appendChild(field);
     }
 
+    // manual
+    sub("Product manual");
+    const mhF = document.createElement("div"); mhF.className = "field";
+    const mhL = document.createElement("label"); mhL.textContent = "Section heading";
+    const mhIn = document.createElement("input"); mhIn.type = "text"; mhIn.value = (cfg.manual && cfg.manual.heading) || "";
+    mhIn.addEventListener("input", () => { if (!cfg.manual) cfg.manual = {}; cfg.manual.heading = mhIn.value; applyText(); markDirty(); });
+    mhF.appendChild(mhL); mhF.appendChild(mhIn); wrap.appendChild(mhF);
+    const mdF = document.createElement("div"); mdF.className = "field";
+    const mdL = document.createElement("label"); mdL.textContent = "Section description";
+    const mdIn = document.createElement("textarea"); mdIn.rows = 2; mdIn.value = (cfg.manual && cfg.manual.description) || "";
+    mdIn.addEventListener("input", () => { if (!cfg.manual) cfg.manual = {}; cfg.manual.description = mdIn.value; applyText(); markDirty(); });
+    mdF.appendChild(mdL); mdF.appendChild(mdIn); wrap.appendChild(mdF);
+    wrap.appendChild(listEditor("manual", [
+      { key: "title", label: "Chapter title" },
+      { key: "body", label: "Body text", textarea: true }
+    ]));
+
     // faq
     sub("FAQ");
     wrap.appendChild(listEditor("faq", [
@@ -1519,7 +1578,7 @@
   function listEditor(key, fields) {
     const box = document.createElement("div");
     box.className = "list-editor";
-    const itemKeys = key === "features" ? cfg.features : cfg[key];
+    const itemKeys = key === "manual" ? (cfg.manual && cfg.manual.chapters) : (key === "features" ? cfg.features : cfg[key]);
     const items = Array.isArray(itemKeys) ? itemKeys : [];
 
     const render = () => {
@@ -1551,6 +1610,7 @@
             if (key === "how") renderSteps();
             if (key === "testimonials") renderTestimonials();
             if (key === "faq") renderFaq();
+            if (key === "manual") renderManual();
             markDirty();
           });
           fd.appendChild(lab); fd.appendChild(inp); grid.appendChild(fd);
@@ -1564,7 +1624,7 @@
       });
       const add = document.createElement("button");
       add.type = "button"; add.className = "btn btn-ghost btn-sm";
-      add.textContent = "+ Add " + (key === "features" ? "feature" : key === "stats" ? "stat" : key === "how" ? "step" : key === "faq" ? "FAQ item" : "item");
+      add.textContent = "+ Add " + (key === "manual" ? "chapter" : key === "features" ? "feature" : key === "stats" ? "stat" : key === "how" ? "step" : key === "faq" ? "FAQ item" : "item");
       add.addEventListener("click", () => {
         const blank = {};
         fields.forEach((f) => { blank[f.key] = ""; });

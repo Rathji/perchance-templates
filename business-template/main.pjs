@@ -44,6 +44,7 @@ generateText = {import:ai-text-plugin}
 //    showcase:  { heading, description, points: [ ... ] },
 //    testimonials: [ { quote, name, role, company }, ... ],
 //    cta:       { heading, description, buttonText, buttonUrl },
+//    manual:    { heading, description, chapters: [ { title, body }, ... ] },
 //    faq:       [ { question, answer }, ... ],
 //    footer:    { columns: [ { heading, links: [ { label, url }, ... ] }, ... ] },
 //    admin:     { showSettingsButton }
@@ -227,6 +228,28 @@ config
     description = Join the teams that ship with confidence. Set up your workspace today — no credit card required.
     buttonText = Get started today
     buttonUrl = #
+
+  // ── Product manual (documentation chapters) ──────────────────────────────
+  // A docs-style section with a contents sidebar. Each chapter renders as a
+  // numbered card with a title and body text. Add/remove chapters like m1, m2…
+  // (body is a single string — use the settings panel or a JSON import if you
+  // want real paragraph breaks).
+  manual
+    heading = Product manual
+    description = A guided walkthrough of the product — from first log-in to everyday workflows, admin and support.
+    chapters
+      m1
+        title = Getting started
+        body = Create your account, invite teammates, and complete your first project from template to launch in under an hour.
+      m2
+        title = Installation & setup
+        body = Guided onboarding covers roles, integrations and branding, with step-by-step migration guides that make switching from your existing tools painless.
+      m3
+        title = Everyday workflows
+        body = Build, review and ship from one workspace. Dashboards, notifications and automations keep the whole team aligned.
+      m4
+        title = Admin, billing & support
+        body = Manage users and permissions, review usage and invoices, and reach our 24/7 support team from the help center.
 
   // ── FAQ accordion ─────────────────────────────────────────────────────────
   faq

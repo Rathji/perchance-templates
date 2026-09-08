@@ -240,6 +240,18 @@
     </div>
   </section>
 
+  <!-- ============================ manual ============================ -->
+  <section class="section" id="manual" style="padding-top:0">
+    <div class="container">
+      <div class="section-head">
+        <span class="eyebrow">Manual</span>
+        <h2><span data-field="manual.heading">Product manual</span></h2>
+        <p class="lede" data-field="manual.description">A guided walkthrough of the product — from first log-in to everyday workflows, admin and support.</p>
+      </div>
+      <div class="manual" id="manualBody"></div>
+    </div>
+  </section>
+
   <!-- ============================ FAQ ============================ -->
   <section class="section" id="faq" style="padding-top:0">
     <div class="container">
@@ -415,9 +427,9 @@
   // ✏️ 1. The AI answers ONLY from this text — keep it accurate & specific.
   const KNOWLEDGE = `
 This is a Perchance template called Business Template.
-What it does: A professional, fully configurable landing-page template. It renders a complete business/product website — header with nav and a dark-mode toggle, a hero with headline and CTAs, a "trusted by" strip, a feature grid, "how it works" steps, a stats band, analytics charts (monthly revenue, new leads, traffic sources), a showcase with a terminal mockup, testimonials, a final call-to-action band, an FAQ accordion, and a multi-column footer. Every piece of text and color on the page is driven by a single configuration object (the "config" list in main.pjs), so you can rebrand the whole site without touching the markup.
+What it does: A professional, fully configurable landing-page template. It renders a complete business/product website — header with nav and a dark-mode toggle, a hero with headline and CTAs, a "trusted by" strip, a feature grid, "how it works" steps, a stats band, analytics charts (monthly revenue, new leads, traffic sources), a showcase with a terminal mockup, testimonials, a final call-to-action band, a product manual (documentation chapters with a contents sidebar), an FAQ accordion, and a multi-column footer. Every piece of text and color on the page is driven by a single configuration object (the "config" list in main.pjs), so you can rebrand the whole site without touching the markup.
 How to use it:
-- Edit config in main.pjs: set your company name/contact/tagline, the product headline and CTAs, colors, font, features, stats, testimonials, FAQ, footer links, and more. Add or remove items in any list (features f1..f6, stats s1..s4, how h1..h3, testimonials t1..t3, faq q1..q5, footer columns and links).
+- Edit config in main.pjs: set your company name/contact/tagline, the product headline and CTAs, colors, font, features, stats, testimonials, the manual chapters (m1..m4), FAQ, footer links, and more. Add or remove items in any list (features f1..f6, stats s1..s4, how h1..h3, testimonials t1..t3, manual chapters m1.., faq q1..q5, footer columns and links).
 - Or use the settings panel: click the gear button (bottom-right) to preview and apply colors, switch between light and dark mode, choose an accent style (gradient or solid), corner radius, base font size, and one of 11 font pairings (lato, inter, roboto, open-sans, source-sans, ibm-plex, dm-sans, manrope, montserrat-lato, playfair-lato, merriweather-inter). You can also scan any website to auto-generate color schemes that match its branding, edit all content live, and import or export the entire configuration as JSON.
 - Import/Export: the exported JSON mirrors the config structure exactly; imports may be partial (missing fields fall back to the defaults in main.pjs). You can download a JSON schema, copy the config to the clipboard, or generate a share link that reproduces the theme, colors, text size and motion settings.
 - Footer text supports the placeholders {year} and {companyName}.
