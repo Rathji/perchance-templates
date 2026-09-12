@@ -1,0 +1,59 @@
+$meta
+  title = Template-U — Project U base framework
+  description = The canonical shared template and identity framework for the Project U family of small-business generators — theme engine, responsive shell, accessible UI components, state/event/persistence/router plumbing, branding, and developer docs.
+  image = https://user.uploads.dev/file/b73b6bdc4bd1abf60b7b77357df8a685.png
+  tags = template, framework, project u, theme, ui components, small business, starter
+  header
+    mode = minimal
+
+// ============================================================================
+//  TEMPLATE-U — PROJECT U BASE FRAMEWORK — BOOT CONFIGURATION
+// ============================================================================
+//  This file is the high-level configuration surface read by src/app.js on
+//  startup. Keep it declarative: implementation belongs in src/, random
+//  content lists belong here or in member generator files.
+//
+//  Member generators created from this template change ONLY the values in the
+//  `pu` block below (plus their own views/modules) — see src/CUSTOMIZATION.md.
+// ============================================================================
+
+kv = {import:kv-plugin} // optional key/value persistence adapter (session + prefs)
+
+pu
+  appTitle = Template-U
+  appShortTitle = TU
+  tagline = The Project U shared framework
+  companyName = Project U
+  version = 0.1.0
+  storageNamespace = pu-template
+  defaultTheme = navy
+  logoMark = TU
+  copyright = Project U
+
+  // --------------------------------------------------------------------------
+  //  Branding overrides (Phase 4, task 16). Leave a value blank to inherit the
+  //  Project U default. `logoUrl` and `fontSans` may be omitted entirely.
+  //  Example:
+  //    branding
+  //      primary = #0f766e
+  //      accent = #b45309
+  //      fontSans = Inter
+  //      logoUrl = https://user.uploads.dev/file/....png
+  //      footer = Acme Tools
+  // --------------------------------------------------------------------------
+  branding
+    primary = #1e3a8a
+    accent = #0d9488
+    fontSans = Inter
+
+// ---------------------------------------------------------------------------
+//  Demo content list — the framework's showcase views use this to illustrate
+//  how Perchance lists feed member generators. Not part of the framework API.
+// ---------------------------------------------------------------------------
+businessType
+  bakery
+  bicycle repair shop
+  bookkeeping practice
+  landscaping crew
+  coffee roastery
+  pet grooming salon

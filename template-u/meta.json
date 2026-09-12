@@ -1,0 +1,141 @@
+{
+  "name": "template-u",
+  "imports": [
+    "kv-plugin"
+  ],
+  "isPrivate": true,
+  "srcManifest": {
+    "framework/utils.js": {
+      "key": "980365f6b4be25173f859f6e88d61efb.js",
+      "size": 9436
+    },
+    "framework/bus.js": {
+      "key": "6fd69c7af6f62d06a788c4003acd2045.js",
+      "size": 2300
+    },
+    "framework/store.js": {
+      "key": "fc47330f24f975805eff922d1fcf4f0f.js",
+      "size": 3515
+    },
+    "framework/storage.js": {
+      "key": "58fa2b90ae6167f9838cf7b733066ac6.js",
+      "size": 3267
+    },
+    "framework/dom.js": {
+      "key": "038b9a67423ff6c8e72f92572c2d9805.js",
+      "size": 6581
+    },
+    "framework/theme.js": {
+      "key": "996996e50223dc088f46f28f0a58d42c.js",
+      "size": 11230
+    },
+    "framework/branding.js": {
+      "key": "17d4dc25cfb8e0a45e28ea0480db548e.js",
+      "size": 5285
+    },
+    "framework/registry.js": {
+      "key": "0ce89f510bc78dd0682851d393ec12cd.js",
+      "size": 3181
+    },
+    "framework/meta.js": {
+      "key": "31736acfa8785a49cee1979f6b458a8a.js",
+      "size": 1758
+    },
+    "components/toast.js": {
+      "key": "16478e7037a065ddcad8c306a5f0e9f5.js",
+      "size": 4592
+    },
+    "components/inputs.js": {
+      "key": "f8475acfc196ef7e1389adf3560823f3.js",
+      "size": 8719
+    },
+    "components/datatable.js": {
+      "key": "e1f03077e6e2c37c4f33bf5346be4979.js",
+      "size": 7598
+    },
+    "framework/pu.js": {
+      "key": "654c5207a383148481890842317d839b.js",
+      "size": 1443
+    },
+    "views/helpers.js": {
+      "key": "290efedbe576195381731f0298a0b3cf.js",
+      "size": 3539
+    },
+    "views/home.js": {
+      "key": "c993af2ee654ba7aa767caca8a4aa161.js",
+      "size": 5068
+    },
+    "views/components.js": {
+      "key": "cb8ba0b0ca4894456f8b4a5b9233f047.js",
+      "size": 7006
+    },
+    "views/data.js": {
+      "key": "b1bc9fda35459d3d5ed93aae896a7e7d.js",
+      "size": 5278
+    },
+    "views/settings.js": {
+      "key": "440aa0df46d7e6f19b299c61af099bf9.js",
+      "size": 11515
+    },
+    "tests/utils.test.js": {
+      "key": "adce01f6b32094db5613e15f02cbdf72.js",
+      "size": 3362
+    },
+    "tests/theme.test.js": {
+      "key": "6cdca434f9bf71f017c59e007705b863.js",
+      "size": 4351
+    },
+    "tests/components.test.js": {
+      "key": "9a2afeac16e2128e620ea8897e167f84.js",
+      "size": 4815
+    },
+    "tests/index.js": {
+      "key": "a8de1bdb9a22aef58f27a1d8ee882640.js",
+      "size": 690
+    },
+    "views/tests.js": {
+      "key": "7f6ec665878722c7f0f8cc6a165eb4da.js",
+      "size": 3796
+    },
+    "views/about.js": {
+      "key": "10934baf741400fdd0bbca880e619b13.js",
+      "size": 5335
+    },
+    "CUSTOMIZATION.md": {
+      "key": "24d089913007275539681142f8c5652a.txt",
+      "size": 3736
+    },
+    "CLONE-GUIDE.md": {
+      "key": "bdcbed8cae680800df6b3ded807ea0d1.txt",
+      "size": 2698
+    },
+    "API.md": {
+      "key": "bb5dc0ea136d594fafb10f5416720359.txt",
+      "size": 6615
+    },
+    "tests/harness.js": {
+      "key": "c2892432defc16099dae6149e8a82045.js",
+      "size": 3096
+    },
+    "app.js": {
+      "key": "c469d70e72a40cfaf0df0d535656a6de.js",
+      "size": 11666
+    },
+    "tests/framework.test.js": {
+      "key": "870fd494fd350175155cc32008b56773.js",
+      "size": 7654
+    },
+    "styles.css": {
+      "key": "7e2551e32c44b2e829d3dd59004fac00.css",
+      "size": 36998
+    },
+    "framework/router.js": {
+      "key": "e7d930bfcace627d7f22a73a77e4dbe7.js",
+      "size": 3768
+    },
+    "README.md": {
+      "key": "0a2fe5816c70e729d4849a4a5efbbbe3.txt",
+      "size": 4910
+    }
+  }
+}
